@@ -12,6 +12,7 @@ var hbs          = require('express-hbs');
 var config = require('./lib/utils/config');
 
 var routes = require('./routes/index');
+var puzzleRoutes = require('./routes/puzzles');
 
 var app = express();
 
@@ -20,6 +21,8 @@ app.engine('hbs', hbs.express4({
 	defaultLayout: path.join(config.paths.templates, 'layout.hbs'),
 	partialsDir: config.paths.partials,
 }));
+
+hbs.registerHelper(require(path.join(__dirname, "hbs-helpers"))(hbs.handlebars));
 
 app.set('views', config.paths.templates);
 app.set('view engine', 'hbs');
@@ -36,6 +39,7 @@ app.use(cookieParser());
 app.use('/static', express.static(config.paths.static));
 
 app.use('/', routes);
+app.use('/puzzles/', puzzleRoutes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

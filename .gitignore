@@ -35,3 +35,8 @@ npm-debug.log
 
 # Compiled static files
 static/dist
+
+
+# Build-generated script files
+static/scripts/view-map.js
+static/scripts/partials.js
