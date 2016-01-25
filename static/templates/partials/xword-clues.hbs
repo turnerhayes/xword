@@ -1,0 +1,20 @@
+<div class="clues-lists">
+	<div class="clues-list clues-list-across">
+		<h3 class="clues-direction-title across">Across</h3>
+		<dl>
+		{{#puzzle.clues.across}}
+			<dt class="clues-list-clue-number" data-clue-direction="across" data-clue-number="{{clueNumber}}">{{clueNumber}}:</dt>
+			<dd class="clues-list-clue-text" data-clue-direction="across" data-clue-number="{{clueNumber}}">{{clueText}}</dd>
+		{{/puzzle.clues.across}}
+		</dl>			
+	</div>
+	<div class="clues-list clues-list-down">
+		<h3 class="clues-direction-title down">Down</h3>
+		<dl>
+		{{#puzzle.clues.down}}
+			<dt class="clues-list-clue-number" data-clue-direction="down" data-clue-number="{{clueNumber}}">{{clueNumber}}:</dt>
+			<dd class="clues-list-clue-text" data-clue-direction="down" data-clue-number="{{clueNumber}}">{{clueText}}</dd>
+		{{/puzzle.clues.down}}
+		</dl>
+	</div>
+</div>
