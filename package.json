@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "postinstall": "NPM_CONFIG_PRODUCTION=false cd static && npm install && cd .. && gulp build"
+    "postinstall": "cd static && npm install && cd .. && gulp build"
   },
   "dependencies": {
     "body-parser": "~1.13.2",
@@ -17,9 +17,7 @@
     "lodash": "^4.0.0",
     "morgan": "~1.6.1",
     "q": "^1.4.1",
-    "serve-favicon": "~2.3.0"
-  },
-  "devDependencies": {
+    "serve-favicon": "~2.3.0",
     "babel-preset-es2015": "^6.3.13",
     "babelify": "^7.2.0",
     "browserify": "^13.0.0",
