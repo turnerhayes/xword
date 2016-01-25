@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "postinstall": "NODE_ENV=development cd static && npm install && cd .. && gulp build"
+    "postinstall": "NPM_CONFIG_PRODUCTION=false cd static && npm install && cd .. && gulp build"
   },
   "dependencies": {
     "body-parser": "~1.13.2",
