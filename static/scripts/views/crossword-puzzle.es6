@@ -1,6 +1,7 @@
 "use strict";
 
 var $ = require('jquery');
+var _ = require('lodash');
 var Backbone = require('backbone');
 
 const DIRECTIONS = {
@@ -53,12 +54,40 @@ exports = module.exports = Backbone.View.extend({
 
 		view.direction = direction;
 
-		view._$directionIndicator.removeClass('down across')
-			.addClass(
-				direction === DIRECTIONS.ACROSS ?
-					'across' :
-					'down'
-			);
+		var clueNumber;
+		var $focusedCell = view._$grid.find(':focus').closest('.crossword-cell');
+
+		var $highlighted = view._$grid.add(view._clueLists.$across)
+			.add(view._clueLists.$down)
+			.find('.highlighted');
+
+		if (view.direction === DIRECTIONS.ACROSS) {
+			view._$directionIndicator.removeClass('down')
+				.addClass('across');
+
+			if ($focusedCell.length > 0) {
+				clueNumber = $focusedCell.data('containing-clue-across');
+			}
+
+			if (!_.isUndefined(clueNumber)) {
+				$highlighted.removeClass('highlighted');
+				view._highlightAcrossClue(clueNumber);
+			}
+		}
+		else if (view.direction === DIRECTIONS.DOWN) {
+			view._$directionIndicator.removeClass('across')
+				.addClass('down');
+
+			if ($focusedCell.length > 0) {
+				clueNumber = $focusedCell.data('containing-clue-down');
+			}
+
+			if (!_.isUndefined(clueNumber)) {
+				$highlighted.removeClass('highlighted');
+				view._highlightDownClue(clueNumber);
+			}
+		}
+
 	},
 
 	_toggleDirection: function() {
@@ -96,11 +125,10 @@ exports = module.exports = Backbone.View.extend({
 		view._$grid.add(view._clueLists.$across)
 			.add(view._clueLists.$down).find('.highlighted').removeClass('highlighted');
 
-		if (clues.across) {
+		if (view.direction === DIRECTIONS.ACROSS) {
 			view._highlightAcrossClue(clues.across);
 		}
-
-		if (clues.down) {
+		else if (view.direction === DIRECTIONS.DOWN) {
 			view._highlightDownClue(clues.down);
 		}
 	},
