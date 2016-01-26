@@ -38,5 +38,5 @@ static/dist
 
 
 # Build-generated script files
-static/scripts/view-map.js
+static/scripts/view-map.es6
 static/scripts/partials.js

@@ -59,7 +59,7 @@ var browserifyOptions = _.extend({}, watchify.args, {
 });
 
 var hbsfyOptions = {
-	extensions: ['.hbs'],
+	extensions: ['hbs'],
 	precompiler: 'handlebars'
 };
 
@@ -85,7 +85,7 @@ var jsSuffixRegex = /\.js$/;
 
 var partialsFile = path.resolve(jsDirectory, 'partials.js');
 
-var viewMapFile = path.resolve(jsDirectory, 'view-map.js');
+var viewMapFile = path.resolve(jsDirectory, 'view-map.es6');
 
 /**
  * This function generates the partials.js file which is included by the Handlebars client-side
@@ -167,7 +167,11 @@ function _writeViewMapFile() {
 		var views = _.reduce(
 			files,
 			function(obj, file) {
-				var viewName = path.relative(jsViewsDirectory, file).replace(jsSuffixRegex, '');
+				if (!es6SuffixRegex.test(file)) {
+					return obj;
+				}
+
+				var viewName = path.relative(jsViewsDirectory, file).replace(es6SuffixRegex, '');
 
 				var viewPath = path.relative(jsDirectory, file);
 
@@ -191,12 +195,12 @@ function _writeViewMapFile() {
 						str += "\n";
 					}
 
-					str += "var " + _viewIdentifier(name) + " = require(" + JSON.stringify(path) + ");";
+					str += "import " + _viewIdentifier(name) + " from " + JSON.stringify(path) + ";";
 
 					return str;
 				},
 				""
-			) + "\n\nmodule.exports = exports = {" +
+			) + "\n\nexport default {" +
 			_.reduce(
 				views,
 				function(str, path, name) {
@@ -323,10 +327,10 @@ function _scriptsTask(watch) {
 	if (watch) {
 		bundler = watchify(bundler);
 	}
-	
-	bundler.transform(babelify.configure(babelifyOptions));
 
 	bundler.transform(hbsfy.configure(hbsfyOptions));
+	
+	bundler.transform(babelify.configure(babelifyOptions));
 
 	if (watch) {
 		bundler.on('update', _.bind(_compileScripts, undefined, bundler));
