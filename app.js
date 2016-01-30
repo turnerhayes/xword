@@ -1,13 +1,15 @@
 "use strict";
 
-var express      = require('express');
-var path         = require('path');
-var fs           = require('fs');
-var favicon      = require('serve-favicon');
-var logger       = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser   = require('body-parser');
-var hbs          = require('express-hbs');
+var express       = require('express');
+var path          = require('path');
+var fs            = require('fs');
+var favicon       = require('serve-favicon');
+var logger        = require('morgan');
+var cookieParser  = require('cookie-parser');
+var bodyParser    = require('body-parser');
+var hbs           = require('express-hbs');
+var session       = require('./session');
+var setupPassport = require('./passport-authentication');
 
 var config = require('./lib/utils/config');
 
@@ -36,7 +38,10 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(session.instance);
 app.use('/static', express.static(config.paths.static));
+
+setupPassport(app);
 
 app.use('/', routes);
 app.use('/puzzles/', puzzleRoutes);

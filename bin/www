@@ -2,14 +2,19 @@
 
 "use strict";
 
+if (process.env.LOAD_ENV) {
+	require('dotenv').config();
+}
 
 /**
  * Module dependencies.
  */
 
-var app   = require('../app');
-var debug = require('debug')('xword:server');
-var http  = require('http');
+var app    = require('../app');
+var debug  = require('debug')('xword:server');
+var http   = require('http');
+var config = require('../lib/utils/config');
+
 
 /**
  * Get port from environment and store in Express.

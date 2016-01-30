@@ -1,0 +1,411 @@
+diff --git a/.gitignore b/.gitignore
+index 7046efc..cc92c5c 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -40,3 +40,6 @@ static/dist
+ # Build-generated script files
+ static/scripts/view-map.es6
+ static/scripts/partials.js
++
++# Environment variables config
++.env
+diff --git a/app.js b/app.js
+index 929ef07..43fd586 100644
+--- a/app.js
++++ b/app.js
+@@ -1,13 +1,15 @@
+ "use strict";
+ 
+-var express      = require('express');
+-var path         = require('path');
+-var fs           = require('fs');
+-var favicon      = require('serve-favicon');
+-var logger       = require('morgan');
+-var cookieParser = require('cookie-parser');
+-var bodyParser   = require('body-parser');
+-var hbs          = require('express-hbs');
++var express       = require('express');
++var path          = require('path');
++var fs            = require('fs');
++var favicon       = require('serve-favicon');
++var logger        = require('morgan');
++var cookieParser  = require('cookie-parser');
++var bodyParser    = require('body-parser');
++var hbs           = require('express-hbs');
++var session       = require('./session');
++var setupPassport = require('./passport-authentication');
+ 
+ var config = require('./lib/utils/config');
+ 
+@@ -36,8 +38,11 @@ app.use(logger('dev'));
+ app.use(bodyParser.json());
+ app.use(bodyParser.urlencoded({ extended: false }));
+ app.use(cookieParser());
++app.use(session.instance);
+ app.use('/static', express.static(config.paths.static));
+ 
++setupPassport(app);
++
+ app.use('/', routes);
+ app.use('/puzzles/', puzzleRoutes);
+ 
+diff --git a/bin/www b/bin/www
+index 3fccd0d..b48dc3c 100644
+--- a/bin/www
++++ b/bin/www
+@@ -2,14 +2,19 @@
+ 
+ "use strict";
+ 
++if (process.env.LOAD_ENV) {
++	require('dotenv').config();
++}
+ 
+ /**
+  * Module dependencies.
+  */
+ 
+-var app   = require('../app');
+-var debug = require('debug')('xword:server');
+-var http  = require('http');
++var app    = require('../app');
++var debug  = require('debug')('xword:server');
++var http   = require('http');
++var config = require('../lib/utils/config');
++
+ 
+ /**
+  * Get port from environment and store in Express.
+diff --git a/lib/utils/config.js b/lib/utils/config.js
+index 58a80bc..6acdefc 100644
+--- a/lib/utils/config.js
++++ b/lib/utils/config.js
+@@ -7,13 +7,54 @@ var templatesPath = path.join(staticPath, 'templates');
+ var partialsPath = path.join(templatesPath, 'partials');
+ 
+ var Config = {
+-	app: {
+-		environment: process.env.NODE_ENV || 'development'
++	"app": {
++		"environment": process.env.NODE_ENV || 'development',
++		"secret": process.env.CONFIG_APP_SECRET,
++		"address": {
++			"host": process.env.CONFIG_APP_ADDRESS_HOST,
++			"port": process.env.PORT,
++			"isSecure": !!process.env.CONFIG_APP_ADDRESS_IS_SECURE,
++			"externalPort": process.env.CONFIG_APP_ADDRESS_EXTERNAL_PORT || null
++		}
+ 	},
+-	paths: {
++	"session": {
++		"key": process.env.CONFIG_SESSION_KEY,
++		"store": {
++			"url": process.env.CONFIG_SESSION_STORE_URL
++		}
++	},
++	"paths": {
+ 		"static": staticPath,
+ 		"templates": templatesPath,
+ 		"partials": partialsPath
++	},
++	"authentication": {
++		"facebook": {
++			"profileFields": [
++				"id",
++				"name",
++				"displayName",
++				"emails"
++			],
++			"scope": [
++				"email"
++			],
++			"callbackURL": "/auth/fb/callback"
++		},
++		"google": {
++			"scope": ["https://www.googleapis.com/auth/plus.login", "email"],
++			"callbackURL": "/auth/google/callback"
++		}
++	},
++	"credentials": {
++		"facebook": {
++			"appSecret": process.env.CONFIG_CREDENTIALS_FACEBOOK_APP_SECRET,
++			"appID": process.env.CONFIG_CREDENTIALS_FACEBOOK_APP_ID
++		},
++		"google": {
++			"clientSecret": process.env.CONFIG_CREDENTIALS_GOOGLE_CLIENT_SECRET,
++			"clientID": process.env.CONFIG_CREDENTIALS_GOOGLE_CLIENT_ID
++		}
+ 	}
+ };
+ 
+diff --git a/package.json b/package.json
+index 0d89fc1..5fc2a92 100644
+--- a/package.json
++++ b/package.json
+@@ -7,21 +7,16 @@
+     "postinstall": "cd static && npm install && cd .. && gulp build"
+   },
+   "dependencies": {
++    "babel-preset-es2015": "^6.3.13",
++    "babelify": "^7.2.0",
+     "body-parser": "~1.13.2",
++    "browserify": "^13.0.0",
+     "cookie-parser": "~1.3.5",
+     "debug": "~2.2.0",
++    "del": "^2.2.0",
++    "dotenv": "^2.0.0",
+     "express": "~4.13.1",
+     "express-hbs": "^0.8.4",
+-    "handlebars": "^4.0.5",
+-    "ipuz": "0.0.0",
+-    "lodash": "^4.0.0",
+-    "morgan": "~1.6.1",
+-    "q": "^1.4.1",
+-    "serve-favicon": "~2.3.0",
+-    "babel-preset-es2015": "^6.3.13",
+-    "babelify": "^7.2.0",
+-    "browserify": "^13.0.0",
+-    "del": "^2.2.0",
+     "gulp": "^3.9.0",
+     "gulp-changed": "^1.3.0",
+     "gulp-debug": "^2.1.2",
+@@ -35,14 +30,20 @@
+     "gulp-uglify": "^1.5.1",
+     "gulp-util": "^3.0.7",
+     "gulp-watch": "^4.3.5",
++    "handlebars": "^4.0.5",
+     "hbsfy": "^2.4.1",
++    "ipuz": "0.0.0",
+     "jshint": "^2.9.1",
+     "jshint-stylish": "^2.1.0",
+     "less-plugin-autoprefix": "^1.5.1",
+     "less-plugin-clean-css": "^1.5.1",
++    "lodash": "^4.0.0",
+     "merge-stream": "^1.0.0",
++    "morgan": "~1.6.1",
++    "q": "^1.4.1",
+     "recursive-readdir": "^1.3.0",
+     "run-sequence": "^1.1.5",
++    "serve-favicon": "~2.3.0",
+     "vinyl-buffer": "^1.0.0",
+     "vinyl-source-stream": "^1.1.0",
+     "watchify": "^3.7.0"
+diff --git a/routes/puzzles.js b/routes/puzzles.js
+index 22570fc..536762f 100644
+--- a/routes/puzzles.js
++++ b/routes/puzzles.js
+@@ -7,13 +7,26 @@ var IPUZParser = require('ipuz');
+ 
+ var parser = new IPUZParser();
+ 
+-router.get('/', function(req, res, next) {
+-	var puzzle = parser.parse(path.resolve(__dirname, '..', 'puzzle.ipuz'));
++router.route('/')
++	.get(function(req, res, next) {
++		var puzzle = parser.parse(path.resolve(__dirname, '..', 'puzzle.ipuz'));
+ 
+-	res.render('puzzle', {
+-		title: 'Xword Gen',
+-		puzzle: puzzle
++		res.render('puzzle', {
++			title: 'Xword Gen',
++			puzzle: puzzle
++		});
+ 	});
+-});
++
++router.route('/solution')
++	.post(
++		function(req, res, next) {
++			console.log('body: ', req.body);
++			var solution = req.body.solution;
++
++			console.log('solution: ', JSON.stringify(solution, null, '\t'));
++
++			res.send();
++		}
++	);
+ 
+ module.exports = router;
+diff --git a/static/package.json b/static/package.json
+index 2afc5f5..da8b6e4 100644
+--- a/static/package.json
++++ b/static/package.json
+@@ -13,7 +13,8 @@
+     "bootstrap": "^3.3.6",
+     "font-awesome": "^4.5.0",
+     "jquery": "^2.2.0",
+-    "lodash": "^4.0.0"
++    "lodash": "^4.0.0",
++    "q": "^1.4.1"
+   },
+   "devDependencies": {}
+ }
+diff --git a/static/scripts/views/crossword-puzzle.es6 b/static/scripts/views/crossword-puzzle.es6
+index 86e16c8..a96372d 100644
+--- a/static/scripts/views/crossword-puzzle.es6
++++ b/static/scripts/views/crossword-puzzle.es6
+@@ -1,7 +1,8 @@
+ "use strict";
+ 
+-var $ = require('jquery');
+-var _ = require('lodash');
++var $        = require('jquery');
++var _        = require('lodash');
++var Q        = require('q');
+ var Backbone = require('backbone');
+ 
+ const DIRECTIONS = {
+@@ -20,10 +21,13 @@ const KEYCODES = {
+ 	DELETE: 46
+ };
+ 
++const SERVER_SEND_DEBOUNCE_INTERVAL = 500;
++
+ exports = module.exports = Backbone.View.extend({
+ 	events: {
+ 		'change .crossword-cell .letter-input': '_handleCrosswordCellChange',
+-		// 'input .crossword-cell': '_handleCrosswordCellInput',
++		'click .crossword-cell': '_handleCrosswordCellClick',
++		'dblclick .crossword-cell': '_handleCrosswordCellDoubleClick',
+ 		'keypress .crossword-cell': '_handleCrosswordCellKeypress',
+ 		'keydown .crossword-cell': '_handleCrosswordCellKeydown',
+ 		'focusin .crossword-cell .letter-input': '_handleCrosswordCellFocus',
+@@ -32,6 +36,17 @@ exports = module.exports = Backbone.View.extend({
+ 
+ 	direction: DIRECTIONS.ACROSS,
+ 
++	initialize: function() {
++		var view = this;
++
++		Backbone.View.prototype.initialize.apply(view, arguments);
++
++		view._debouncedSendToServer = _.debounce(
++			view._sendSolutionToServer,
++			SERVER_SEND_DEBOUNCE_INTERVAL
++		);
++	},
++
+ 	render: function() {
+ 		var view = this;
+ 
+@@ -47,6 +62,91 @@ exports = module.exports = Backbone.View.extend({
+ 		view._$directionIndicator = view.$('.direction-indicator');
+ 
+ 		view._setDirection(DIRECTIONS.ACROSS);
++
++		view._loadSolution();
++	},
++
++	_loadSolution: function() {
++		var view = this;
++
++		var solution = window.localStorage.getItem('solution');
++
++		if (!solution) {
++			return;
++		}
++
++		solution = JSON.parse(solution);
++
++		var $rows = view._$grid.find('.puzzle-row');
++
++		_.each(
++			solution,
++			function(row, rowIndex) {
++				var $cells = $rows.eq(rowIndex).find('.cell');
++
++				_.each(
++					row,
++					function(cell, cellIndex) {
++						if (cell === '#') {
++							return;
++						}
++
++						if (cell) {
++							$cells.eq(cellIndex).find('.letter-input').val(cell);
++						}
++					}
++				);
++			}
++		);
++	},
++
++	_getCurrentAnswers: function() {
++		var view = this;
++
++		var answers = _.map(
++			view._$grid.find('.puzzle-row'),
++			function(row) {
++				return _.map(
++					$(row).find('.cell'),
++					function(cell) {
++						var $cell = $(cell);
++
++						if ($cell.hasClass('block-cell')) {
++							return '#';
++						}
++
++						return $cell.find('.letter-input').val() || null;
++					}
++				);
++			}
++		);
++
++		return answers;
++	},
++
++	_sendSolutionToServer: function(solution) {
++		var view = this;
++		
++		return Q(
++			$.post({
++				url: "/puzzles/solution",
++				data: JSON.stringify({
++					solution: solution
++				}),
++				dataType: 'json',
++				contentType: 'application/json'
++			})
++		);
++	},
++
++	_updateAnswer: function() {
++		var view = this;
++
++		var answers = view._getCurrentAnswers();
++
++		window.localStorage.setItem('solution', JSON.stringify(answers));
++
++		view._debouncedSendToServer(answers);
+ 	},
+ 
+ 	_setDirection: function(direction) {
+@@ -251,6 +351,8 @@ exports = module.exports = Backbone.View.extend({
+ 		var $cell = $(event.currentTarget);
+ 
+ 		$cell.val($cell.val().toLocaleUpperCase());
++
++		view._updateAnswer();
+ 	},
+ 
+ 	_handleCrosswordCellFocus: function(event) {
+@@ -268,6 +370,18 @@ exports = module.exports = Backbone.View.extend({
+ 		view._highlightClues(containingClues);
+ 	},
+ 
++	_handleCrosswordCellDoubleClick: function(event) {
++		var view = this;
++
++		view._toggleDirection();
++	},
++
++	_handleCrosswordCellClick: function(event) {
++		var view = this;
++
++		$(event.currentTarget).find('.letter-input').focus();
++	},
++
+ 	_handleClueClick: function(event) {
+ 		var view = this;
+ 

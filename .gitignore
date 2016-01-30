@@ -40,3 +40,6 @@ static/dist
 # Build-generated script files
 static/scripts/view-map.es6
 static/scripts/partials.js
+
+# Environment variables config
+.env

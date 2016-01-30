@@ -1,7 +1,8 @@
 "use strict";
 
-var $ = require('jquery');
-var _ = require('lodash');
+var $        = require('jquery');
+var _        = require('lodash');
+var Q        = require('q');
 var Backbone = require('backbone');
 
 const DIRECTIONS = {
@@ -20,10 +21,13 @@ const KEYCODES = {
 	DELETE: 46
 };
 
+const SERVER_SEND_DEBOUNCE_INTERVAL = 500;
+
 exports = module.exports = Backbone.View.extend({
 	events: {
 		'change .crossword-cell .letter-input': '_handleCrosswordCellChange',
-		// 'input .crossword-cell': '_handleCrosswordCellInput',
+		'click .crossword-cell': '_handleCrosswordCellClick',
+		'dblclick .crossword-cell': '_handleCrosswordCellDoubleClick',
 		'keypress .crossword-cell': '_handleCrosswordCellKeypress',
 		'keydown .crossword-cell': '_handleCrosswordCellKeydown',
 		'focusin .crossword-cell .letter-input': '_handleCrosswordCellFocus',
@@ -31,6 +35,17 @@ exports = module.exports = Backbone.View.extend({
 	},
 
 	direction: DIRECTIONS.ACROSS,
+
+	initialize: function() {
+		var view = this;
+
+		Backbone.View.prototype.initialize.apply(view, arguments);
+
+		view._debouncedSendToServer = _.debounce(
+			view._sendSolutionToServer,
+			SERVER_SEND_DEBOUNCE_INTERVAL
+		);
+	},
 
 	render: function() {
 		var view = this;
@@ -47,6 +62,91 @@ exports = module.exports = Backbone.View.extend({
 		view._$directionIndicator = view.$('.direction-indicator');
 
 		view._setDirection(DIRECTIONS.ACROSS);
+
+		view._loadSolution();
+	},
+
+	_loadSolution: function() {
+		var view = this;
+
+		var solution = window.localStorage.getItem('solution');
+
+		if (!solution) {
+			return;
+		}
+
+		solution = JSON.parse(solution);
+
+		var $rows = view._$grid.find('.puzzle-row');
+
+		_.each(
+			solution,
+			function(row, rowIndex) {
+				var $cells = $rows.eq(rowIndex).find('.cell');
+
+				_.each(
+					row,
+					function(cell, cellIndex) {
+						if (cell === '#') {
+							return;
+						}
+
+						if (cell) {
+							$cells.eq(cellIndex).find('.letter-input').val(cell);
+						}
+					}
+				);
+			}
+		);
+	},
+
+	_getCurrentAnswers: function() {
+		var view = this;
+
+		var answers = _.map(
+			view._$grid.find('.puzzle-row'),
+			function(row) {
+				return _.map(
+					$(row).find('.cell'),
+					function(cell) {
+						var $cell = $(cell);
+
+						if ($cell.hasClass('block-cell')) {
+							return '#';
+						}
+
+						return $cell.find('.letter-input').val() || null;
+					}
+				);
+			}
+		);
+
+		return answers;
+	},
+
+	_sendSolutionToServer: function(solution) {
+		var view = this;
+		
+		return Q(
+			$.post({
+				url: "/puzzles/solution",
+				data: JSON.stringify({
+					solution: solution
+				}),
+				dataType: 'json',
+				contentType: 'application/json'
+			})
+		);
+	},
+
+	_updateAnswer: function() {
+		var view = this;
+
+		var answers = view._getCurrentAnswers();
+
+		window.localStorage.setItem('solution', JSON.stringify(answers));
+
+		view._debouncedSendToServer(answers);
 	},
 
 	_setDirection: function(direction) {
@@ -251,6 +351,8 @@ exports = module.exports = Backbone.View.extend({
 		var $cell = $(event.currentTarget);
 
 		$cell.val($cell.val().toLocaleUpperCase());
+
+		view._updateAnswer();
 	},
 
 	_handleCrosswordCellFocus: function(event) {
@@ -266,6 +368,18 @@ exports = module.exports = Backbone.View.extend({
 		};
 
 		view._highlightClues(containingClues);
+	},
+
+	_handleCrosswordCellDoubleClick: function(event) {
+		var view = this;
+
+		view._toggleDirection();
+	},
+
+	_handleCrosswordCellClick: function(event) {
+		var view = this;
+
+		$(event.currentTarget).find('.letter-input').focus();
 	},
 
 	_handleClueClick: function(event) {
