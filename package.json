@@ -36,7 +36,7 @@
     "gulp-watch": "^4.3.5",
     "handlebars": "^4.0.5",
     "hbsfy": "^2.4.1",
-    "ipuz": "0.0.0",
+    "xpuz": "0.0.0",
     "jshint": "^2.9.1",
     "jshint-stylish": "^2.1.0",
     "less-plugin-autoprefix": "^1.5.1",

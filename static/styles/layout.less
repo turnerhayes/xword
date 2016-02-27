@@ -1,0 +1,31 @@
+body {
+	display: flex;
+	flex-direction: column;
+}
+
+.page-layout--header {
+	order: 1;
+}
+
+.page-layout--content {
+	flex: 1;
+	order: 2;
+	display: flex;
+	flex-direction: row;
+
+	&--left-panel {
+		order: 1;
+		width: 25em;
+		display: none;
+	}
+
+	&--main-content {
+		order: 2;
+		flex: 1;
+	}
+
+	&--right-panel {
+		order: 3;
+		display: none;
+	}
+}

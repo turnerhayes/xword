@@ -1,7 +1,3 @@
 <div class="crossword" data-view-classes="crossword-puzzle">
-	<div class="direction-indicator">
-	</div>
-	{{> xword-grid}}
-
-	{{> xword-clues}}
+	{{> xword-grid-and-clues clues=puzzle.clues}}
 </div>

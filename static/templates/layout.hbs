@@ -7,7 +7,20 @@
 	{{{block styles}}}
 </head>
 <body>
-	{{{body}}}
+	<main class="page-layout--content">
+		<section class="page-layout--content--main-content">
+		{{{body}}}
+		</section>
+		<nav class="page-layout--content--left-panel">
+		</nav>
+		<aside class="page-layout--content--right-panel">
+		</aside>
+	</main>
+	<header class="page-layout--header">
+		{{#block 'page-header'}}
+		{{> user-toolbar}}
+		{{/block}}
+	</header>
 
 	<script src="/static/dist/js/build.js"></script>
 	{{{block scripts}}}

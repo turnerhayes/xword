@@ -3,30 +3,18 @@
 	{{#puzzle.grid}}
 		<tr class="puzzle-row">
 		{{#.}}
-			<td
-				{{#if clueNumber}}
-				data-clue-number="{{clueNumber}}"
-				{{/if}}
-
-				{{#if containingClues.across}}
-				data-containing-clue-across="{{containingClues.across}}"
-				{{/if}}
-
-				{{#if containingClues.down}}
-				data-containing-clue-down="{{containingClues.down}}"
-				{{/if}}
-
-				class="cell {{^isBlockCell}}crossword-cell{{/isBlockCell}} {{#isBlockCell}}block-cell{{/isBlockCell}}"
-			>
-			{{^isBlockCell}}
-				<input
-					type="text"
-					class="letter-input"
-				/>
-			{{/isBlockCell}}
-			</td>
+			{{> grid/cell editable=../../editable}}
 		{{/.}}
 		</tr>
 	{{/puzzle.grid}}
+	{{^puzzle}}
+		{{#each (Range height)}}
+		<tr class="puzzle-row">
+			{{#each (Range ../width)}}
+			{{> grid/cell editable=../../editable}}
+			{{/each}}
+		</tr>
+		{{/each}}
+	{{/puzzle}}
 	</tbody>
 </table>

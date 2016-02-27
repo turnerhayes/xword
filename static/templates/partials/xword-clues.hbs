@@ -1,20 +1,18 @@
 <div class="clues-lists">
-	<div class="clues-list clues-list-across">
+	<div class="clues-list-container">
 		<h3 class="clues-direction-title across">Across</h3>
-		<dl>
-		{{#puzzle.clues.across}}
-			<dt class="clues-list-clue-number" data-clue-direction="across" data-clue-number="{{clueNumber}}">{{clueNumber}}:</dt>
-			<dd class="clues-list-clue-text" data-clue-direction="across" data-clue-number="{{clueNumber}}">{{clueText}}</dd>
-		{{/puzzle.clues.across}}
-		</dl>			
+		<ol class="clues-list clues-list-across">
+		{{#each clues.across}}
+			{{> clue-item direction=across clueNumber=@key text=. editable=../editable}}
+		{{/each}}
+		</ol>
 	</div>
-	<div class="clues-list clues-list-down">
+	<div class="clues-list-container">
 		<h3 class="clues-direction-title down">Down</h3>
-		<dl>
-		{{#puzzle.clues.down}}
-			<dt class="clues-list-clue-number" data-clue-direction="down" data-clue-number="{{clueNumber}}">{{clueNumber}}:</dt>
-			<dd class="clues-list-clue-text" data-clue-direction="down" data-clue-number="{{clueNumber}}">{{clueText}}</dd>
-		{{/puzzle.clues.down}}
-		</dl>
+		<ol class="clues-list clues-list-down">
+		{{#each clues.down}}
+			{{> clue-item direction=down clueNumber=@key text=. editable=../editable}}
+		{{/each}}
+		</ol>
 	</div>
 </div>

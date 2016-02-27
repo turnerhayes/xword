@@ -1,2 +1,10 @@
 <h1>{{title}}</h1>
 <p>Welcome to {{title}}</p>
+
+<ul class="puzzle-list">
+	{{#puzzles}}
+	<li>
+		<a href="/puzzles/{{id}}">{{name}}</a>
+	</li>
+	{{/puzzles}}
+</ul>

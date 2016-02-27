@@ -60,7 +60,7 @@ module.exports = function(Handlebars) {
 		},
 
 		Serialize: function(obj) {
-			return new Handlebars.SafeString(JSON.stringify(obj));
+			return JSON.stringify(obj);
 		},
 
 		Default: function(value, defaultValue) {

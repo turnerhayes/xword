@@ -1,0 +1,10 @@
+<section class="user-toolbar">
+	{{#if req.user}}
+	<div>
+		<span>Logged in as </span>
+		<a href="/profile/{{req.user.username}}">{{req.user.preferredDisplayName}}</a>
+	</div>
+	{{else}}
+	<a href="/login">Log in</a>
+	{{/if}}
+</section>

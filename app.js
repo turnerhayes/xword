@@ -4,6 +4,8 @@ var express       = require('express');
 var path          = require('path');
 var fs            = require('fs');
 var favicon       = require('serve-favicon');
+var debug         = require('debug')('xword:app');
+var mongoose      = require('mongoose');
 var logger        = require('morgan');
 var cookieParser  = require('cookie-parser');
 var bodyParser    = require('body-parser');
@@ -14,7 +16,14 @@ var setupPassport = require('./passport-authentication');
 var config = require('./lib/utils/config');
 
 var routes = require('./routes/index');
+var authenticationRoutes = require('./routes/authentication');
 var puzzleRoutes = require('./routes/puzzles');
+
+debug('Connecting to database at ', config.data.store.url);
+mongoose.connect(config.data.store.url);
+if (process.env.DEBUG_DB) {
+	mongoose.set('debug', true);
+}
 
 var app = express();
 
@@ -44,6 +53,7 @@ app.use('/static', express.static(config.paths.static));
 setupPassport(app);
 
 app.use('/', routes);
+app.use('/', authenticationRoutes);
 app.use('/puzzles/', puzzleRoutes);
 
 // catch 404 and forward to error handler
