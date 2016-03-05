@@ -1,0 +1,10 @@
+<li class="dictionary-term-item">
+	<input type="hidden" name="word" value="{{word}}" />
+	<span class="word">{{word}}</span>
+	<section class="definitions">
+		{{#definitions}}
+			{{> dictionary/term-item-definition definition=.}}
+		{{/definitions}}
+	</section>
+	<button type="button" class="add-definition-button fa fa-plus btn btn-default"><span class="sr-only">Add definition</span></button>
+</li>

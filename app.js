@@ -15,9 +15,10 @@ var setupPassport = require('./passport-authentication');
 
 var config = require('./lib/utils/config');
 
-var routes = require('./routes/index');
+var routes               = require('./routes/index');
 var authenticationRoutes = require('./routes/authentication');
-var puzzleRoutes = require('./routes/puzzles');
+var puzzleRoutes         = require('./routes/puzzles');
+var dictionaryRoutes     = require('./routes/dictionary');
 
 debug('Connecting to database at ', config.data.store.url);
 mongoose.connect(config.data.store.url);
@@ -55,6 +56,7 @@ setupPassport(app);
 app.use('/', routes);
 app.use('/', authenticationRoutes);
 app.use('/puzzles/', puzzleRoutes);
+app.use('/dictionary/', dictionaryRoutes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -66,29 +68,38 @@ app.use(function(req, res, next) {
 // error handlers
 app.use(function(err, req, res, next) {
 	var status = err.status || 500;
-
-	var errorTemplateName = path.join('errors', '' + status);
-	var errorTemplatePath = path.join(config.paths.templates, errorTemplateName + '.hbs');
-
 	res.status(status);
 
-	fs.stat(
-		errorTemplatePath,
-		function(statError) {
-			if (statError && statError.code === 'ENOENT') {
-				errorTemplateName = 'errors/500';
-			}
-
-			res.render(errorTemplateName, {
-				req: req,
-				message: err.message,
-				// no stacktraces leaked to user in production
-				error: config.app.environment === 'development' ?
-					err :
-					{}
+	res.format({
+		json: function() {
+			res.json({
+				error: err.message
 			});
+		},
+		default: function() {
+			var errorTemplateName = path.join('errors', '' + status);
+			var errorTemplatePath = path.join(config.paths.templates, errorTemplateName + '.hbs');
+
+
+			fs.stat(
+				errorTemplatePath,
+				function(statError) {
+					if (statError && statError.code === 'ENOENT') {
+						errorTemplateName = 'errors/500';
+					}
+
+					res.render(errorTemplateName, {
+						req: req,
+						message: err.message,
+						// no stacktraces leaked to user in production
+						error: config.app.environment === 'development' ?
+							err :
+							{}
+					});
+				}
+			);
 		}
-	);
+	});
 });
 
 module.exports = app;

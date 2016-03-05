@@ -1,0 +1,45 @@
+<div class="dictionary-management-container" data-view-classes="manage-dictionary">
+	<form
+		class="dictionary-search-form"
+		action="/dictionary/search"
+		enctype="application/www-form-urlencoded"
+		method="get"
+	>
+		<section>
+			<header>
+				<h3>Search the dictionary</h3>
+			</header>
+			<div class="form-group">
+				<label>
+					Pattern:
+					<input
+						type="text"
+						class="form-control"
+						name="pattern"
+						pattern="[A-Za-z_]{2,}"
+						placeholder="Pattern (A__C_)"
+						{{#req.query.pattern}}
+						value="{{.}}"
+						{{/req.query.pattern}}
+						required
+					/>
+				</label>
+			</div>
+			<div>
+				<button type="submit" class="btn btn-default">Search</button>
+			</div>
+		</section>
+	</form>
+	<form
+		class="search-results-form"
+		action="/dictionary/terms"
+		method="POST"
+		enctype="application/www-form-urlencoded"
+	>
+		<ul class="search-results-list">{{#results}}
+		{{> dictionary/term-item}}
+		{{/results}}</ul>
+
+		<button type="submit" class="save-definition-changes-button btn btn-default">Save changes</button>
+	</form>
+</div>

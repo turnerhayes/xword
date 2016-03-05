@@ -1,0 +1,79 @@
+.search-results-list {
+	@-webkit-keyframes definition-input-updated {
+		0% {
+			background-color: white;
+		}
+
+		50% {
+			background-color: lightgreen;
+		}
+
+		100% {
+			background-color: white;
+		}
+	}
+
+	@keyframes definition-input-updated {
+		0% {
+			background-color: white;
+		}
+
+		50% {
+			background-color: lightgreen;
+		}
+
+		100% {
+			background-color: white;
+		}
+	}
+
+	padding: 1em;
+
+	@border-color: lightgrey;
+
+	.dictionary-term-item {
+		display: flex;
+		flex-direction: row;
+		padding-top: 0.8em;
+		padding-bottom: 0.8em;
+
+		border-bottom: 1px solid @border-color;
+
+		&:first-child {
+			border-top: 1px solid @border-color;
+		}
+
+		.word {
+			margin-right: 1em;
+			align-self: center;
+			display: inline-block;
+			width: 10em;
+			font-weight: bold;
+		}
+
+		.definitions {
+			flex: 1;
+		}
+
+		.definition-input {
+			margin-top: 0.5em;
+
+			&:first-child {
+				margin-top: 0;
+			}
+
+			&.updated {
+				animation: 2s definition-input-updated;
+			}
+		}
+
+		.add-definition-button {
+			align-self: center;
+			margin-left: 1em;
+		}
+	}
+
+	&:empty + .save-definition-changes-button {
+		display: none;
+	}
+}
