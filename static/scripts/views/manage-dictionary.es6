@@ -33,7 +33,7 @@ exports = module.exports = Backbone.View.extend({
 		var pattern = view._$patternInput.val().toUpperCase();
 
 		$.get({
-			url: '/dictionary/search',
+			url: '/dictionary/termList',
 			data: {
 				pattern: pattern
 			}
@@ -67,7 +67,7 @@ exports = module.exports = Backbone.View.extend({
 
 				var $definitions = $item.find('[name="definition"]');
 
-				var word = $item.find('[name="word"]').val();
+				var term = $item.find('[name="term"]').val();
 
 				var definitions = [];
 
@@ -94,7 +94,7 @@ exports = module.exports = Backbone.View.extend({
 				);
 			
 				if (hasChangedDefinition) {
-					data[word] = definitions;
+					data[term] = definitions;
 				}
 
 				return data;
@@ -107,8 +107,8 @@ exports = module.exports = Backbone.View.extend({
 			return;
 		}
 
-		$.get({
-			url: '/dictionary/update',
+		$.ajax({
+			url: '/dictionary/termList',
 			method: 'POST',
 			contentType: 'application/json',
 			data: JSON.stringify(termData)
@@ -117,14 +117,20 @@ exports = module.exports = Backbone.View.extend({
 				$changedInputs.each(function() {
 					var $input = $(this);
 
-					$input.data('original', $input.val());
+					if ($input.val().replace(/s/g, '').length === 0) {
+						$input.remove();
+					}
+					else {
+						$input.data('original', $input.val());
 
-					$input.off('animationend.manage-dictionary-updated')
-						.one('animationend.manage-dictionary-updated', function() {
-							$input.removeClass('updated');
-						});
+						$input.off('animationend.manage-dictionary-updated')
+							.one('animationend.manage-dictionary-updated', function() {
+								$input.removeClass('updated');
+							});
 
-					$input.addClass('updated');
+						$input.addClass('updated');
+					}
+
 				});
 			}
 		);

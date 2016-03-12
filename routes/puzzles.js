@@ -32,6 +32,28 @@ router.route('/create')
 		});
 	});
 
+router.route('/play')
+	.get(function(req, res, next) {
+		res.render('puzzle-list', {
+			title: 'Do a puzzle',
+			req: req,
+			puzzles: [
+				{
+					id: 'ipuz',
+					name: 'ipuz puzzle'
+				},
+				{
+					id: 'puz',
+					name: 'puz puzzle'
+				},
+				{
+					id: 'rebus_puz',
+					name: 'rebus puz puzzle'
+				}
+			]
+		});
+	});
+
 router.route('/:puzzleId')
 	.get(function(req, res, next) {
 		var puzzleId = req.params.puzzleId;

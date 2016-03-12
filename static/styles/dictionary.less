@@ -1,0 +1,43 @@
+@-webkit-keyframes definition-input-updated {
+	0% {
+		background-color: white;
+	}
+
+	50% {
+		background-color: lightgreen;
+	}
+
+	100% {
+		background-color: white;
+	}
+}
+
+@keyframes definition-input-updated {
+	0% {
+		background-color: white;
+	}
+
+	50% {
+		background-color: lightgreen;
+	}
+
+	100% {
+		background-color: white;
+	}
+}
+
+.definitions {
+	.definition-input {
+		+ .definition-input {
+			margin-top: 0.5em;
+		}
+
+		&:first-child {
+			margin-top: 0;
+		}
+
+		&.updated {
+			animation: 2s definition-input-updated;
+		}
+	}	
+}

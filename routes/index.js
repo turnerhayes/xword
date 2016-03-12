@@ -9,21 +9,7 @@ router.route('/')
 			'index',
 			{
 				title: 'Xword Gen',
-				req: req,
-				puzzles: [
-					{
-						id: 'ipuz',
-						name: 'ipuz puzzle'
-					},
-					{
-						id: 'puz',
-						name: 'puz puzzle'
-					},
-					{
-						id: 'rebus_puz',
-						name: 'rebus puz puzzle'
-					}
-				]
+				req: req
 			}
 		);
 	}

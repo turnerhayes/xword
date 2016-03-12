@@ -48,7 +48,7 @@ reader.on('line', function(line) {
 
 		if (!(word in definitions)) {
 			definitions[word] = {
-				word: word,
+				term: word,
 				definitions: []
 			};
 		}
