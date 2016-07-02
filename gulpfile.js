@@ -1,57 +1,76 @@
 "use strict";
 
-var debug = require('debug')('xword:build');
+const debug = require('debug')('xword:build');
 
-var _                    = require('lodash');
-var path                 = require('path');
-var fs                   = require('fs');
-var dirRecurse           = require('recursive-readdir');
-var Q                    = require('q');
-var del                  = require('del');
+const _                    = require('lodash');
+const path                 = require('path');
+const fs                   = require('fs');
+const dirRecurse           = require('recursive-readdir');
+const Q                    = require('q');
+const del                  = require('del');
 
-var gulp                 = require('gulp');
-var gulpIf               = require('gulp-if');
-var jshint               = require('gulp-jshint');
-var gutil                = require('gulp-util');
-var gulpDebug            = require('gulp-debug');
-var sourcemaps           = require('gulp-sourcemaps');
-var rename               = require('gulp-rename');
-var less                 = require('gulp-less');
-var uglify               = require('gulp-uglify');
-var watch                = require('gulp-watch');
-var plumber              = require('gulp-plumber');
-var changed              = require('gulp-changed');
-var runSequence          = require('run-sequence');
+const gulp                 = require('gulp');
+const gulpIf               = require('gulp-if');
+const jshint               = require('gulp-jshint');
+const gutil                = require('gulp-util');
+const gulpDebug            = require('gulp-debug');
+const sourcemaps           = require('gulp-sourcemaps');
+const rename               = require('gulp-rename');
+const less                 = require('gulp-less');
+const uglify               = require('gulp-uglify');
+const watch                = require('gulp-watch');
+const plumber              = require('gulp-plumber');
+const changed              = require('gulp-changed');
+const runSequence          = require('run-sequence');
 
-var watchify             = require('watchify');
-var browserify           = require('browserify');
-var hbsfy                = require('hbsfy');
-var babelify             = require('babelify');
-var source               = require('vinyl-source-stream');
-var buffer               = require('vinyl-buffer');
-var merge                = require('merge-stream');
-var stylish              = require('jshint-stylish');
+const watchify             = require('watchify');
+const browserify           = require('browserify');
+const hbsfy                = require('hbsfy');
+const babelify             = require('babelify');
+const source               = require('vinyl-source-stream');
+const buffer               = require('vinyl-buffer');
+const merge                = require('merge-stream');
+const stylish              = require('jshint-stylish');
 
-var LessPluginCleanCSS   = require('less-plugin-clean-css');
-var LessPluginAutoPrefix = require('less-plugin-autoprefix');
+const LessPluginCleanCSS   = require('less-plugin-clean-css');
+const LessPluginAutoPrefix = require('less-plugin-autoprefix');
 
-var cleancss             = new LessPluginCleanCSS({ advanced: true });
-var autoprefix           = new LessPluginAutoPrefix({ browsers: ["last 2 versions"] });
+const cleancss             = new LessPluginCleanCSS({ advanced: true });
+const autoprefix           = new LessPluginAutoPrefix({ browsers: ["last 2 versions"] });
 
-var config               = require('./lib/utils/config');
+const realFavicon        = require ('gulp-real-favicon');
+
+const config               = require('./lib/utils/config');
 
 
-var IS_DEVELOPMENT = config.app.environment === 'development';
+const IS_DEVELOPMENT = config.app.environment === 'development';
 
-var stylesDirectory = path.join(config.paths.static, 'styles');
+const stylesDirectory = path.join(config.paths.static, 'styles');
 
-var partialsDirectory = path.join(config.paths.templates, 'partials');
+const partialsDirectory = path.join(config.paths.templates, 'partials');
 
-var jsDirectory = path.join(config.paths.static, 'scripts');
+const jsDirectory = path.join(config.paths.static, 'scripts');
 
-var jsViewsDirectory = path.join(jsDirectory, 'views');
+const jsViewsDirectory = path.join(jsDirectory, 'views');
 
-var thirdPartyJS = [path.join(config.paths.static, 'node_modules', 'bootstrap', 'dist', 'js', 'bootstrap.js')];
+const thirdPartyJS = [path.join(config.paths.static, 'node_modules', 'bootstrap', 'dist', 'js', 'bootstrap.js')];
+
+const jsBlob = path.join(jsDirectory, '**/*.{js,es6}');
+
+const partialsBlob = path.join(partialsDirectory, '**/*.hbs');
+
+const hbsSuffixRegex = /\.hbs$/;
+
+const es6SuffixRegex = /\.es6$/;
+
+const jsSuffixRegex = /\.js$/;
+
+const partialsFile = path.resolve(jsDirectory, 'partials.js');
+
+const viewMapFile = path.resolve(jsDirectory, 'view-map.es6');
+
+const faviconDirectory = path.join(config.paths.static, 'dist', 'favicons/');
+
 
 var browserifyOptions = _.extend({}, watchify.args, {
 	debug: IS_DEVELOPMENT,
@@ -63,7 +82,6 @@ var hbsfyOptions = {
 	precompiler: 'handlebars'
 };
 
-
 var babelifyOptions = {
 	sourceRoot: jsDirectory,
 	presets: ['es2015'],
@@ -71,21 +89,6 @@ var babelifyOptions = {
 	comments: IS_DEVELOPMENT,
 	babelrc: false
 };
-
-
-var jsBlob = path.join(jsDirectory, '**/*.{js,es6}');
-
-var partialsBlob = path.join(partialsDirectory, '**/*.hbs');
-
-var hbsSuffixRegex = /\.hbs$/;
-
-var es6SuffixRegex = /\.es6$/;
-
-var jsSuffixRegex = /\.js$/;
-
-var partialsFile = path.resolve(jsDirectory, 'partials.js');
-
-var viewMapFile = path.resolve(jsDirectory, 'view-map.es6');
 
 /**
  * This function generates the partials.js file which is included by the Handlebars client-side
@@ -417,4 +420,100 @@ gulp.task('static', ['styles', 'scripts-and-templates']);
 
 gulp.task('watch-static', ['watch-styles', 'watch-partials', 'watch-scripts']);
 
-gulp.task('build', ['static']);
+gulp.task('build', ['static', 'generate-favicon']);
+
+
+// File where the favicon markups are stored
+const FAVICON_DATA_FILE = path.join(faviconDirectory, 'faviconData.json');
+
+// Generate the icons. This task takes a few seconds to complete.
+// You should run it at least once to create the icons. Then,
+// you should run it whenever RealFaviconGenerator updates its
+// package (see the check-for-favicon-update task below).
+gulp.task('generate-favicon', function(done) {
+	realFavicon.generateFavicon({
+		masterPicture: path.join(__dirname, 'favicon-master.png'),
+		dest: faviconDirectory,
+		iconsPath: '/',
+		design: {
+			ios: {
+				pictureAspect: 'backgroundAndMargin',
+				backgroundColor: '#ffffff',
+				margin: '21%',
+				assets: {
+					ios6AndPriorIcons: false,
+					ios7AndLaterIcons: false,
+					precomposedIcons: false,
+					declareOnlyDefaultIcon: true
+				}
+			},
+			desktopBrowser: {},
+			windows: {
+				pictureAspect: 'noChange',
+				backgroundColor: '#da532c',
+				onConflict: 'override',
+				assets: {
+					windows80Ie10Tile: false,
+					windows10Ie11EdgeTiles: {
+						small: false,
+						medium: true,
+						big: false,
+						rectangle: false
+					}
+				}
+			},
+			androidChrome: {
+				pictureAspect: 'backgroundAndMargin',
+				margin: '17%',
+				backgroundColor: '#ffffff',
+				themeColor: '#ffffff',
+				manifest: {
+					name: 'XWords',
+					display: 'standalone',
+					orientation: 'notSet',
+					onConflict: 'override',
+					declared: true
+				},
+				assets: {
+					legacyIcon: false,
+					lowResolutionIcons: false
+				}
+			},
+			safariPinnedTab: {
+				pictureAspect: 'blackAndWhite',
+				threshold: 90,
+				themeColor: '#5bbad5'
+			}
+		},
+		settings: {
+			compression: 2,
+			scalingAlgorithm: 'Mitchell',
+			errorOnImageTooSmall: false
+		},
+		markupFile: FAVICON_DATA_FILE
+	}, function() {
+		done();
+	});
+});
+
+// Inject the favicon markups in your HTML pages. You should run
+// this task whenever you modify a page. You can keep this task
+// as is or refactor your existing HTML pipeline.
+gulp.task('inject-favicon-markups', function() {
+	gulp.src([ 'TODO: List of the HTML files where to inject favicon markups' ])
+		.pipe(realFavicon.injectFaviconMarkups(JSON.parse(fs.readFileSync(FAVICON_DATA_FILE)).favicon.html_code))
+		.pipe(gulp.dest('TODO: Path to the directory where to store the HTML files'));
+});
+
+// Check for updates on RealFaviconGenerator (think: Apple has just
+// released a new Touch icon along with the latest version of iOS).
+// Run this task from time to time. Ideally, make it part of your
+// continuous integration system.
+gulp.task('check-for-favicon-update', function(done) {
+	var currentVersion = JSON.parse(fs.readFileSync(FAVICON_DATA_FILE)).version;
+	realFavicon.checkForUpdates(currentVersion, function(err) {
+		if (err) {
+			throw err;
+		}
+	});
+});

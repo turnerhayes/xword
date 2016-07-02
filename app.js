@@ -20,7 +20,7 @@ const authenticationRoutes = require('./routes/authentication');
 const puzzleRoutes         = require('./routes/puzzles');
 const dictionaryRoutes     = require('./routes/dictionary');
 
-const faviconPath = path.join(__dirname, 'favicons', 'favicon.ico');
+const faviconDirectory = path.join(config.paths.static, 'dist', 'favicons');
 
 debug('Connecting to database at ', config.data.store.url);
 mongoose.connect(config.data.store.url);
@@ -30,7 +30,7 @@ if (process.env.DEBUG_DB) {
 
 const app = express();
 
-app.use(favicon(faviconPath));
+app.use(favicon(path.join(faviconDirectory, 'favicon.ico')));
 
 // view engine setup
 app.engine('hbs', hbs.express4({
@@ -53,7 +53,7 @@ app.use(cookieParser());
 app.use(session.instance);
 app.use('/static', express.static(config.paths.static));
 // Ensure favicons can be found at the root
-app.use('/', express.static(faviconPath));
+app.use('/', express.static(faviconDirectory));
 
 setupPassport(app);
 
