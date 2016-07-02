@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "start-local": "LOAD_ENV=1 node ./bin/www",
-    "watch-start-local": "LOAD_ENV=1 nodemon ./bin/www",
+    "watch-start-local": "LOAD_ENV=1 DEBUG=xword:* DEBUG_DB=1 nodemon ./bin/www",
     "postinstall": "cd static && npm install && cd .. && gulp build"
   },
   "dependencies": {

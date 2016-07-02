@@ -1,24 +1,26 @@
 "use strict";
 
-var express       = require('express');
-var path          = require('path');
-var fs            = require('fs');
-var favicon       = require('serve-favicon');
-var debug         = require('debug')('xword:app');
-var mongoose      = require('mongoose');
-var logger        = require('morgan');
-var cookieParser  = require('cookie-parser');
-var bodyParser    = require('body-parser');
-var hbs           = require('express-hbs');
-var session       = require('./session');
-var setupPassport = require('./passport-authentication');
+const express       = require('express');
+const path          = require('path');
+const fs            = require('fs');
+const favicon       = require('serve-favicon');
+const debug         = require('debug')('xword:app');
+const mongoose      = require('mongoose');
+const logger        = require('morgan');
+const cookieParser  = require('cookie-parser');
+const bodyParser    = require('body-parser');
+const hbs           = require('express-hbs');
+const session       = require('./session');
+const setupPassport = require('./passport-authentication');
 
-var config = require('./lib/utils/config');
+const config = require('./lib/utils/config');
 
-var routes               = require('./routes/index');
-var authenticationRoutes = require('./routes/authentication');
-var puzzleRoutes         = require('./routes/puzzles');
-var dictionaryRoutes     = require('./routes/dictionary');
+const routes               = require('./routes/index');
+const authenticationRoutes = require('./routes/authentication');
+const puzzleRoutes         = require('./routes/puzzles');
+const dictionaryRoutes     = require('./routes/dictionary');
+
+const faviconPath = path.join(__dirname, 'favicons', 'favicon.ico');
 
 debug('Connecting to database at ', config.data.store.url);
 mongoose.connect(config.data.store.url);
@@ -26,7 +28,9 @@ if (process.env.DEBUG_DB) {
 	mongoose.set('debug', true);
 }
 
-var app = express();
+const app = express();
+
+app.use(favicon(faviconPath));
 
 // view engine setup
 app.engine('hbs', hbs.express4({
@@ -42,14 +46,14 @@ app.set('view engine', 'hbs');
 app.set('env', config.app.environment);
 app.locals.IS_DEVELOPMENT = config.app.environment === 'development';
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(session.instance);
 app.use('/static', express.static(config.paths.static));
+// Ensure favicons can be found at the root
+app.use('/', express.static(faviconPath));
 
 setupPassport(app);
 
@@ -77,8 +81,8 @@ app.use(function(err, req, res, next) {
 			});
 		},
 		default: function() {
-			var errorTemplateName = path.join('errors', '' + status);
-			var errorTemplatePath = path.join(config.paths.templates, errorTemplateName + '.hbs');
+			const errorTemplateName = path.join('errors', '' + status);
+			const errorTemplatePath = path.join(config.paths.templates, errorTemplateName + '.hbs');
 
 
 			fs.stat(

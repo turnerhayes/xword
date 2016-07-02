@@ -3,8 +3,8 @@
 var path = require('path');
 var express = require('express');
 var router = express.Router();
-var IPUZParser = require('xpuz');
-var PUZParser = require('xpuz/parsers/puz');
+var IPUZParser = require('xpuz').IPUZ;
+var PUZParser = require('xpuz').PUZ;
 
 var ipuzParser = new IPUZParser();
 var puzParser = new PUZParser();
