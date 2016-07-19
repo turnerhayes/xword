@@ -500,9 +500,9 @@ gulp.task('generate-favicon', function(done) {
 // this task whenever you modify a page. You can keep this task
 // as is or refactor your existing HTML pipeline.
 gulp.task('inject-favicon-markups', function() {
-	gulp.src([ 'TODO: List of the HTML files where to inject favicon markups' ])
+	gulp.src([path.join(config.paths.templates, 'layout.hbs')])
 		.pipe(realFavicon.injectFaviconMarkups(JSON.parse(fs.readFileSync(FAVICON_DATA_FILE)).favicon.html_code))
-		.pipe(gulp.dest('TODO: Path to the directory where to store the HTML files'));
+		.pipe(gulp.dest(config.paths.templates));
 });
 
 // Check for updates on RealFaviconGenerator (think: Apple has just

@@ -54,6 +54,18 @@ router.route('/play')
 		});
 	});
 
+	
+
+router.route('/fill')
+	.get(
+		function(req, res) {
+			res.render('fill-puzzle', {
+				title: 'Fill a puzzle',
+				req: req
+			});
+		}
+	);
+
 router.route('/:puzzleId')
 	.get(function(req, res, next) {
 		var puzzleId = req.params.puzzleId;

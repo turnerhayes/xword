@@ -1,0 +1,27 @@
+<div
+	class="answer-options-dialog"
+	data-cell-position="{{Serialize cellPosition}}"
+>
+	<ul>
+		{{#terms}}
+		<li
+			class="answer-option"
+			data-across-term="{{acrossTerm}}"
+			data-down-options="{{Serialize downOptions}}"
+		>
+			Across {{acrossTerm}} &#8658; Down:
+			<ul
+				class="down-options-list"
+			>
+				{{#downOptions}}
+				<li
+					class="down-option"
+				>
+					{{.}}
+				</li>
+				{{/downOptions}}
+			</ul>
+		</li>
+		{{/terms}}
+	</ul>
+</div>

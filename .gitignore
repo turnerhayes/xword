@@ -43,3 +43,7 @@ static/scripts/partials.js
 
 # Environment variables config
 .env
+
+# SSL key/cert files
+*.key
+*.crt

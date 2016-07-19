@@ -14,24 +14,69 @@ if (process.env.IS_HEROKU) {
  * Module dependencies.
  */
 
-var app    = require('../app');
-var debug  = require('debug')('xword:server');
-var http   = require('http');
-var config = require('../lib/utils/config');
+const app    = require('../app');
+const _      = require('lodash');
+const debug  = require('debug')('xword:server');
+const http   = require('http');
+const https  = require('https');
+const URL    = require('url');
+const fs     = require('fs');
+const config = require('../lib/utils/config');
 
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '8989');
+var port = normalizePort(config.app.address.PORT || '8989');
 app.set('port', port);
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+var server;
+
+
+if (config.app.address.isSecure) {
+	server = https.createServer(
+		{
+			key: config.ssl.key,
+			cert: config.ssl.cert,
+		},
+		app
+	);
+
+	if (config.app.address.insecurePort) {
+		let insecurePort = normalizePort(config.app.address.insecurePort);
+
+		let insecureServer = http.createServer(
+			function(req, res) {
+				res.writeHead(301, {
+					"Location": URL.format({
+						protocol: 'https',
+						hostname: req.headers.host.split(':')[0],
+						port: port,
+						pathname: req.url
+					})
+				});
+				res.end();
+			}
+		).listen(insecurePort);
+
+		insecureServer.on('error', function(error) {
+			debug('error in insecure server:\n');
+			onError(error);
+		});
+
+		insecureServer.on('listening', function() {
+			debug('insecure server listening on port ' + insecureServer.address().port);
+		});
+	}
+}
+else {
+	server = http.createServer(app);
+}
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -77,15 +122,15 @@ function onError(error) {
 	// handle specific listen errors with friendly messages
 	switch (error.code) {
 		case 'EACCES':
-		console.error(bind + ' requires elevated privileges');
-		process.exit(1);
-		break;
+			console.error(bind + ' requires elevated privileges');
+			process.exit(1);
+			break;
 		case 'EADDRINUSE':
-		console.error(bind + ' is already in use');
-		process.exit(1);
-		break;
+			console.error(bind + ' is already in use');
+			process.exit(1);
+			break;
 		default:
-		throw error;
+			throw error;
 	}
 }
 

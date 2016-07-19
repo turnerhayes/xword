@@ -22,6 +22,8 @@ const dictionaryRoutes     = require('./routes/dictionary');
 
 const faviconDirectory = path.join(config.paths.static, 'dist', 'favicons');
 
+mongoose.Promise = require('q').Promise;
+
 debug('Connecting to database at ', config.data.store.url);
 mongoose.connect(config.data.store.url);
 if (process.env.DEBUG_DB) {
@@ -73,6 +75,8 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
 	var status = err.status || 500;
 	res.status(status);
+
+	console.error(err);
 
 	res.format({
 		json: function() {

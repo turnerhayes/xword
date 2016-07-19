@@ -1,5 +1,6 @@
 "use strict";
 
+var _               = require('lodash');
 var express         = require('express');
 var mongoose        = require('mongoose');
 var DictionaryStore = require('../lib/persistence/stores/dictionary');
@@ -86,6 +87,40 @@ router.route('/termList')
 			}).done(
 				function() {
 					res.end();
+				}
+			);
+		}
+	);
+
+router.route('/terms')
+	.get(
+		function(req, res, next) {
+			var options = {};
+
+			if (req.query.pattern) {
+				options.pattern = req.query.pattern;
+			}
+
+			if (req.query.termLengths) {
+				options.termLengths = _.map(req.query.termLengths, Number);
+			}
+
+			if (req.query.limit) {
+				options.frame = {
+					length: Number(req.query.limit)
+				};
+
+				if (options.frame.length < 0) {
+					options.frame.length = Infinity;
+				}
+			}
+
+			DictionaryStore.findTerms(options).done(
+				function(results) {
+					res.json(results || []);
+				},
+				function(err) {
+					next(err);
 				}
 			);
 		}
