@@ -1,0 +1,8 @@
+{
+	"source": {
+		"includePattern": ".+\\.(js|es6)$"
+	},
+	"opts": {
+		"recurse": true
+	}
+}

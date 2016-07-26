@@ -6,7 +6,6 @@
 		{{#terms}}
 		<li
 			class="answer-option"
-			data-across-term="{{acrossTerm}}"
 			data-down-options="{{Serialize downOptions}}"
 		>
 			Across {{acrossTerm}} &#8658; Down:
@@ -16,6 +15,8 @@
 				{{#downOptions}}
 				<li
 					class="down-option"
+					data-across-term="{{../acrossTerm}}"
+					data-down-term="{{.}}"
 				>
 					{{.}}
 				</li>

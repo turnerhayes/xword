@@ -21,6 +21,7 @@ const uglify               = require('gulp-uglify');
 const watch                = require('gulp-watch');
 const plumber              = require('gulp-plumber');
 const changed              = require('gulp-changed');
+const jsdoc                = require('gulp-jsdoc3');
 const runSequence          = require('run-sequence');
 
 const watchify             = require('watchify');
@@ -38,7 +39,7 @@ const LessPluginAutoPrefix = require('less-plugin-autoprefix');
 const cleancss             = new LessPluginCleanCSS({ advanced: true });
 const autoprefix           = new LessPluginAutoPrefix({ browsers: ["last 2 versions"] });
 
-const realFavicon        = require ('gulp-real-favicon');
+const realFavicon          = require ('gulp-real-favicon');
 
 const config               = require('./lib/utils/config');
 
@@ -52,6 +53,8 @@ const partialsDirectory = path.join(config.paths.templates, 'partials');
 const jsDirectory = path.join(config.paths.static, 'scripts');
 
 const jsViewsDirectory = path.join(jsDirectory, 'views');
+
+const documentationDirectory = path.join(__dirname, 'docs');
 
 const thirdPartyJS = [path.join(config.paths.static, 'node_modules', 'bootstrap', 'dist', 'js', 'bootstrap.js')];
 
@@ -421,6 +424,22 @@ gulp.task('static', ['styles', 'scripts-and-templates']);
 gulp.task('watch-static', ['watch-styles', 'watch-partials', 'watch-scripts']);
 
 gulp.task('build', ['static', 'generate-favicon']);
+
+gulp.task('documentation', function(done) {
+	fs.readFile('./.jsdocrc', { encoding: 'utf8' }, function(err, configText) {
+		if (err) {
+			throw new Error(err);
+		}
+
+		let jsdocConfig = JSON.parse(configText);
+
+		jsdocConfig.opts = jsdocConfig.opts || {};
+		jsdocConfig.opts.destination = documentationDirectory;
+
+		gulp.src([jsBlob], { read: false }).
+			pipe(jsdoc(jsdocConfig, done));
+	});
+});
 
 
 // File where the favicon markups are stored

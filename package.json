@@ -57,5 +57,8 @@
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.7.0",
     "xpuz": "^0.0.3"
+  },
+  "devDependencies": {
+    "gulp-jsdoc3": "^0.3.0"
   }
 }

@@ -126,6 +126,21 @@ router.route('/terms')
 		}
 	);
 
+router.route('/terms/check')
+	.post(
+		function(req, res) {
+			let terms = req.body;
+
+			DictionaryStore.verifyValidTerms({
+				terms: terms
+			}).done(
+				function(results) {
+					res.json(results);
+				}
+			);
+		}
+	);
+
 router.route('/update')
 	.post(function(req, res, next) {
 		var terms = req.body;

@@ -5,7 +5,7 @@ const Backbone = require('backbone');
 
 
 const _defaults = {
-	terms: 
+	terms: []
 };
 
 class DictionaryModel extends Backbone.Model {
