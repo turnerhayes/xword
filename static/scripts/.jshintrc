@@ -1,5 +1,7 @@
 {
 	"node": true,
+	"unused": true,
+	"undef": true,
 	"browser": true,
-	"esversion": 6
+	"esnext": true
 }

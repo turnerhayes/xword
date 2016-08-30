@@ -1,9 +1,8 @@
 "use strict";
 
-var $        = require('jquery');
-var _        = require('lodash');
-var Q        = require('q');
-var Backbone = require('backbone');
+const $        = require('jquery');
+const _        = require('lodash');
+const Backbone = require('backbone');
 
 const DIRECTIONS = {
 	ACROSS: 1,
@@ -21,26 +20,32 @@ const KEYCODES = {
 	DELETE: 46
 };
 
-var GridView = Backbone.View.extend({
-	events: {
-		'change .crossword-cell .letter-input': '_handleCrosswordCellChange',
-		'click .crossword-cell': '_handleCrosswordCellClick',
-		'dblclick .crossword-cell.highlighted': '_handleCrosswordCellDoubleClick',
-		'keypress .crossword-cell': '_handleCrosswordCellKeypress',
-		'keydown .crossword-cell': '_handleCrosswordCellKeydown',
-		'focusin .crossword-cell .letter-input': '_handleCrosswordCellFocus'
-	},
+const _events = {
+	'input .crossword-cell .letter-input': '_handleCrosswordCellInput',
+	'click .crossword-cell': '_handleCrosswordCellClick',
+	'dblclick .crossword-cell.highlighted': '_handleCrosswordCellDoubleClick',
+	'keypress .crossword-cell': '_handleCrosswordCellKeypress',
+	'keydown .crossword-cell': '_handleCrosswordCellKeydown',
+	'focusin .crossword-cell .letter-input': '_handleCrosswordCellFocus'
+};
 
-	initialize: function() {
-		var view = this;
+class GridView extends Backbone.View {
+	get events() {
+		return _events;
+	}
 
-		Backbone.View.prototype.initialize.apply(view, arguments);
-	},
+	static get KEYCODES() {
+		return KEYCODES;
+	}
 
-	render: function() {
-		var view = this;
+	static get DIRECTIONS() {
+		return DIRECTIONS;
+	}
 
-		Backbone.View.prototype.render.apply(view, arguments);
+	render() {
+		const view = this;
+
+		super.render(...arguments);
 
 		view._$grid = view.$('.crossword-grid');
 
@@ -54,18 +59,18 @@ var GridView = Backbone.View.extend({
 		view._setDirection(DIRECTIONS.ACROSS);
 
 		return view;
-	},
+	}
 
-	_getCurrentAnswers: function() {
-		var view = this;
+	_getCurrentAnswers() {
+		const view = this;
 
-		var answers = _.map(
+		const answers = _.map(
 			view._$grid.find('.puzzle-row'),
 			function(row) {
 				return _.map(
 					$(row).find('.cell'),
 					function(cell) {
-						var $cell = $(cell);
+						const $cell = $(cell);
 
 						if ($cell.hasClass('block-cell')) {
 							return '#';
@@ -78,27 +83,27 @@ var GridView = Backbone.View.extend({
 		);
 
 		return answers;
-	},
+	}
 
-	_toggleDirection: function() {
-		var view = this;
+	_toggleDirection() {
+		const view = this;
 
 		view._setDirection(
 			view.direction === DIRECTIONS.ACROSS ?
 				DIRECTIONS.DOWN :
 				DIRECTIONS.ACROSS
 		);
-	},
+	}
 
-	_setDirection: function(direction) {
-		var view = this;
+	_setDirection(direction) {
+		const view = this;
 
 		view.direction = direction;
 
-		var clueNumber;
-		var $focusedCell = view._$grid.find(':focus').closest('.crossword-cell');
+		let clueNumber;
+		const $focusedCell = view._$grid.find(':focus').closest('.crossword-cell');
 
-		var $highlighted = view._$grid.add(view._clueLists.$across)
+		const $highlighted = view._$grid.add(view._clueLists.$across)
 			.add(view._clueLists.$down)
 			.find('.highlighted');
 
@@ -128,81 +133,73 @@ var GridView = Backbone.View.extend({
 				view._highlightDownClue(clueNumber);
 			}
 		}
-	},
+	}
 
-	_goLeft: function($currentCell) {
-		var view = this;
-
+	_goLeft($currentCell) {
 		return $currentCell.prevAll('.crossword-cell').first().find('.letter-input').focus();
-	},
+	}
 
-	_goRight: function($currentCell) {
-		var view = this;
-
+	_goRight($currentCell) {
 		return $currentCell.nextAll('.crossword-cell').first().find('.letter-input').focus();
-	},
+	}
 
-	_goUp: function($currentCell) {
-		var view = this;
-
+	_goUp($currentCell) {
 		return $currentCell.closest('.puzzle-row').prevAll().find(
 			'.crossword-cell:nth-child(' + (
 				$currentCell.index() + 1
 			) + ')'
 		).last().find('.letter-input').focus();
-	},
+	}
 
-	_goDown: function($currentCell) {
-		var view = this;
-
+	_goDown($currentCell) {
 		return $currentCell.closest('.puzzle-row').nextAll().find(
 			'.crossword-cell:nth-child(' + (
 				$currentCell.index() + 1
 			) + ')'
 		).first().find('.letter-input').focus();
-	},
+	}
 
-	_goToNextCell: function($currentCell) {
-		var view = this;
+	_goToNextCell($currentCell) {
+		const view = this;
 
 		if (view.direction === DIRECTIONS.ACROSS) {
 			return view._goRight($currentCell);
 		}
 
 		return view._goDown($currentCell);
-	},
+	}
 
-	_goToPreviousCell: function($currentCell) {
-		var view = this;
+	_goToPreviousCell($currentCell) {
+		const view = this;
 
 		if (view.direction === DIRECTIONS.ACROSS) {
 			return view._goLeft($currentCell);
 		}
 
 		return view._goUp($currentCell);
-	},
+	}
 
-	_highlightAcrossClue: function(number) {
-		var view = this;
+	_highlightAcrossClue(number) {
+		const view = this;
 
 		view._clueLists.$across.find('[data-clue-number="' + number + '"]').addClass('highlighted');
 
 		view._$grid.find('.crossword-cell[data-containing-clue-across="' + number + '"]')
 			.addClass('highlighted');
-	},
+	}
 
-	_highlightDownClue: function(number) {
-		var view = this;
+	_highlightDownClue(number) {
+		const view = this;
 
 		view._clueLists.$down.find('[data-clue-number="' + number + '"]')
 			.addClass('highlighted');
 
 		view._$grid.find('.crossword-cell[data-containing-clue-down="' + number + '"]')
 			.addClass('highlighted');
-	},
+	}
 
-	_highlightClues: function(clues) {
-		var view = this;
+	_highlightClues(clues) {
+		const view = this;
 
 		view._$grid.add(view._clueLists.$across)
 			.add(view._clueLists.$down).find('.highlighted').removeClass('highlighted');
@@ -213,26 +210,24 @@ var GridView = Backbone.View.extend({
 		else if (view.direction === DIRECTIONS.DOWN) {
 			view._highlightDownClue(clues.down);
 		}
-	},
+	}
 
-	_handleCrosswordCellChange: function(event) {
-		var view = this;
-
+	_handleCrosswordCellInput(event) {
 		var $cell = $(event.currentTarget);
 
 		$cell.val($cell.val().toLocaleUpperCase());
-	},
+	}
 
-	_handleCrosswordCellKeypress: function(event) {
-		var view = this;
+	_handleCrosswordCellKeypress(event) {
+		const view = this;
 
 		view._goToNextCell($(event.currentTarget));
-	},
+	}
 
-	_handleCrosswordCellKeydown: function(event) {
-		var view = this;
-		var $currentCell = $(event.currentTarget);
-		var $input = $currentCell.find('.letter-input');
+	_handleCrosswordCellKeydown(event) {
+		const view = this;
+		const $currentCell = $(event.currentTarget);
+		const $input = $currentCell.find('.letter-input');
 
 		switch (event.which) {
 			case KEYCODES.LEFT_ARROW:
@@ -284,42 +279,40 @@ var GridView = Backbone.View.extend({
 			// Not an alphabetic character--reject it
 			event.preventDefault();
 		}
-	},
+	}
 
-	_handleCrosswordCellFocus: function(event) {
-		var view = this;
+	_handleCrosswordCellFocus(event) {
+		const view = this;
 
-		var $el = $(event.currentTarget);
+		const $el = $(event.currentTarget);
 
-		var $parentCell = $el.closest('.crossword-cell');
+		const $parentCell = $el.closest('.crossword-cell');
 
-		var containingClues = {
+		const containingClues = {
 			across: $parentCell.data('containing-clue-across'),
 			down: $parentCell.data('containing-clue-down')
 		};
 
 		view._highlightClues(containingClues);
-	},
+	}
 
-	_handleCrosswordCellClick: function(event) {
-		var view = this;
-
+	_handleCrosswordCellClick(event) {
 		$(event.currentTarget).find('.letter-input').focus();
-	},
+	}
 
-	_handleCrosswordCellDoubleClick: function(event) {
-		var view = this;
+	_handleCrosswordCellDoubleClick() {
+		const view = this;
 
 		view._toggleDirection();
-	},
+	}
 
-	_handleClueClick: function(event) {
-		var view = this;
+	_handleClueClick(event) {
+		const view = this;
 
-		var $clue = $(event.currentTarget);
+		const $clue = $(event.currentTarget);
 
-		var clueNumber = $clue.data('clue-number');
-		var clueDirection = $clue.data('clue-direction');
+		const clueNumber = $clue.data('clue-number');
+		const clueDirection = $clue.data('clue-direction');
 
 		view._$grid.find('.crossword-cell[data-clue-number="' + clueNumber + '"]')
 			.find('.letter-input').focus();
@@ -330,10 +323,6 @@ var GridView = Backbone.View.extend({
 				DIRECTIONS.DOWN
 		);
 	}
-});
-
-GridView.KEYCODES = KEYCODES;
-
-GridView.DIRECTIONS = DIRECTIONS;
+}
 
 exports = module.exports = GridView;

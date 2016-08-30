@@ -14,11 +14,28 @@
 			<button type="submit" class="submit-create-puzzle-form-button btn btn-primary">Generate</button>
 		</form>
 
-		<input type="file" class="file-upload" /> 
+		<input type="file" class="file-upload" />
+
+		<progress class="find-answers-progress hidden"></progress>
 
 		{{> xword-grid-and-clues width=(Default req.query.width 4) height=(Default req.query.height 4)}}
 
-		<button type="button" class="get-terms-button">Get Candidate Terms</button>
-		<button type="button" class="validate-puzzle-button">Validate Puzzle</button>
+		<button type="button" class="btn btn-default keep-puzzle-button hidden">Keep Puzzle Locally</button>
+		<button type="button" class="btn btn-default validate-puzzle-button">Validate Puzzle</button>
+		
+		<div class="export-to-file-container">
+			<button type="button" class="export-to-file-button btn btn-default">Export puzzle to file</button>
+
+			<div class="btn-group" data-toggle="buttons">
+				<label class="btn btn-primary active">
+					.PUZ
+					<input type="radio" name="file-type" value="puz" checked />
+				</label>
+				<label class="btn btn-primary">
+					.IPUZ
+					<input type="radio" name="file-type" value="ipuz" />
+				</label>
+			</div>
+		</div>
 	</div>
 </section>

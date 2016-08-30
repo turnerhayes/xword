@@ -1,8 +1,8 @@
 "use strict";
 
-const _        = require('lodash');
-const Q        = require('q');
-const Backbone = require('backbone');
+import _        from "lodash";
+import Q        from "q";
+import Backbone from "backbone";
 
 
 class BaseCollection extends Backbone.Collection {

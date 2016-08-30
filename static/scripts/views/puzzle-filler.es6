@@ -6,16 +6,20 @@
  * @module views/puzzle-filler
  */
 
-const _                           = require('lodash');
-const $                           = require('jquery');
-const Q                           = require('q');
-const Backbone                    = require('backbone');
-const Puzzle                      = require('xpuz/lib/puzzle');
-const PUZParser                   = require('xpuz/parsers/puz');
-const DictionaryData              = require('../data/dictionary');
-const puzzleGridAndCluesTemplate  = require('../../templates/partials/xword-grid-and-clues.hbs');
-const clueItemTemplate            = require('../../templates/partials/clue-item.hbs');
-const answerOptionsDialogTemplate = require('../../templates/partials/answer-options-dialog.hbs');
+import _                           from "lodash";
+import $                           from "jquery";
+import Q                           from "q";
+import Backbone                    from "backbone";
+import Base64ArrayBuffer           from "base64-arraybuffer";
+import XPuz                        from "xpuz";
+import DictionaryData              from "../data/dictionary";
+import puzzleGridAndCluesTemplate  from "../../templates/partials/xword-grid-and-clues.hbs";
+import clueItemTemplate            from "../../templates/partials/clue-item.hbs";
+import answerOptionsDialogTemplate from "../../templates/partials/answer-options-dialog.hbs";
+
+const Puzzle    = XPuz.Puzzle;
+const PUZParser = XPuz.PUZ;
+
 
 /**
  * Puzzle object class
@@ -29,7 +33,7 @@ const answerOptionsDialogTemplate = require('../../templates/partials/answer-opt
  */
 
 /**
- * Backbone view class
+ * Q promise class
  * @external "Q.Promise"
  * @see {@link https://github.com/kriskowal/q/wiki/API-Reference|Q}
  */
@@ -38,17 +42,20 @@ const _events = {
 	'submit .create-puzzle-form': '_handleFormSubmit',
 	'change .file-upload': '_handleChangeFileUpload',
 	'click .cell': '_handleCellClick',
+	'click .export-to-file-button': '_handleClickExportToFile',
 	'contextmenu .crossword-cell': '_handleContextmenuCrosswordCell',
-	'click .get-terms-button': '_handleClickGetTermsButton',
-	'click .validate-puzzle-button': '_handleClickValidatePuzzleButton'
+	'click .keep-puzzle-button': '_handleClickKeepPuzzleButton',
+	'click .validate-puzzle-button': '_handleClickValidatePuzzleButton',
 };
 
 const $body = $(document.body);
 
+window._DEVELOPMENT = window._DEVELOPMENT || true;
+
 
 // NOTE: The following functions (_termMatchesLetters, _findAnswers) must remain
 // executable from a worker context--that means no DOM access, no references to
-// imports in this file, nor any require() calls of its own--only native JS that can be run in a worker
+// imports in this file, nor any import calls of its own--only native JS that can be run in a worker
 function _termMatchesLetters(term, letters) {
 	for (let i = term.length - 1; i >= 0; i--) {
 		if (letters[i] !== void 0 && term[i] !== letters[i]) {
@@ -208,6 +215,8 @@ class PuzzleFillerView extends Backbone.View {
 
 		view._$directionIndicator = view.$('.direction-indicator');
 
+		view._$findAnswersProgress = view.$('.find-answers-progress');
+
 		view._fetchedLengths = [];
 
 		view._puzParser = new PUZParser();
@@ -227,6 +236,20 @@ class PuzzleFillerView extends Backbone.View {
 		view._attachEventListeners();
 
 		view._setCellNumbering();
+
+		if (window._DEVELOPMENT) {
+			view.$('.keep-puzzle-button').removeClass('hidden');
+
+			let b64string = localStorage.getItem('_PUZZLE');
+
+			if (b64string) {
+				view._puzParser.parse(PuzzleFillerView._base64ToArrayBuffer(b64string)).done(
+					function(puzzle) {
+						view._setFromPuzzle(puzzle);
+					}
+				);
+			}
+		}
 
 		return view;
 	}
@@ -580,8 +603,6 @@ class PuzzleFillerView extends Backbone.View {
 	}
 
 	_getCellPosition($cell) {
-		const view = this;
-
 		return [$cell.index(), $cell.closest('.puzzle-row').prevAll('.puzzle-row').length];
 	}
 
@@ -603,8 +624,6 @@ class PuzzleFillerView extends Backbone.View {
 		let acrossLength = $acrossCells.length;
 
 		let $downCells = $cell;
-
-		let endDownIndexSearch = false;
 
 		let $row = $cell.closest('.puzzle-row');
 
@@ -720,6 +739,7 @@ class PuzzleFillerView extends Backbone.View {
 						deferred.resolve(message.data);
 
 						worker.terminate();
+						worker = undefined;
 					};
 
 					worker.postMessage(args);
@@ -736,111 +756,259 @@ class PuzzleFillerView extends Backbone.View {
 	/**
 	 * Ensure that the filled answers are valid (not repeated, all exist, etc.)
 	 *
-	 * @return {external:"Q.Promise"} resolves to true if the answers are valid; false if there's an error
+	 * @return {external:"Q.Promise"} resolves to an object containing information about
+	 * any issues with the answers, or undefined if there are no issues.
 	 */
 	_validateAnswers() {
 		const view = this;
 
-		let termLengths = view._getTermLengths();
+		let puzzle = view.generatePuzzleFromBoard();
 
-		return DictionaryData.findByTermLengths(_.uniq(_.concat(termLengths.across, termLengths.down))).
-			then(
-				function(termsByLength) {
-					let puzzle = view.generatePuzzleFromBoard();
+		let acrossSolutions = [];
 
-					let acrossSolutions = [];
+		let downSolutions = [];
 
-					let downSolutions = [];
+		let across = '', down = [];
 
-					let across = '', down = [];
-
-					_.each(
-						puzzle.grid,
-						function(row, rowIndex) {
-							_.each(
-								row,
-								function(cell, cellIndex) {
-									if (cell.isBlockCell) {
-										if (_.size(across) > 1) {
-											acrossSolutions.push(across);
-										}
-
-										if (_.size(down[cellIndex]) > 1) {
-											downSolutions.push(down[cellIndex]);
-										}
-
-										delete down[cellIndex];
-
-										across = '';
-									}
-									else if (!_.isUndefined(cell.solution)) {
-										across += cell.solution;
-										down[cellIndex] = (down[cellIndex] || '') + cell.solution;
-									}
-									else {
-										across += '_';
-										down[cellIndex] = (down[cellIndex] || '') + '_';
-									}
-								}
-							);
-
+		_.each(
+			puzzle.grid,
+			function(row) {
+				_.each(
+					row,
+					function(cell, cellIndex) {
+						if (cell.isBlockCell) {
 							if (_.size(across) > 1) {
 								acrossSolutions.push(across);
 							}
 
+							if (_.size(down[cellIndex]) > 1) {
+								downSolutions.push(down[cellIndex]);
+							}
+
+							delete down[cellIndex];
+
 							across = '';
 						}
-					);
-
-					if (!_.isEmpty(down)) {
-						_.each(
-							down,
-							function(downSolution, cellIndex) {
-								if (_.size(downSolution) > 1) {
-									downSolutions.push(downSolution);
-								}
-							}
-						);
-					}
-
-					let allSolutions = _.concat(acrossSolutions, downSolutions);
-
-					let report = {
-						repeated: _.intersection(
-							acrossSolutions,
-							downSolutions
-						),
-						missing: _.filter(
-							allSolutions,
-							(solution) => solution.indexOf('_') >= 0
-						),
-					};
-
-					return DictionaryData.checkTerms(
-						allSolutions.filter(
-							(s) => s.indexOf('_') < 0
-						)
-					).then(
-						function(result) {
-							if (result) {
-								report.invalidTerms = result;
-
-								return report;
-							}
+						else if (!_.isUndefined(cell.solution)) {
+							across += cell.solution;
+							down[cellIndex] = (down[cellIndex] || '') + cell.solution;
 						}
-					);
+						else {
+							across += '_';
+							down[cellIndex] = (down[cellIndex] || '') + '_';
+						}
+					}
+				);
+
+				if (_.size(across) > 1) {
+					acrossSolutions.push(across);
 				}
-			).then(
-				function(report) {
-					debugger;
+
+				across = '';
+			}
+		);
+
+		if (!_.isEmpty(down)) {
+			_.each(
+				down,
+				function(downSolution) {
+					if (_.size(downSolution) > 1) {
+						downSolutions.push(downSolution);
+					}
 				}
 			);
+		}
+
+		let allSolutions = _.concat(acrossSolutions, downSolutions);
+
+		let report = {};
+
+		let repeated = _.intersection(
+			acrossSolutions,
+			downSolutions
+		);
+		
+		if (_.size(repeated) > 0) {
+			report.repeated = repeated;
+		}
+
+		let missing = _.filter(
+			allSolutions,
+			(solution) => solution.indexOf('_') >= 0
+		);
+
+		if (_.size(missing) > 0) {
+			report.missing = missing;
+		}
+
+		return DictionaryData.verifyValidTerms(
+			allSolutions.filter((s) => s.indexOf('_') < 0)
+		).then(
+			function(result) {
+				if (!_.isUndefined(result)) {
+					report.invalidTerms = result;
+
+				}
+
+				return report;
+			}
+		).then(
+			function(report) {
+				if (_.isEmpty(report)) {
+					return undefined;
+				}
+
+				return report;
+			}
+		);
 	}
 
 	_dismissAnswersPopup() {
+		$body.find('.answer-options-dialog').remove();
+	}
+
+	_mapTermsToCells() {
 		const view = this;
 
-		$body.find('.answer-options-dialog').remove();
+		const map = {};
+
+		let $rows = view._$boardContainer.find('.puzzle-row').each(
+			function() {
+				let acrossClueNumber;
+				let acrossTerm = '';
+				let $acrossCells = $();
+
+				$(this).find('.cell').each(
+					function() {
+						let $cell = $(this);
+
+						if ($cell.hasClass('block-cell')) {
+							if (acrossTerm.length > 1) {
+								if (!(acrossTerm in map)) {
+									map[acrossTerm] = [];
+								}
+
+								map[acrossTerm].push({
+									direction: 'across',
+									clueNumber: acrossClueNumber,
+									$cells: $acrossCells,
+								});
+							}
+
+							acrossTerm = '';
+							$acrossCells = $();
+							acrossClueNumber = undefined;
+						}
+						else {
+							if (_.isUndefined(acrossClueNumber)) {
+								acrossClueNumber = $cell.data('containing-clue-across');
+							}
+
+							acrossTerm += $cell.find('.letter-input').val();
+							$acrossCells = $acrossCells.add($cell);
+						}
+					}
+				);
+
+				if (acrossTerm.length > 1) {
+					if (!(acrossTerm in map)) {
+						map[acrossTerm] = [];
+					}
+
+					map[acrossTerm].push({
+						direction: 'across',
+						clueNumber: acrossClueNumber,
+						$cells: $acrossCells,
+					});
+				}
+
+				acrossTerm = '';
+				$acrossCells = $();
+				acrossClueNumber = undefined;
+			}
+		);
+
+		$rows.first().find('.cell').each(
+			function(index) {
+				let downTerm = '';
+				let $downCells = $();
+				let downClueNumber;
+				
+				$rows.find('.cell:nth-child(' + (index + 1) + ')').each(
+					function() {
+						var $cell = $(this);
+
+						if ($cell.hasClass('block-cell')) {
+							if (downTerm.length > 1) {
+								if (!(downTerm in map)) {
+									map[downTerm] = [];
+								}
+
+								map[downTerm].push({
+									direction: 'down',
+									clueNumber: downClueNumber,
+									$cells: $downCells,
+								});
+							}
+
+							downTerm = [];
+							$downCells = $();
+							downClueNumber = undefined;
+						}
+						else {
+							if (_.isUndefined(downClueNumber)) {
+								downClueNumber = $cell.data('containing-clue-down');
+							}
+
+							downTerm += $cell.find('.letter-input').val();
+							$downCells = $downCells.add($cell);
+						}
+					}
+				);
+
+				if (downTerm.length > 1) {
+					if (!(downTerm in map)) {
+						map[downTerm] = [];
+					}
+
+					map[downTerm].push({
+						direction: 'down',
+						clueNumber: downClueNumber,
+						$cells: $downCells,
+					});
+				}
+			}
+		);
+
+		return map;
+	}
+
+	_handleClickKeepPuzzleButton() {
+		const view = this;
+
+		let puzzle = view.generatePuzzleFromBoard();
+
+		localStorage.setItem('_PUZZLE', PuzzleFillerView._arrayBufferToBase64(view._puzParser.generate(puzzle)));
+	}
+
+	_handleClickExportToFile() {
+		const view = this;
+
+		const puzzle = view.generatePuzzleFromBoard();
+
+		const puzzleBuffer = view._puzParser.generate(puzzle);
+
+		const blob = new Blob([puzzleBuffer]);
+
+		const url = URL.createObjectURL(blob);
+
+		const link = document.createElement('a');
+
+		link.setAttribute('href', url);
+
+		link.setAttribute('download', 'puzzle.puz');
+
+		link.click();
 	}
 
 	_handleClickAnswerOption(event) {
@@ -875,7 +1043,7 @@ class PuzzleFillerView extends Backbone.View {
 
 		let $firstDownRow = $();
 
-		let $prevRows = $row.prevAll('.puzzle-row').each(
+		$row.prevAll('.puzzle-row').each(
 			function() {
 				let $prevRow = $(this);
 
@@ -908,7 +1076,61 @@ class PuzzleFillerView extends Backbone.View {
 	_handleClickValidatePuzzleButton() {
 		const view = this;
 
-		view._validateAnswers();
+		let map = view._mapTermsToCells();
+
+		view._$boardContainer.find('.crossword-cell.invalid').removeClass('invalid invalid-term repeated-term');
+
+		view._validateAnswers().done(
+			function(report) {
+				if (_.isUndefined(report)) {
+					return;
+				}
+
+				_.each(
+					report.invalidTerms,
+					function(term) {
+						_.each(
+							map[term],
+							function(termInstance) {
+								termInstance.$cells.addClass('invalid invalid-term').attr('data-invalid-message', 'Term is not in dictionary');
+							}
+						);
+					}
+				);
+
+				_.each(
+					report.repeated,
+					function(term) {
+						_.each(
+							map[term],
+							function(termInstance) {
+								termInstance.$cells.each(
+									function() {
+										let $cell = $(this);
+
+										$cell.addClass('invalid repeated-term');
+
+										let msg = $cell.attr('data-invalid-message');
+
+										if (msg) {
+											msg += '\n'; 
+										}
+										else {
+											msg = '';
+										}
+
+										
+										msg += 'Term is duplicated';
+										
+										$cell.attr('data-invalid-message', msg);
+									}
+								);
+							}
+						);
+					}
+				);
+			}
+		);
 	}
 
 	_handleCellClick(event) {
@@ -942,6 +1164,14 @@ class PuzzleFillerView extends Backbone.View {
 		view._$boardContainer = view.$('.grid-and-clues');
 	}
 
+	static _arrayBufferToBase64(buffer) {
+		return Base64ArrayBuffer.encode(buffer);
+	}
+
+	static _base64ToArrayBuffer(b64string) {
+		return Base64ArrayBuffer.decode(b64string);
+	}
+
 	_handleChangeFileUpload(event) {
 		const view = this;
 
@@ -964,22 +1194,12 @@ class PuzzleFillerView extends Backbone.View {
 		fr.readAsArrayBuffer(file);
 	}
 
-	_handleClickGetTermsButton(event) {
-		const view = this;
-
-		let termLengths = view._getTermLengths();
-
-		DictionaryData.findByTermLengths(termLengths).done(
-			function(terms) {
-				console.log('terms: ', terms);
-			}
-		);
-	}
-
 	_handleContextmenuCrosswordCell(event) {
 		const view = this;
 
 		event.preventDefault();
+
+		view._$findAnswersProgress.removeClass('hidden');
 
 		view._dismissAnswersPopup();
 
@@ -1008,13 +1228,14 @@ class PuzzleFillerView extends Backbone.View {
 						),
 					})
 				);
-
 				$body.append($dialog);
 
 				$dialog.css({
 					top: event.pageY + 'px',
 					left: event.pageX + 'px'
 				});
+
+				view._$findAnswersProgress.addClass('hidden');
 
 				$(document).off('.context-menu.' + view._namespace).on(
 					'click.context-menu.' + view._namespace,
@@ -1029,7 +1250,6 @@ class PuzzleFillerView extends Backbone.View {
 				);
 			}
 		);
-
 	}
 }
 

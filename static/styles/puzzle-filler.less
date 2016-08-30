@@ -64,8 +64,43 @@
 .fill-puzzle-section {
 	.crossword-grid {
 		.crossword-cell {
+			// Adds a border that will show on all 4 sides,
+			// regardless of border-collapse: collapse
+			// layout
+			.extra-border(@color, @width: 1px) {
+				& {
+					position: relative;
+					z-index: 1;
+				}
+
+				&:before {
+					content: "";
+					position: absolute;
+					top: -1 * @width;
+					right: -1 * @width;
+					bottom: -1 * @width;
+					left: -1 * @width;
+					border: @width solid @color;
+					z-index: -1;
+				}
+			}
+
 			&.no-candidates {
-				border: 1px solid red;
+				.extra-border(@width: 1px, @color: red);
+			}
+
+			&.invalid {
+				.extra-border(@width: 1px, @color: yellow);
+
+				// &[data-invalid-message] {
+				// 	&:hover:after {
+				// 		content: attr(data-invalid-message);
+				// 		position: absolute;
+				// 		border: 1px solid black;
+				// 		background: yellow;
+				// 		z-index: 2;
+				// 	}
+				// }
 			}
 		}
 	}

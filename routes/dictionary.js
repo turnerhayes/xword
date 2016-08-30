@@ -129,7 +129,7 @@ router.route('/terms')
 router.route('/terms/check')
 	.post(
 		function(req, res) {
-			let terms = req.body;
+			let terms = req.body.terms;
 
 			DictionaryStore.verifyValidTerms({
 				terms: terms

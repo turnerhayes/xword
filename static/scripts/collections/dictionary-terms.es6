@@ -1,9 +1,8 @@
 "use strict";
 
-const _                   = require('lodash');
-const Q                   = require('q');
-const BaseCollection      = require('./base');
-const DictionaryTermModel = require('../models/dictionary-term');
+import _                   from "lodash";
+import BaseCollection      from "./base";
+import DictionaryTermModel from "../models/dictionary-term";
 
 
 let _defaultCollection;
@@ -32,8 +31,6 @@ class DictionaryTermCollection extends BaseCollection {
 	}
 
 	fetch(options) {
-		const collection = this;
-
 		options = _.extend(options || {}, {
 			data: {}
 		});

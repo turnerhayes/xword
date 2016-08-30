@@ -1,7 +1,6 @@
 "use strict";
 
-const _        = require('lodash');
-const Backbone = require('backbone');
+import Backbone from "backbone";
 
 
 const _defaults = {

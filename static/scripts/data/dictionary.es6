@@ -1,7 +1,10 @@
 "use strict";
 
-const $                    = require('jquery');
-const dictionaryCollection = require('../collections/dictionary-terms').default;
+import $                    from "jquery";
+import _                    from "lodash";
+import Q                    from "q";
+import DictionaryCollection from "../collections/dictionary-terms";
+
 
 let _fetchedTermLengths = [];
 
@@ -44,18 +47,32 @@ class DictionaryData {
 				}
 			);
 			
-			promise = dictionaryCollection.fetchPromise(options);
+			promise = DictionaryCollection.default.fetchPromise(options);
 		}
 
 		return promise.then(
 			function() {
-				return _filterByLengths(dictionaryCollection, termLengths);
+				return _filterByLengths(DictionaryCollection.default, termLengths);
 			}
 		);
 	}
 
-	static checkTerms(terms) {
-		
+	static verifyValidTerms(terms) {
+		return Q(
+			$.post(
+				{
+					url: '/dictionary/terms/check',
+					contentType: 'application/json',
+					data: JSON.stringify({
+						terms: terms
+					})
+				}
+			)
+		).then(
+			function(results) {
+				return _.size(results.missingTerms) === 0 ? undefined : results.missingTerms;
+			}
+		);
 	}
 }
 
