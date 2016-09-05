@@ -32,6 +32,9 @@ console.log('config.app.address: ', JSON.stringify(config.app.address, null, '\t
 var port = normalizePort(config.app.address.PORT || '8989');
 app.set('port', port);
 
+console.log('port: ', port);
+// console.log('config: ', JSON.stringify(config, null, '\t'));
+
 /**
  * Create HTTP server.
  */
