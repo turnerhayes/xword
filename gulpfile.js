@@ -7,7 +7,6 @@ const path                 = require('path');
 const fs                   = require('fs');
 const dirRecurse           = require('recursive-readdir');
 const Q                    = require('q');
-const del                  = require('del');
 
 const gulp                 = require('gulp');
 const gulpIf               = require('gulp-if');
@@ -28,10 +27,12 @@ const watchify             = require('watchify');
 const browserify           = require('browserify');
 const hbsfy                = require('hbsfy');
 const babelify             = require('babelify');
+const uglifyify            = require('uglifyify');
 const source               = require('vinyl-source-stream');
 const buffer               = require('vinyl-buffer');
 const merge                = require('merge-stream');
 const stylish              = require('jshint-stylish');
+const pump                 = require('pump');
 
 const LessPluginCleanCSS   = require('less-plugin-clean-css');
 const LessPluginAutoPrefix = require('less-plugin-autoprefix');
@@ -75,22 +76,28 @@ const viewMapFile = path.resolve(jsDirectory, 'view-map.es6');
 const faviconDirectory = path.join(config.paths.static, 'dist', 'favicons/');
 
 
-var browserifyOptions = _.extend({}, watchify.args, {
-	debug: IS_DEVELOPMENT,
+const browserifyOptions = _.extend({}, watchify.args, {
+	debug: true,
 	extensions: ['.es6', '.js', '.json']
 });
 
-var hbsfyOptions = {
+const hbsfyOptions = {
 	extensions: ['hbs'],
 	precompiler: 'handlebars'
 };
 
-var babelifyOptions = {
+const babelifyOptions = {
 	sourceRoot: jsDirectory,
 	presets: ['es2015'],
 	extensions: ['.es6'],
 	comments: IS_DEVELOPMENT,
 	babelrc: false
+};
+
+const uglifyifyOptions = {
+	global: true,
+	compress: true,
+	mangle: true,
 };
 
 /**
@@ -310,7 +317,10 @@ function _compileScripts(bundler, changedFiles) {
 				.pipe(sourcemaps.init({
 					loadMaps: true // loads map from browserify file
 				}))
-				.pipe(gulpIf(!IS_DEVELOPMENT, uglify()))
+				// .pipe(gulpIf(!IS_DEVELOPMENT, uglify()))
+				// .on('error', function(err) {
+				// 	gutil.log(gutil.colors.red('Uglify error:\n'), err.toString());
+				// })
 				.pipe(sourcemaps.write('.')) // writes .map file
 				.pipe(gulp.dest(path.join(config.paths.static, 'dist', 'js/')));
 
@@ -337,6 +347,10 @@ function _scriptsTask(watch) {
 	bundler.transform(hbsfy.configure(hbsfyOptions));
 	
 	bundler.transform(babelify.configure(babelifyOptions));
+
+	if (!IS_DEVELOPMENT) {
+		bundler.transform(uglifyifyOptions, 'uglifyify');
+	}
 
 	if (watch) {
 		bundler.on('update', _.bind(_compileScripts, undefined, bundler));
