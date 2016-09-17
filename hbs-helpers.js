@@ -111,6 +111,14 @@ module.exports = function(Handlebars) {
 			}
 		},
 
+		Percentage: function(numerator, denominator, options) {
+			var precision = (options.hash && options.hash.precision) ? Number(options.hash.precision) : 0;
+
+			var value = (numerator / denominator) * 100;
+
+			return value.toFixed(precision);
+		},
+
 		"Object": function(options) {
 			var obj = {};
 			var key;

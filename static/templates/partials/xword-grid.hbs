@@ -1,12 +1,18 @@
 <table class="crossword-grid">
 	<tbody>
-	{{#puzzle.grid}}
+	{{#each puzzle.grid}}
+		{{#with @index as |rowIndex|}}
 		<tr class="puzzle-row">
-		{{#.}}
-			{{> grid/cell editable=../../editable}}
-		{{/.}}
+		{{#each ..}}
+			{{#with @index as |columnIndex|}}
+			{{#..}}
+			{{> grid/cell editable=../../editable solution=(lookup (lookup @root.puzzle.userSolution rowIndex) columnIndex)}}
+			{{/..}}
+			{{/with}}
+		{{/each}}
 		</tr>
-	{{/puzzle.grid}}
+		{{/with}}
+	{{/each}}
 	{{^puzzle}}
 		{{#each (Range height)}}
 		<tr class="puzzle-row">

@@ -1,0 +1,43 @@
+.play-imported-puzzle-container {
+	.grid-and-clues {
+		margin-top: 4em;
+	}
+
+	.puzzle-info-container {
+		display: flex;
+		flex-direction: row;
+		position: fixed;
+		background: #FFFFFF;
+		width: 100%;
+	}
+
+	.current-clue-container {
+		margin: 0;
+		text-align: center;
+		order: 1;
+		flex: 1;
+		z-index: 1;
+	}
+
+	.crossword {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.crossword-cell {
+		&.error {
+			background-color: hsla(0, 80%, 80%, 1);
+		}
+	}
+
+	@media screen 
+		and (max-device-width: 400px) {
+		.grid-and-clues {
+			flex-direction: column;
+		}
+
+		.crossword {
+			// transform: scale(2);
+		}
+	}
+}

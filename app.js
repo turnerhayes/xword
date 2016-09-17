@@ -53,9 +53,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(session.instance);
-app.use('/static', express.static(config.paths.static));
+app.use('/static', express.static(config.paths.static, { maxAge: '7 days' }));
 // Ensure favicons can be found at the root
-app.use('/', express.static(faviconDirectory));
+app.use('/', express.static(faviconDirectory, { maxAge: '30 days' }));
 
 setupPassport(app);
 

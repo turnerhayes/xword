@@ -54,13 +54,24 @@ router.route('/play')
 		});
 	});
 
-	
+
 
 router.route('/fill')
 	.get(
 		function(req, res) {
 			res.render('fill-puzzle', {
 				title: 'Fill a puzzle',
+				req: req
+			});
+		}
+	);
+
+
+router.route('/import')
+	.get(
+		function(req, res) {
+			res.render('play-imported-puzzle', {
+				title: 'Play an imported puzzle',
 				req: req
 			});
 		}

@@ -13,11 +13,13 @@ const KEYCODES = {
 	BACKSPACE: 8,
 	TAB: 9,
 	SPACE: 32,
+	END: 35,
+	HOME: 36,
 	LEFT_ARROW: 37,
 	UP_ARROW: 38,
 	RIGHT_ARROW: 39,
 	DOWN_ARROW: 40,
-	DELETE: 46
+	DELETE: 46,
 };
 
 const _events = {
@@ -26,6 +28,7 @@ const _events = {
 	'dblclick .crossword-cell.highlighted': '_handleCrosswordCellDoubleClick',
 	'keypress .crossword-cell': '_handleCrosswordCellKeypress',
 	'keydown .crossword-cell': '_handleCrosswordCellKeydown',
+	'keyup .crossword-cell': '_handleCrosswordCellKeyup',
 	'focusin .crossword-cell .letter-input': '_handleCrosswordCellFocus'
 };
 
@@ -179,6 +182,54 @@ class GridView extends Backbone.View {
 		return view._goUp($currentCell);
 	}
 
+	_goToBeginningCell($currentCell) {
+		const view = this;
+
+		if (view.direction === DIRECTIONS.ACROSS) {
+			return $currentCell.prevUntil('.block-cell').add($currentCell).first().find('.letter-input').focus();
+		}
+
+		let $cells = $currentCell;
+
+		$currentCell.closest('.puzzle-row').prevAll().each(
+			function() {
+				let $crosswordCell = $(this).find('.crossword-cell:nth-child(' + ($currentCell.index() + 1) + ')');
+
+				if ($crosswordCell.length === 0) {
+					return false;
+				}
+
+				$cells = $crosswordCell.add($cells);
+			}
+		);
+
+		return $cells.first().find('.letter-input').focus();
+	}
+
+	_goToEndingCell($currentCell) {
+		const view = this;
+
+		if (view.direction === DIRECTIONS.ACROSS) {
+			return $currentCell.add($currentCell.nextUntil('.block-cell')).last().find('.letter-input').focus();
+		}
+
+		let $cells = $currentCell;
+
+		$currentCell.closest('.puzzle-row').nextAll().each(
+			function() {
+				let $crosswordCell =$(this).find('.crossword-cell:nth-child(' + ($currentCell.index() + 1) + ')');
+
+				if ($crosswordCell.length === 0) {
+					return false;
+				}
+
+				$cells = $cells.add($crosswordCell);
+			}
+		);
+
+		return $cells.last().find('.letter-input').focus();
+	}
+
 	_highlightAcrossClue(number) {
 		const view = this;
 
@@ -186,6 +237,11 @@ class GridView extends Backbone.View {
 
 		view._$grid.find('.crossword-cell[data-containing-clue-across="' + number + '"]')
 			.addClass('highlighted');
+
+		view.$el.trigger('clue-change', {
+			direction: 'across',
+			number: number,
+		});
 	}
 
 	_highlightDownClue(number) {
@@ -196,6 +252,11 @@ class GridView extends Backbone.View {
 
 		view._$grid.find('.crossword-cell[data-containing-clue-down="' + number + '"]')
 			.addClass('highlighted');
+		
+		view.$el.trigger('clue-change', {
+			direction: 'down',
+			number: number,
+		});
 	}
 
 	_highlightClues(clues) {
@@ -213,7 +274,8 @@ class GridView extends Backbone.View {
 	}
 
 	_handleCrosswordCellInput(event) {
-		var $cell = $(event.currentTarget);
+		const view = this;
+		const $cell = $(event.currentTarget);
 
 		$cell.val($cell.val().toLocaleUpperCase());
 	}
@@ -221,13 +283,28 @@ class GridView extends Backbone.View {
 	_handleCrosswordCellKeypress(event) {
 		const view = this;
 
-		view._goToNextCell($(event.currentTarget));
+	}
+
+	_handleCrosswordCellKeyup(event) {
+		const view = this;
+		const $currentCell = $(event.currentTarget);
+
+		if (/[a-zA-Z]/.test(String.fromCharCode(event.which))) {
+			view._goToNextCell($currentCell);
+		}
+		else if (event.which === 8) {
+			view._goToPreviousCell($currentCell);
+		}
 	}
 
 	_handleCrosswordCellKeydown(event) {
 		const view = this;
 		const $currentCell = $(event.currentTarget);
 		const $input = $currentCell.find('.letter-input');
+
+		if (event.which === 229) {
+			return;
+		}
 
 		switch (event.which) {
 			case KEYCODES.LEFT_ARROW:
@@ -246,6 +323,14 @@ class GridView extends Backbone.View {
 				view._goDown($currentCell);
 				event.preventDefault();
 				return;
+			case KEYCODES.HOME:
+				view._goToBeginningCell($currentCell);
+				event.preventDefault();
+				return;
+			case KEYCODES.END:
+				view._goToEndingCell($currentCell);
+				event.preventDefault();
+				return;
 			case KEYCODES.DELETE:
 				$input.val('');
 				return;
@@ -258,10 +343,7 @@ class GridView extends Backbone.View {
 				event.preventDefault();
 				return;
 			case KEYCODES.BACKSPACE:
-				if ($input.val() === '') {
-					view._goToPreviousCell($currentCell).find('.letter-input').val('');
-				}
-				else {
+				if ($input.val() !== '') {
 					$input.val('');
 				}
 				return;

@@ -1,44 +1,55 @@
 "use strict";
 
-var $        = require('jquery');
-var _        = require('lodash');
-var Q        = require('q');
-var Backbone = require('backbone');
+import $        from 'jquery';
+import _        from 'lodash';
+import Q        from 'q';
+import Backbone from 'backbone';
 
 
 const SERVER_SEND_DEBOUNCE_INTERVAL = 500;
 
 const LOCALSTORAGE_KEY = 'solution_' + document.location.pathname;
 
-exports = module.exports = Backbone.View.extend({
-	events: {
-	},
+const _events = {
+	'crossword-check-solutions': '_handleCheckSolutions'
+};
 
-	initialize: function() {
-		var view = this;
+class CrosswordPuzzleView extends Backbone.View {
+	get events() {
+		return _events;
+	}
 
-		Backbone.View.prototype.initialize.apply(view, arguments);
+	initialize() {
+		const view = this;
+
+		super.initialize(...arguments);
 
 		view._debouncedSendToServer = _.debounce(
 			view._sendSolutionToServer,
 			SERVER_SEND_DEBOUNCE_INTERVAL
 		);
-	},
+	}
 
-	render: function() {
-		var view = this;
+	render() {
+		const view = this;
 
-		Backbone.View.prototype.render.apply(view, arguments);
+		super.render(...arguments);
 
 		view._$grid = view.$('.crossword-grid');
 
 		view._loadSolution();
-	},
+	}
 
-	_loadSolution: function() {
-		var view = this;
+	checkSolution() {
+		const view = this;
 
-		var solution = window.localStorage.getItem(LOCALSTORAGE_KEY);
+		const solution = view._getCurrentAnswers();
+	}
+
+	_loadSolution() {
+		const view = this;
+
+		let solution = window.localStorage.getItem(LOCALSTORAGE_KEY);
 
 		if (!solution) {
 			return;
@@ -46,12 +57,12 @@ exports = module.exports = Backbone.View.extend({
 
 		solution = JSON.parse(solution);
 
-		var $rows = view._$grid.find('.puzzle-row');
+		const $rows = view._$grid.find('.puzzle-row');
 
 		_.each(
 			solution,
 			function(row, rowIndex) {
-				var $cells = $rows.eq(rowIndex).find('.cell');
+				const $cells = $rows.eq(rowIndex).find('.cell');
 
 				_.each(
 					row,
@@ -67,18 +78,18 @@ exports = module.exports = Backbone.View.extend({
 				);
 			}
 		);
-	},
+	}
 
-	_getCurrentAnswers: function() {
-		var view = this;
+	_getCurrentAnswers() {
+		const view = this;
 
-		var answers = _.map(
+		const answers = _.map(
 			view._$grid.find('.puzzle-row'),
 			function(row) {
 				return _.map(
 					$(row).find('.cell'),
 					function(cell) {
-						var $cell = $(cell);
+						const $cell = $(cell);
 
 						if ($cell.hasClass('block-cell')) {
 							return '#';
@@ -91,10 +102,10 @@ exports = module.exports = Backbone.View.extend({
 		);
 
 		return answers;
-	},
+	}
 
-	_sendSolutionToServer: function(solution) {
-		var view = this;
+	_sendSolutionToServer(solution) {
+		const view = this;
 		
 		return Q(
 			$.post({
@@ -106,15 +117,23 @@ exports = module.exports = Backbone.View.extend({
 				contentType: 'application/json'
 			})
 		);
-	},
+	}
 
-	_updateAnswer: function() {
-		var view = this;
+	_updateAnswer() {
+		const view = this;
 
-		var answers = view._getCurrentAnswers();
+		const answers = view._getCurrentAnswers();
 
 		window.localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(answers));
 
 		view._debouncedSendToServer(answers);
 	}
-});
+
+	_handleCheckSolutions(event) {
+		const view = this;
+
+		view.checkSolution();
+	}
+};
+
+exports = module.exports = CrosswordPuzzleView;
