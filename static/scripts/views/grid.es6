@@ -26,7 +26,6 @@ const _events = {
 	'input .crossword-cell .letter-input': '_handleCrosswordCellInput',
 	'click .crossword-cell': '_handleCrosswordCellClick',
 	'dblclick .crossword-cell.highlighted': '_handleCrosswordCellDoubleClick',
-	'keypress .crossword-cell': '_handleCrosswordCellKeypress',
 	'keydown .crossword-cell': '_handleCrosswordCellKeydown',
 	'keyup .crossword-cell': '_handleCrosswordCellKeyup',
 	'focusin .crossword-cell .letter-input': '_handleCrosswordCellFocus'
@@ -278,11 +277,6 @@ class GridView extends Backbone.View {
 		const $cell = $(event.currentTarget);
 
 		$cell.val($cell.val().toLocaleUpperCase());
-	}
-
-	_handleCrosswordCellKeypress(event) {
-		const view = this;
-
 	}
 
 	_handleCrosswordCellKeyup(event) {

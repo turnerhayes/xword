@@ -3,11 +3,10 @@
 var path = require('path');
 var express = require('express');
 var router = express.Router();
-var IPUZParser = require('xpuz').IPUZ;
-var PUZParser = require('xpuz').PUZ;
+var XPuz = require('xpuz');
 
-var ipuzParser = new IPUZParser();
-var puzParser = new PUZParser();
+var ipuzParser = new XPuz.Parsers.IPUZ();
+var puzParser = new XPuz.Parsers.PUZ();
 
 var puzzleMap = {
 	ipuz: {

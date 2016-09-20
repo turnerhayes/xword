@@ -16,7 +16,8 @@
     "font-awesome": "^4.5.0",
     "jquery": "^2.2.0",
     "lodash": "^4.0.0",
-    "q": "^1.4.1"
+    "q": "^1.4.1",
+    "xpuz": "~0.0.7"
   },
   "devDependencies": {}
 }

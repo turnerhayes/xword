@@ -3,6 +3,9 @@
 		"includePattern": ".+\\.(js|es6)$"
 	},
 	"opts": {
-		"recurse": true
-	}
+		"recurse": true,
+		"package": "./package.json",
+		"private": true
+	},
+	"plugins": ["plugins/markdown"]
 }

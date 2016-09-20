@@ -1,5 +1,11 @@
 "use strict";
 
+/**
+ * Puzzle play view module
+ *
+ * @module views/puzzle-imported-puzzle
+ */
+
 import $                          from "jquery";
 import _                          from "lodash";
 import Backbone                   from "backbone";
@@ -37,23 +43,40 @@ const _events = {
 	'clue-change': '_handleClueChange'
 };
 
+/**
+ * View for playing a crossword puzzle from an uploaded .puz file.
+ *
+ * @extends external:"Backbone.View"
+ */
 class PlayImportedPuzzleView extends Backbone.View {
 	get events() {
 		return _events;
 	}
 
+	/**
+	 * Sets up the view during construction.
+	 *
+	 * @see {@link http://backbonejs.org/#View-initialize|Backbone.View#initialize}
+	 */
 	initialize() {
 		const view = this;
 
 		super.initialize(...arguments);
 
-		view._puzParser = new XPuz.PUZ();
+		view._puzParser = new XPuz.Parsers.PUZ();
 
 		view._namespace = 'play-imported-puzzle-view-' + view.cid;
 
 		view._boundRequestAnimationFrame = _.bind(view._handleRequestAnimationFrame, view);
 	}
 
+	/**
+	 * Renders the DOM for this view.
+	 *
+	 * @see {@link http://backbonejs.org/#View-render|Backbone.View#render}
+	 *
+	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
 	render() {
 		const view = this;
 
@@ -89,6 +112,11 @@ class PlayImportedPuzzleView extends Backbone.View {
 		return view;
 	}
 
+	/**
+	 * Removes the view and its element from the DOM.
+	 *
+	 * @see {@link http://backbonejs.org/#View-remove|Backbone.View#remove}
+	 */
 	remove() {
 		const view = this;
 
@@ -97,6 +125,13 @@ class PlayImportedPuzzleView extends Backbone.View {
 		return super.remove(...arguments);
 	}
 
+	/**
+	 * Attaches any event listeners that need to be attached outside of the events view member.
+	 *
+	 * @private
+	 *
+	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
 	_attachEventListeners() {
 		const view = this;
 
@@ -106,7 +141,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 				event.shiftKey &&
 				event.ctrlKey
 			) {
-				view._checkPuzzle();
+				view.checkPuzzle();
 			}
 		}).on(visibilityChangeEventName + '.' + view._namespace, function(event) {
 			if (document[hiddenPropertyName]) {
@@ -122,16 +157,34 @@ class PlayImportedPuzzleView extends Backbone.View {
 		});
 
 		window.requestAnimationFrame(view._boundRequestAnimationFrame);
+
+		return view;
 	}
 
+	/**
+	 * Removes any event listeners attached outside of the `events` view member.
+	 *
+	 * @private
+	 *
+	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
 	_detachEventListeners() {
 		const view = this;
 
 		$(document).off('.' + view._namespace);
 
 		$(window).off('.' + view._namespace);
+
+		return view;
 	}
 
+	/**
+	 * Starts or resumes the timer.
+	 *
+	 * @private
+	 *
+	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
 	_startTimer() {
 		const view = this;
 
@@ -141,8 +194,17 @@ class PlayImportedPuzzleView extends Backbone.View {
 
 		view._timerRunning = true;
 		view._lastTimerStart = Date.now();
+
+		return view;
 	}
 
+	/**
+	 * Pauses the timer.
+	 *
+	 * @private
+	 *
+	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
 	_stopTimer() {
 		const view = this;
 
@@ -156,8 +218,38 @@ class PlayImportedPuzzleView extends Backbone.View {
 			PUZZLE_TIMER_STORAGE_KEY,
 			view._storedTimerValue
 		);
+
+		return view;
 	}
 
+	/**
+	 * Resets the puzzle timer to 0.
+	 *
+	 * @private
+	 *
+	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
+	_resetTimer() {
+		const view = this;
+
+		view._storedTimerValue = 0;
+		window.localStorage.setItem(PUZZLE_TIMER_STORAGE_KEY, view._storedTimerValue);
+
+		view._updateTimerDisplay();
+
+		return view;
+	}
+
+	/**
+	 * Refreshes the timer display element to be in sync with the current timer value.
+	 *
+	 * @private
+	 *
+	 * @param {Number} [numMilliseconds] - The time, in milliseconds, to show as the timer.
+	 *	If omitted, retrieves value from localStorage.
+	 *
+	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
 	_updateTimerDisplay(numMilliseconds) {
 		const view = this;
 
@@ -185,16 +277,33 @@ class PlayImportedPuzzleView extends Backbone.View {
 		if (display !== view._$timerDisplay.text()) {
 			view._$timerDisplay.text(display);
 		}
+
+		return view;
 	}
 
+	/**
+	 * Toggles display between showing the file upload field and showing the puzzle.
+	 *
+	 * @private
+	 *
+	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
 	_toggleDisplay() {
 		const view = this;
 
 		view._$crossword.toggleClass('hidden');
 		view._$filePicker.toggleClass('hidden');
+
+		return view;
 	}
 
-	_checkPuzzle() {
+	/**
+	 * Checks the current state of the puzzle to determine the player's progress. Triggers
+	 * display of puzzle statistics in a modal popup.
+	 *
+	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
+	checkPuzzle() {
 		const view = this;
 
 		let correctCells = view._numberOfCrosswordCells;
@@ -225,8 +334,19 @@ class PlayImportedPuzzleView extends Backbone.View {
 			totalNumberOfCells: view._numberOfCrosswordCells,
 			numberOfCorrectCells: correctCells,
 		})).modal();
+
+		return view;
 	}
 
+	/**
+	 * Sets up the puzzle grid from the {@link external:XPuz/Puzzle} provided.
+	 *
+	 * @private
+	 *
+	 * @param {external:XPuz/Puzzle} puzzle - the puzzle from which to generate the game grid
+	 *
+	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
 	_setFromPuzzle(puzzle) {
 		const view = this;
 
@@ -243,11 +363,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 
 		view._numberOfCrosswordCells = view._$boardContainer.find('.crossword-cell').length;
 
-		if (!hiddenPropertyName || !document[hiddenPropertyName]) {
-			view._startTimer();
-		}
-
-		view._storedTimerValue = Number(window.localStorage.getItem(PUZZLE_TIMER_STORAGE_KEY) || 0);
+		return view;
 	}
 
 	_updateStoredPuzzle(updateSolution) {
@@ -308,6 +424,12 @@ class PlayImportedPuzzleView extends Backbone.View {
 					view._setFromPuzzle(puzzle);
 
 					view._updateStoredPuzzle();
+
+					view._resetTimer();
+
+					if (!hiddenPropertyName || !document[hiddenPropertyName]) {
+						view._startTimer();
+					}
 
 					view._toggleDisplay();
 				}

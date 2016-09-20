@@ -36,10 +36,6 @@ npm-debug.log
 # Compiled static files
 static/dist
 
-# Generated documentation
-docs/
-
-
 # Build-generated script files
 static/scripts/view-map.es6
 static/scripts/partials.js

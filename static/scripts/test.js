@@ -4,7 +4,7 @@ const XPuz = require('xpuz');
 const fs = require('fs');
 const puzzle = require('../../puzzle.json');
 
-const parser = new XPuz.PUZ();
+const parser = new XPuz.Parsers.PUZ();
 
 let generated = parser.generate(puzzle);
 
@@ -22,7 +22,7 @@ console.log(generated);
 
 // 	console.log(obj);
 
-// 	const puzzle = new XPuz.PUZ().parse(obj);
+// 	const puzzle = new XPuz.Parsers.PUZ().parse(obj);
 	
 // 	console.log(puzzle);
 // });

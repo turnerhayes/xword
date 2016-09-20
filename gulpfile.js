@@ -7,6 +7,8 @@ const path                 = require('path');
 const fs                   = require('fs');
 const dirRecurse           = require('recursive-readdir');
 const Q                    = require('q');
+const del                  = require('del');
+const pkg                  = require('./package.json');
 
 const gulp                 = require('gulp');
 const gulpIf               = require('gulp-if');
@@ -57,6 +59,8 @@ const jsViewsDirectory = path.join(jsDirectory, 'views');
 
 const documentationDirectory = path.join(__dirname, 'docs');
 
+const currentVersionDocumentationDirectory = path.join(documentationDirectory, pkg.name, pkg.version);
+
 const thirdPartyJS = [path.join(config.paths.static, 'node_modules', 'bootstrap', 'dist', 'js', 'bootstrap.js')];
 
 const jsBlob = path.join(jsDirectory, '**/*.{js,es6}');
@@ -99,6 +103,128 @@ const uglifyifyOptions = {
 	compress: true,
 	mangle: true,
 };
+
+function _cleanDocumentation() {
+	return Q(del(path.join(currentVersionDocumentationDirectory, '*'))).
+		then(
+			function() {
+				const deferred = Q.defer();
+
+				fs.readdir(documentationDirectory, function(err, files) {
+					if (err) {
+						deferred.reject(err);
+						return;
+					}
+
+					let failed = false;
+
+					_.each(files, function(file) {
+						try {
+							const filePath = path.join(documentationDirectory, file);
+							const stat = fs.lstatSync(filePath);
+
+							if (stat.isSymbolicLink()) {
+								fs.unlinkSync(filePath);
+							}
+						}
+						catch(ex) {
+							deferred.reject(ex);
+							failed = true;
+							return false;
+						}
+					});
+
+					if (!failed) {
+						deferred.resolve();
+					}
+				});
+
+				return deferred.promise;
+			}
+		);
+}
+
+function _buildDocumentation() {
+	const deferred = Q.defer();
+
+	fs.readFile('./.jsdocrc', { encoding: 'utf8' }, function(err, configText) {
+		if (err) {
+			deferred.reject(err);
+			return;
+		}
+
+		const jsdocConfig = JSON.parse(configText);
+
+		jsdocConfig.opts = jsdocConfig.opts || {};
+		jsdocConfig.opts.destination = documentationDirectory;
+
+		gulp.src(jsBlob, { read: false }).
+			pipe(
+				jsdoc(jsdocConfig, function(err) {
+					if (err) {
+						deferred.reject(err);
+						return;
+					}
+
+					deferred.resolve();
+				})
+			);
+	});
+
+	return deferred.promise;
+}
+
+function _setupDocumentationSymlinks() {
+	const deferred = Q.defer();
+
+	fs.readdir(
+		currentVersionDocumentationDirectory,
+		{
+			encoding: "utf8"
+		},
+		function(err, files) {
+			if (err) {
+				deferred.reject(err);
+				return;
+			}
+
+			let errored = false;
+
+			_.each(
+				files,
+				function(file) {
+					try {
+						let symlinkedFile = path.join(documentationDirectory, file);
+
+						try {
+							fs.unlinkSync(symlinkedFile);
+						}
+						catch(e) {}
+						
+						fs.symlinkSync(
+							path.relative(
+								documentationDirectory,
+								path.join(currentVersionDocumentationDirectory, file)
+							),
+							symlinkedFile
+						);
+					}
+					catch(e) {
+						deferred.reject(e);
+						errored = true;
+						return false;
+					}
+				}
+			);
+
+			if (!errored) {
+				deferred.resolve();
+			}
+		}
+	);
+
+	return deferred.promise;
+}
 
 /**
  * This function generates the partials.js file which is included by the Handlebars client-side
@@ -439,20 +565,12 @@ gulp.task('watch-static', ['watch-styles', 'watch-partials', 'watch-scripts']);
 
 gulp.task('build', ['static', 'generate-favicon']);
 
-gulp.task('documentation', function(done) {
-	fs.readFile('./.jsdocrc', { encoding: 'utf8' }, function(err, configText) {
-		if (err) {
-			throw new Error(err);
-		}
-
-		let jsdocConfig = JSON.parse(configText);
-
-		jsdocConfig.opts = jsdocConfig.opts || {};
-		jsdocConfig.opts.destination = documentationDirectory;
-
-		gulp.src([jsBlob], { read: false }).
-			pipe(jsdoc(jsdocConfig, done));
-	});
+gulp.task('docs', function(done) {
+	_cleanDocumentation().then(_buildDocumentation).
+		then(_setupDocumentationSymlinks).done(
+			() => done(),
+			(err) => done(err)
+		);
 });
 
 

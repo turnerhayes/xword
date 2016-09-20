@@ -18,12 +18,12 @@ import clueItemTemplate            from "../../templates/partials/clue-item.hbs"
 import answerOptionsDialogTemplate from "../../templates/partials/answer-options-dialog.hbs";
 
 const Puzzle    = XPuz.Puzzle;
-const PUZParser = XPuz.PUZ;
+const PUZParser = XPuz.Parsers.PUZ;
 
 
 /**
  * Puzzle object class
- * @external "xpuz.Puzzle"
+ * @external "xpuz/Puzzle"
  */
 
 /**
@@ -226,7 +226,7 @@ class PuzzleFillerView extends Backbone.View {
 	 * Renders the view.
 	 *
 	 * @override
-	 * @return {PuzzleFillerView} this view
+	 * @return {module:views/puzzle-imported-puzzle~PuzzleFillerView} this view
 	 */
 	render() {
 		const view = this;
