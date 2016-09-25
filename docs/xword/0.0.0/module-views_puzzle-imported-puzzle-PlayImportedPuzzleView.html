@@ -33,21 +33,21 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-views_puzzle-filler.html">views/puzzle-filler</a></li><li><a href="module-views_puzzle-imported-puzzle.html">views/puzzle-imported-puzzle</a></li>
+					<li><a href="module-collections_base.html">collections/base</a></li><li><a href="module-collections_dictionary-terms.html">collections/dictionary-terms</a></li><li><a href="module-data_dictionary.html">data/dictionary</a></li><li><a href="module-models_dictionary.html">models/dictionary</a></li><li><a href="module-models_dictionary-term.html">models/dictionary-term</a></li><li><a href="module-views_add-to-dictionary.html">views/add-to-dictionary</a></li><li><a href="module-views_crossword-puzzle.html">views/crossword-puzzle</a></li><li><a href="module-views_grid.html">views/grid</a></li><li><a href="module-views_manage-dictionary.html">views/manage-dictionary</a></li><li><a href="module-views_puzzle-creator.html">views/puzzle-creator</a></li><li><a href="module-views_puzzle-filler.html">views/puzzle-filler</a></li><li><a href="module-views_puzzle-imported-puzzle.html">views/puzzle-imported-puzzle</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-views_puzzle-filler-PuzzleFillerView.html">views/puzzle-filler~PuzzleFillerView</a></li><li><a href="module-views_puzzle-imported-puzzle-PlayImportedPuzzleView.html">views/puzzle-imported-puzzle~PlayImportedPuzzleView</a></li>
+					<li><a href="module-collections_base-BaseCollection.html">collections/base~BaseCollection</a></li><li><a href="module-collections_dictionary-terms-DictionaryTermCollection.html">collections/dictionary-terms~DictionaryTermCollection</a></li><li><a href="module-data_dictionary-DictionaryData.html">data/dictionary~DictionaryData</a></li><li><a href="module-models_dictionary-term-DictionaryTerm.html">models/dictionary-term~DictionaryTerm</a></li><li><a href="module-models_dictionary-DictionaryModel.html">models/dictionary~DictionaryModel</a></li><li><a href="module-views_add-to-dictionary-AddToDictionaryView.html">views/add-to-dictionary~AddToDictionaryView</a></li><li><a href="module-views_crossword-puzzle-CrosswordPuzzleView.html">views/crossword-puzzle~CrosswordPuzzleView</a></li><li><a href="module-views_grid-GridView.html">views/grid~GridView</a></li><li><a href="module-views_manage-dictionary-ManageDictionaryView.html">views/manage-dictionary~ManageDictionaryView</a></li><li><a href="module-views_puzzle-creator-PuzzleCreatorView.html">views/puzzle-creator~PuzzleCreatorView</a></li><li><a href="module-views_puzzle-filler-PuzzleFillerView.html">views/puzzle-filler~PuzzleFillerView</a></li><li><a href="module-views_puzzle-imported-puzzle-PlayImportedPuzzleView.html">views/puzzle-imported-puzzle~PlayImportedPuzzleView</a></li><li><a href="ViewStarter.html">ViewStarter</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="externals.list.html" class="dropdown-toggle" data-toggle="dropdown">Externals<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="external-_Backbone.View_.html">Backbone.View</a></li><li><a href="external-_Q.Promise_.html">Q.Promise</a></li><li><a href="external-_xpuz_Puzzle_.html">xpuz/Puzzle</a></li>
+					<li><a href="external-Backbone_Collection.html">Backbone/Collection</a></li><li><a href="external-Backbone_Model.html">Backbone/Model</a></li><li><a href="external-Backbone_View.html">Backbone/View</a></li><li><a href="external-jQuery.html">jQuery</a></li><li><a href="external-Q_Promise.html">Q/Promise</a></li><li><a href="external-XPuz_Puzzle.html">XPuz/Puzzle</a></li>
 				</ul>
 			</li>
 			
@@ -180,7 +180,7 @@
 
 
     <ul>
-        <li><a href="external-_Backbone.View_.html">external:"Backbone.View"</a></li>
+        <li><a href="external-Backbone_View.html">external:Backbone/View</a></li>
     </ul>
 
 
@@ -194,6 +194,81 @@
 
     
 
+    
+        <h3 class="subsection-title">Members</h3>
+
+        <dl>
+            
+<hr>
+<dt class="name" id="events">
+    <h4><span class="type-signature"></span>events<span class="type-signature"> :object</span></h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Events object</p>
+    </div>
+    
+
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">object</span>
+
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+        </dl>
     
 
     
@@ -407,6 +482,549 @@
             
 <hr>
 <dt>
+    <h4 class="name" id="_handleClueChange"><span class="type-signature">&lt;private> </span>_handleClueChange(event, data)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Handles change of a selected clue.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>event</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">event</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the event object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">data</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>data about the selected clue</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="_handlePuzzleFileSelect"><span class="type-signature">&lt;private> </span>_handlePuzzleFileSelect(event)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Handles selection of a file.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>event</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">event</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the change event</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="_handleRequestAnimationFrame"><span class="type-signature">&lt;private> </span>_handleRequestAnimationFrame(timestamp)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Callback for <code>window.requestAnimationFrame()</code>.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>timestamp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">DOMHighResTimeStamp</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the time the callback was called</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+	<dt class="tag-see method-doc-label method-doc-details-label">See:</dt>
+	<dd class="tag-see">
+		<ul>
+			<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame">requestAnimationFrame</a></li>
+			</ul>
+	</dd>
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="_handleSolutionChange"><span class="type-signature">&lt;private> </span>_handleSolutionChange(event)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Handles change of a crossword cell's solution input.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>event</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">event</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the event object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
     <h4 class="name" id="_resetTimer"><span class="type-signature">&lt;private> </span>_resetTimer()</h4>
     
     
@@ -517,7 +1135,7 @@
 
     
     <div class="description">
-        <p>Sets up the puzzle grid from the external:XPuz/Puzzle provided.</p>
+        <p>Sets up the puzzle grid from the <a href="external-XPuz_Puzzle.html">external:XPuz/Puzzle</a> provided.</p>
     </div>
     
 
@@ -558,7 +1176,7 @@
             <td class="type">
             
                 
-<span class="param-type">external:XPuz/Puzzle</span>
+<span class="param-type"><a href="external-XPuz_Puzzle.html">external:XPuz/Puzzle</a></span>
 
 
 
@@ -882,6 +1500,160 @@
     
 
     
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>this view</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="module-views_puzzle-imported-puzzle-PlayImportedPuzzleView.html">module:views/puzzle-imported-puzzle~PlayImportedPuzzleView</a></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="_updateStoredPuzzle"><span class="type-signature">&lt;private> </span>_updateStoredPuzzle(updateSolution)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Updates the stored puzzle, optionally synchronizing the puzzle with the current solutions the
+    user has entered.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>updateSolution</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>if <code>true</code>, the puzzle will be updated with the current
+    solution state before being stored</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
     
 
     
@@ -1397,6 +2169,30 @@ display of puzzle statistics in a modal popup.</p>
     
 
     
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>this view</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="module-views_puzzle-imported-puzzle-PlayImportedPuzzleView.html">module:views/puzzle-imported-puzzle~PlayImportedPuzzleView</a></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
 
     
 </dd>
@@ -1558,7 +2354,7 @@ display of puzzle statistics in a modal popup.</p>
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
 	
-		on 2016-09-19T19:57:29-04:00
+		on 2016-09-25T00:41:27-04:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

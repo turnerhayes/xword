@@ -1,11 +1,44 @@
 "use strict";
 
+/**
+ * Base collection class
+ *
+ * @module collections/base
+ */
+
+/**
+ * Backbone collection class
+ *
+ * @external Backbone/Collection
+ * @see {@link http://backbonejs.org/#Collection|Collection}
+ */
+
+/**
+ * Q promise class
+ *
+ * @external Q/Promise
+ * @see {@link https://github.com/kriskowal/q/wiki/API-Reference|Q}
+ */
+
 import _        from "lodash";
 import Q        from "q";
 import Backbone from "backbone";
 
-
+/**
+ * Base collection class
+ *
+ * @extends external:Backbone/Collection
+ */
 class BaseCollection extends Backbone.Collection {
+	/**
+	 * Fetches the collection and returns a promise.
+	 *
+	 * @param {object} [options] - options to pass to Backbone's
+	 *	{@link http://backbonejs.org/#Collection-fetch|fetch()} method
+	 *
+	 * @returns {external:Q/Promise} a promise that resolves or rejects
+	 *	based on the success of failure of `fetch()`
+	 */
 	fetchPromise(options) {
 		const collection = this;
 
@@ -48,4 +81,4 @@ class BaseCollection extends Backbone.Collection {
 	}
 }
 
-exports = module.exports = BaseCollection;
+export default BaseCollection;

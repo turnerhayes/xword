@@ -6,6 +6,27 @@
  * @module views/puzzle-imported-puzzle
  */
 
+/**
+ * Backbone view class
+ *
+ * @external Backbone/View
+ * @see {@link http://backbonejs.org/#View|View}
+ */
+
+/**
+ * jQuery
+ *
+ * @external jQuery
+ * @see {@link http://api.jquery.com|jQuery}
+ */
+
+/**
+ * XPuz Puzzle class
+ *
+ * @external XPuz/Puzzle
+ * @see {@link http://turnerhayes.github.io/xpuz/module-xpuz_puzzle-Puzzle.html|Puzzle}
+ */
+
 import $                          from "jquery";
 import _                          from "lodash";
 import Backbone                   from "backbone";
@@ -46,9 +67,16 @@ const _events = {
 /**
  * View for playing a crossword puzzle from an uploaded .puz file.
  *
- * @extends external:"Backbone.View"
+ * @extends external:Backbone/View
  */
 class PlayImportedPuzzleView extends Backbone.View {
+	/**
+	 * Events object
+	 *
+	 * @override
+	 *
+	 * @type object
+	 */
 	get events() {
 		return _events;
 	}
@@ -56,6 +84,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 	/**
 	 * Sets up the view during construction.
 	 *
+	 * @override
 	 * @see {@link http://backbonejs.org/#View-initialize|Backbone.View#initialize}
 	 */
 	initialize() {
@@ -73,9 +102,10 @@ class PlayImportedPuzzleView extends Backbone.View {
 	/**
 	 * Renders the DOM for this view.
 	 *
+	 * @override
 	 * @see {@link http://backbonejs.org/#View-render|Backbone.View#render}
 	 *
-	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	render() {
 		const view = this;
@@ -115,7 +145,10 @@ class PlayImportedPuzzleView extends Backbone.View {
 	/**
 	 * Removes the view and its element from the DOM.
 	 *
+	 * @override
 	 * @see {@link http://backbonejs.org/#View-remove|Backbone.View#remove}
+	 *
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	remove() {
 		const view = this;
@@ -130,7 +163,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 	 *
 	 * @private
 	 *
-	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	_attachEventListeners() {
 		const view = this;
@@ -166,7 +199,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 	 *
 	 * @private
 	 *
-	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	_detachEventListeners() {
 		const view = this;
@@ -183,7 +216,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 	 *
 	 * @private
 	 *
-	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	_startTimer() {
 		const view = this;
@@ -203,7 +236,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 	 *
 	 * @private
 	 *
-	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	_stopTimer() {
 		const view = this;
@@ -227,7 +260,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 	 *
 	 * @private
 	 *
-	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	_resetTimer() {
 		const view = this;
@@ -248,7 +281,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 	 * @param {Number} [numMilliseconds] - The time, in milliseconds, to show as the timer.
 	 *	If omitted, retrieves value from localStorage.
 	 *
-	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	_updateTimerDisplay(numMilliseconds) {
 		const view = this;
@@ -286,7 +319,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 	 *
 	 * @private
 	 *
-	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	_toggleDisplay() {
 		const view = this;
@@ -301,7 +334,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 	 * Checks the current state of the puzzle to determine the player's progress. Triggers
 	 * display of puzzle statistics in a modal popup.
 	 *
-	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	checkPuzzle() {
 		const view = this;
@@ -345,7 +378,7 @@ class PlayImportedPuzzleView extends Backbone.View {
 	 *
 	 * @param {external:XPuz/Puzzle} puzzle - the puzzle from which to generate the game grid
 	 *
-	 * @return {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
 	 */
 	_setFromPuzzle(puzzle) {
 		const view = this;
@@ -366,6 +399,17 @@ class PlayImportedPuzzleView extends Backbone.View {
 		return view;
 	}
 
+	/**
+	 * Updates the stored puzzle, optionally synchronizing the puzzle with the current solutions the
+	 *	user has entered.
+	 *
+	 * @private
+	 *
+	 * @param {boolean} updateSolution - if `true`, the puzzle will be updated with the current
+	 *	solution state before being stored
+	 *
+	 * @returns {module:views/puzzle-imported-puzzle~PlayImportedPuzzleView} this view
+	 */
 	_updateStoredPuzzle(updateSolution) {
 		const view = this;
 
@@ -385,16 +429,27 @@ class PlayImportedPuzzleView extends Backbone.View {
 					);
 				}
 			);
-
-			window.localStorage.setItem(
-				PUZZLE_STORAGE_KEY,
-				Base64ArrayBuffer.encode(
-					view._puzParser.generate(view._puzzle)
-				)
-			);
 		}
+
+		window.localStorage.setItem(
+			PUZZLE_STORAGE_KEY,
+			Base64ArrayBuffer.encode(
+				view._puzParser.generate(view._puzzle)
+			)
+		);
+
+		return view;
 	}
 
+	/**
+	 * Callback for `window.requestAnimationFrame()`.
+	 *
+	 * @private
+	 *
+	 * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame|requestAnimationFrame}
+	 *
+	 * @param {!DOMHighResTimeStamp} timestamp - the time the callback was called
+	 */
 	_handleRequestAnimationFrame(timestamp) {
 		const view = this;
 
@@ -405,6 +460,13 @@ class PlayImportedPuzzleView extends Backbone.View {
 		window.requestAnimationFrame(view._boundRequestAnimationFrame);
 	}
 
+	/**
+	 * Handles selection of a file.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the change event
+	 */
 	_handlePuzzleFileSelect(event) {
 		const view = this;
 
@@ -439,6 +501,13 @@ class PlayImportedPuzzleView extends Backbone.View {
 		fr.readAsArrayBuffer(file);
 	}
 
+	/**
+	 * Handles change of a crossword cell's solution input.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the event object
+	 */
 	_handleSolutionChange(event) {
 		const view = this;
 
@@ -447,6 +516,14 @@ class PlayImportedPuzzleView extends Backbone.View {
 		$(event.currentTarget).removeClass('error');
 	}
 
+	/**
+	 * Handles change of a selected clue.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the event object
+	 * @param {data} data - data about the selected clue
+	 */
 	_handleClueChange(event, data) {
 		const view = this;
 
@@ -456,4 +533,4 @@ class PlayImportedPuzzleView extends Backbone.View {
 	}
 }
 
-exports = module.exports = PlayImportedPuzzleView;
+export default PlayImportedPuzzleView;

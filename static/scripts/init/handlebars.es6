@@ -1,3 +1,9 @@
+"use strict";
+
+/**
+ * @file Handles initializing the Javascript environment for the client.
+ */
+
 import _          from "lodash";
 import Handlebars from "hbsfy/runtime";
 import getHelpers from "../../../hbs-helpers";

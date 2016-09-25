@@ -6,6 +6,34 @@
  * @module views/puzzle-filler
  */
 
+/**
+ * Puzzle object class
+ *
+ * @external XPuz/Puzzle
+ * @see {@link http://turnerhayes.github.io/xpuz/module-xpuz_puzzle-Puzzle.html|Puzzle}
+ */
+
+/**
+ * jQuery
+ *
+ * @external jQuery
+ * @see {@link http://api.jquery.com|jQuery}
+ */
+
+/**
+ * Backbone view class
+ *
+ * @external Backbone/View
+ * @see {@link http://backbonejs.org/#View|View}
+ */
+
+/**
+ * Q promise class
+ *
+ * @external Q/Promise
+ * @see {@link https://github.com/kriskowal/q/wiki/API-Reference|Q}
+ */
+
 import _                           from "lodash";
 import $                           from "jquery";
 import Q                           from "q";
@@ -19,24 +47,6 @@ import answerOptionsDialogTemplate from "../../templates/partials/answer-options
 
 const Puzzle    = XPuz.Puzzle;
 const PUZParser = XPuz.Parsers.PUZ;
-
-
-/**
- * Puzzle object class
- * @external "xpuz/Puzzle"
- */
-
-/**
- * Backbone view class
- * @external "Backbone.View"
- * @see {@link http://backbonejs.org/#View|View}
- */
-
-/**
- * Q promise class
- * @external "Q.Promise"
- * @see {@link https://github.com/kriskowal/q/wiki/API-Reference|Q}
- */
 
 const _events = {
 	'submit .create-puzzle-form': '_handleFormSubmit',
@@ -187,7 +197,7 @@ const _workerContent = `
 /**
  * View for filling a puzzle from the dictionary.
  *
- * @extends external:"Backbone.View"
+ * @extends external:Backbone/View
  */
 class PuzzleFillerView extends Backbone.View {
 	/**
@@ -226,7 +236,7 @@ class PuzzleFillerView extends Backbone.View {
 	 * Renders the view.
 	 *
 	 * @override
-	 * @return {module:views/puzzle-imported-puzzle~PuzzleFillerView} this view
+	 * @returns {module:views/puzzle-filler~PuzzleFillerView} this view
 	 */
 	render() {
 		const view = this;
@@ -257,7 +267,7 @@ class PuzzleFillerView extends Backbone.View {
 	/**
 	 * Creates a Puzzle object based on the current state of the board.
 	 *
-	 * @return {external:"xpuz.Puzzle"} the generated puzzle
+	 * @returns {external:XPuz/Puzzle} the generated puzzle
 	 */
 	generatePuzzleFromBoard() {
 		const view = this;
@@ -321,16 +331,39 @@ class PuzzleFillerView extends Backbone.View {
 		});
 	}
 
+	/**
+	 * Attaches any event listeners that need to be attached outside of the events view member.
+	 *
+	 * @private
+	 *
+	 * @returns {module:views/puzzle-filler~PuzzleFillerView} this view
+	 */
 	_attachEventListeners() {
 		const view = this;
 
 		$body.off('click.' + view._namespace).on(
-				'click.' + view._namespace,
-				'.down-option',
-				_.bind(view._handleClickAnswerOption, view)
-			);
+			'click.' + view._namespace,
+			'.down-option',
+			_.bind(view._handleClickAnswerOption, view)
+		);
 	}
 
+	/**
+	 * A mapping of across and down clue numbers to term lengths.
+	 *
+	 * @typedef {object} TermLengthResult
+	 *
+	 * @property {object} across - an object mapping across clue number to length 
+	 * @property {object} down - an object mapping down clue number to length 
+	 */
+
+	/**
+	 * Gets a summary of the lengths of clues.
+	 *
+	 * @private
+	 *
+	 * @returns {module:views/puzzle-filler~TermLengthResult} summary of term lengths
+	 */
 	_getTermLengths() {
 		const view = this;
 
@@ -437,6 +470,15 @@ class PuzzleFillerView extends Backbone.View {
 		};
 	}
 
+	/**
+	 * Sets up the puzzle grid from the {@link external:XPuz/Puzzle} provided.
+	 *
+	 * @private
+	 *
+	 * @param {external:XPuz/Puzzle} puzzle - the puzzle from which to generate the game grid
+	 *
+	 * @returns {module:views/puzzle-filler~PuzzleFillerView} this view
+	 */
 	_setFromPuzzle(puzzle) {
 		const view = this;
 
@@ -450,6 +492,24 @@ class PuzzleFillerView extends Backbone.View {
 		view._$boardContainer = view.$('.grid-and-clues');
 	}
 
+	/**
+	 * Defines a set of across and down clues.
+	 *
+	 * @typedef {object} CluesDefinition
+	 *
+	 * @property {object} across - across clues; keys are clue numbers, values are
+	 *	objects that contain a `length` property with the length of the term
+	 * @property {object} down - down clues; keys are clue numbers, values are
+	 *	objects that contain a `length` property with the length of the term
+	 */
+
+	/**
+	 * Sets the clue numbers on the appropriate cells.
+	 *
+	 * @private
+	 *
+	 * @returns {module:views/puzzle-filler~CluesDefinition} the new clue information
+	 */
 	_setCellNumbering() {
 		const view = this;
 
@@ -540,6 +600,15 @@ class PuzzleFillerView extends Backbone.View {
 		return clues;
 	}
 
+	/**
+	 * Updates the clues to match the current cell numbering.
+	 *
+	 * @private
+	 *
+	 * @param {module:views/puzzle-filler~CluesDefinition} cluesDefinition - an object defining the state of the clues
+	 *
+	 * @returns {module:views/puzzle-filler~PuzzleFillerView} this view
+	 */
 	_updateCluesList(cluesDefinition) {
 		const view = this;
 
@@ -600,12 +669,35 @@ class PuzzleFillerView extends Backbone.View {
 
 		$acrossCluesList.html(acrossClues);
 		$downCluesList.html(downClues);
+
+		return view;
 	}
 
+	/**
+	 * Finds the position of the specified cell in the grid.
+	 *
+	 * @private
+	 *
+	 * @param {external:jQuery} $cell - a jQuery object containing the `.cell` to locate
+	 *
+	 * @returns {Array<Number>} a two-element array consisting of the horizontal index of the cell
+	 *	followed by its vertical index
+	 */
 	_getCellPosition($cell) {
 		return [$cell.index(), $cell.closest('.puzzle-row').prevAll('.puzzle-row').length];
 	}
 
+	/**
+	 * Gets all terms that are valid options to fill in the cells.
+	 *
+	 * @private
+	 *
+	 * @param {external:jQuery} $cell - a jQuery object containing the `.cell` around which to
+	 *	locate the clues
+	 *
+	 * @returns {object} an object mapping clues for across cells to an array of compatible down
+	 *	clues
+	 */
 	_getCandidateTerms($cell) {
 		const view = this;
 
@@ -756,7 +848,7 @@ class PuzzleFillerView extends Backbone.View {
 	/**
 	 * Ensure that the filled answers are valid (not repeated, all exist, etc.)
 	 *
-	 * @return {external:"Q.Promise"} resolves to an object containing information about
+	 * @returns {external:Q/Promise} resolves to an object containing information about
 	 * any issues with the answers, or undefined if there are no issues.
 	 */
 	_validateAnswers() {
@@ -863,10 +955,39 @@ class PuzzleFillerView extends Backbone.View {
 		);
 	}
 
+	/**
+	 * Hides any currently open popup displaying term options.
+	 *
+	 * @private
+	 *
+	 * @returns {module:views/puzzle-filler~PuzzleFillerView} this view
+	 */
 	_dismissAnswersPopup() {
 		$body.find('.answer-options-dialog').remove();
+
+		return this;
 	}
 
+	/**
+	 * Describes a set of cells corresponding to a term.
+	 *
+	 * @typedef {object} CellSetInfo
+	 *
+	 * @property {string} direction - a string representing the direction of the cells; it is
+	 *	either "down" or "across"
+	 * @property {Number} clueNumber - the clue number for this term
+	 * @property {external:jQuery} $cells - a jQuery object containing the cells for the term
+	 */
+
+	/**
+	 * Generates an object mapping down and across terms to their corresponding
+	 *	cell nodes.
+	 *
+	 * @private
+	 *
+	 * @returns {object} an object mapping terms to an array of {@link module:views/puzzle-filler~CellSetInfo|CellSetInfos}
+	 *	that contain the term
+	 */
 	_mapTermsToCells() {
 		const view = this;
 
@@ -983,6 +1104,11 @@ class PuzzleFillerView extends Backbone.View {
 		return map;
 	}
 
+	/**
+	 * Handles a click of the button that persists the puzzle to storage.
+	 *
+	 * @private
+	 */
 	_handleClickKeepPuzzleButton() {
 		const view = this;
 
@@ -991,6 +1117,11 @@ class PuzzleFillerView extends Backbone.View {
 		localStorage.setItem('_PUZZLE', PuzzleFillerView._arrayBufferToBase64(view._puzParser.generate(puzzle)));
 	}
 
+	/**
+	 * Handles a click of the button that exports the current puzzle to a file.
+	 *
+	 * @private
+	 */
 	_handleClickExportToFile() {
 		const view = this;
 
@@ -1011,6 +1142,13 @@ class PuzzleFillerView extends Backbone.View {
 		link.click();
 	}
 
+	/**
+	 * Handles a click of an answer option in the popup.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the click event
+	 */
 	_handleClickAnswerOption(event) {
 		const view = this;
 
@@ -1073,6 +1211,11 @@ class PuzzleFillerView extends Backbone.View {
 		view._dismissAnswersPopup();
 	}
 
+	/**
+	 * Handles a click of the button that validates the current puzzle.
+	 *
+	 * @private
+	 */
 	_handleClickValidatePuzzleButton() {
 		const view = this;
 
@@ -1133,6 +1276,13 @@ class PuzzleFillerView extends Backbone.View {
 		);
 	}
 
+	/**
+	 * Handles a click of a crossword cell.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the click event
+	 */
 	_handleCellClick(event) {
 		const view = this;
 
@@ -1145,6 +1295,13 @@ class PuzzleFillerView extends Backbone.View {
 		}
 	}
 
+	/**
+	 * Handles a click of the button that persists the puzzle to storage.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the submit event
+	 */
 	_handleFormSubmit(event) {
 		const view = this;
 
@@ -1164,14 +1321,39 @@ class PuzzleFillerView extends Backbone.View {
 		view._$boardContainer = view.$('.grid-and-clues');
 	}
 
+	/**
+	 * Converts an {@link ArrayBuffer} to a base 64 string.
+	 *
+	 * @private
+	 *
+	 * @param {ArrayBuffer} buffer - the buffer to encode
+	 *
+	 * @returns {string} a base 64 encoded string
+	 */
 	static _arrayBufferToBase64(buffer) {
 		return Base64ArrayBuffer.encode(buffer);
 	}
 
+	/**
+	 * Converts an {@link string} to an {@link ArrayBuffer}.
+	 *
+	 * @private
+	 *
+	 * @param {string} b64string - the base 64 decoded string
+	 *
+	 * @returns {ArrayBuffer} the decoded buffer
+	 */
 	static _base64ToArrayBuffer(b64string) {
 		return Base64ArrayBuffer.decode(b64string);
 	}
 
+	/**
+	 * Handles a change of the file upload control.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the change event
+	 */
 	_handleChangeFileUpload(event) {
 		const view = this;
 
@@ -1194,6 +1376,13 @@ class PuzzleFillerView extends Backbone.View {
 		fr.readAsArrayBuffer(file);
 	}
 
+	/**
+	 * Handles a context menu being triggered on a crossword cell.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the submit event
+	 */
 	_handleContextmenuCrosswordCell(event) {
 		const view = this;
 
@@ -1253,4 +1442,4 @@ class PuzzleFillerView extends Backbone.View {
 	}
 }
 
-exports = module.exports = PuzzleFillerView;
+export default PuzzleFillerView;

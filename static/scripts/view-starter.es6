@@ -1,3 +1,12 @@
+"use strict";
+
+/**
+ * jQuery
+ *
+ * @external jQuery
+ * @see {@link http://api.jquery.com|jQuery}
+ */
+
 import $       from "jquery";
 import _       from "lodash";
 import _debug   from "debug";
@@ -5,7 +14,17 @@ import viewMap from "./view-map";
 
 const debug = _debug('xword:client:view-starter');
 
+/**
+ * View starter class
+ */
 class ViewStarter {
+	/**
+	 * Creates and renders views based on the DOM attributes in the specified
+	 *	element and its subtree
+	 *
+	 * @param {external:jQuery} $baseEl - the jQuery element containing the DOM
+	 *	node to start along with its descendants
+	 */
 	static run($baseEl) {
 		let $viewElements;
 
@@ -43,6 +62,11 @@ class ViewStarter {
 	}
 }
 
+/**
+ * Observer that monitors DOM changes to run the ViewStarter on.
+ *
+ * @type external:MutationObserver
+ */
 ViewStarter._VIEW_STARTER_OBSERVER = new window.MutationObserver(function(mutations) {
 	_.each(
 		mutations,

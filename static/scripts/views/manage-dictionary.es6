@@ -1,36 +1,75 @@
 "use strict";
 
-var $                                    = require('jquery');
-var _                                    = require('lodash');
-var Backbone                             = require('backbone');
-var dictionaryTermItemTemplate           = require('../../templates/partials/dictionary/term-item.hbs');
-var dictionaryTermItemDefinitionTemplate = require('../../templates/partials/dictionary/term-item-definition.hbs');
+/**
+ * Manages the term dictionary
+ *
+ * @module views/manage-dictionary
+ */
 
-exports = module.exports = Backbone.View.extend({
-	events: {
-		'submit .dictionary-search-form': '_handleSubmitSearchForm',
-		'submit .search-results-form': '_handleSubmitResultsForm',
-		'click .add-definition-button': '_handleClickAddDefinitionButton'
-	},
+/**
+ * Backbone view class
+ *
+ * @external Backbone/View
+ * @see {@link http://backbonejs.org/#View|View}
+ */
 
-	initialize: function() {
-		var view = this;
+import $                                    from "jquery";
+import _                                    from "lodash";
+import Backbone                             from "backbone";
+import dictionaryTermItemTemplate           from "../../templates/partials/dictionary/term-item.hbs";
+import dictionaryTermItemDefinitionTemplate from "../../templates/partials/dictionary/term-item-definition.hbs";
+
+const _events = {
+	'submit .dictionary-search-form': '_handleSubmitSearchForm',
+	'submit .search-results-form': '_handleSubmitResultsForm',
+	'click .add-definition-button': '_handleClickAddDefinitionButton',
+};
+
+/**
+ * View for managing the term dictionary
+ *
+ * @extends external:Backbone/View
+ */
+class ManageDictionaryView extends Backbone.View {
+	/**
+	 * Events object
+	 *
+	 * @type object
+	 */
+	get events() {
+		return _events;
+	}
+
+	/**
+	 * Initializes the view.
+	 *
+	 * @override
+	 */
+	initialize() {
+		const view = this;
 
 		Backbone.View.prototype.initialize.apply(view, arguments);
 
 		view._$searchResultsList = view.$('.search-results-list');
 
 		view._$patternInput = view.$('[name="pattern"]');
-	},
+	}
 
-	_handleSubmitSearchForm: function(event) {
-		var view = this;
+	/**
+	 * Handles the `submit` event of the search form.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the submit event
+	 */
+	_handleSubmitSearchForm(event) {
+		const view = this;
 
 		event.preventDefault();
 
-		var $form = $(event.currentTarget);
+		const $form = $(event.currentTarget);
 
-		var pattern = view._$patternInput.val().toUpperCase();
+		const pattern = view._$patternInput.val().toUpperCase();
 
 		$.get({
 			url: '/dictionary/termList',
@@ -49,37 +88,44 @@ exports = module.exports = Backbone.View.extend({
 				);
 			}
 		);
-	},
+	}
 
-	_handleSubmitResultsForm: function(event) {
-		var view = this;
+	/**
+	 * Handles the `submit` event of the result change form.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the submit event
+	 */
+	_handleSubmitResultsForm(event) {
+		const view = this;
 
 		event.preventDefault();
 
-		var $termItems = $(event.target).find('.dictionary-term-item');
+		const $termItems = $(event.target).find('.dictionary-term-item');
 
-		var $changedInputs = $();
+		let $changedInputs = $();
 
-		var termData = _.reduce(
+		const termData = _.reduce(
 			$termItems,
 			function(data, item) {
-				var $item = $(item);
+				const $item = $(item);
 
-				var $definitions = $item.find('[name="definition"]');
+				const $definitions = $item.find('[name="definition"]');
 
-				var term = $item.find('[name="term"]').val();
+				const term = $item.find('[name="term"]').val();
 
-				var definitions = [];
+				const definitions = [];
 
-				var hasChangedDefinition = false;
+				let hasChangedDefinition = false;
 
 				$definitions.each(
 					function() {
-						var $definition = $(this);
+						const $definition = $(this);
 
-						var definition = $definition.val();
+						const definition = $definition.val();
 
-						var original = $definition.data('original');
+						const original = $definition.data('original');
 
 						if (definition !== original) {
 							hasChangedDefinition = true;
@@ -115,7 +161,7 @@ exports = module.exports = Backbone.View.extend({
 		}).done(
 			function(results) {
 				$changedInputs.each(function() {
-					var $input = $(this);
+					const $input = $(this);
 
 					if ($input.val().replace(/s/g, '').length === 0) {
 						$input.remove();
@@ -134,12 +180,19 @@ exports = module.exports = Backbone.View.extend({
 				});
 			}
 		);
-	},
+	}
 
-	_handleClickAddDefinitionButton: function(event) {
-		var view = this;
+	/**
+	 * Handles the `click` event of the button to add a term definition.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the click event
+	 */
+	_handleClickAddDefinitionButton(event) {
+		const view = this;
 
-		var $definitionList = $(event.target).closest('.dictionary-term-item')
+		const $definitionList = $(event.target).closest('.dictionary-term-item')
 			.find('.definitions');
 
 		$definitionList.append(
@@ -150,4 +203,6 @@ exports = module.exports = Backbone.View.extend({
 
 		$definitionList.find('[name="definition"]').last().focus();
 	}
-});
+}
+
+export default ManageDictionaryView;

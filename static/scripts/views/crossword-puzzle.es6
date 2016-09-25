@@ -1,10 +1,29 @@
 "use strict";
 
+/**
+ * Adds entries to the dictionary
+ *
+ * @module views/crossword-puzzle
+ */
+
+/**
+ * Backbone view class
+ *
+ * @external Backbone/View
+ * @see {@link http://backbonejs.org/#View|View}
+ */
+
+/**
+ * Q promise class
+ *
+ * @external Q/Promise
+ * @see {@link https://github.com/kriskowal/q/wiki/API-Reference|Q}
+ */
+
 import $        from 'jquery';
 import _        from 'lodash';
 import Q        from 'q';
 import Backbone from 'backbone';
-
 
 const SERVER_SEND_DEBOUNCE_INTERVAL = 500;
 
@@ -14,11 +33,26 @@ const _events = {
 	'crossword-check-solutions': '_handleCheckSolutions'
 };
 
+/**
+ * View for managing a crossword puzzle.
+ *
+ * @extends external:Backbone/View
+ */
 class CrosswordPuzzleView extends Backbone.View {
+	/**
+	 * Events object
+	 *
+	 * @type object
+	 */
 	get events() {
 		return _events;
 	}
 
+	/**
+	 * Intitializes the view.
+	 *
+	 * @override
+	 */
 	initialize() {
 		const view = this;
 
@@ -30,6 +64,13 @@ class CrosswordPuzzleView extends Backbone.View {
 		);
 	}
 
+	/**
+	 * Renders the view.
+	 *
+	 * @override
+	 *
+	 * @returns {module:views/crossword-puzzle~CrosswordPuzzleView} this view
+	 */
 	render() {
 		const view = this;
 
@@ -38,14 +79,28 @@ class CrosswordPuzzleView extends Backbone.View {
 		view._$grid = view.$('.crossword-grid');
 
 		view._loadSolution();
+
+		return view;
 	}
 
+	/**
+	 * Validates the current solution.
+	 *
+	 * @todo implement
+	 */
 	checkSolution() {
 		const view = this;
 
 		const solution = view._getCurrentAnswers();
 	}
 
+	/**
+	 * Loads the stored solution from local storage into the puzzle.
+	 *
+	 * @private
+	 *
+	 * @returns {module:views/crossword-puzzle~CrosswordPuzzleView} this view
+	 */
 	_loadSolution() {
 		const view = this;
 
@@ -78,8 +133,27 @@ class CrosswordPuzzleView extends Backbone.View {
 				);
 			}
 		);
+
+		return view;
 	}
 
+	/**
+	 * Gets a grid of the current answers corresponding to the crossword grid.
+	 *
+	 * For example:
+	 *	
+	 *	[
+	 *		['A', 'N', 'T', '#', 'U'],
+	 *		['V', '#', 'Y', '#', 'P']
+	 *	]
+	 *
+	 * '#' represents a block cell.
+	 *
+	 * @private
+	 *
+	 * @returns {Array<Array<string>>} a two-dimensional array, with one element for
+	 *	each cell in the puzzle
+	 */
 	_getCurrentAnswers() {
 		const view = this;
 
@@ -104,6 +178,16 @@ class CrosswordPuzzleView extends Backbone.View {
 		return answers;
 	}
 
+	/**
+	 * Sends the current solution to the server to be persisted.
+	 *
+	 * @private
+	 *
+	 * @param {Array<Array<string>>} solution - a two-dimensional array like that
+	 *	returned by {@link module:views/crossword-puzzle~CrosswordPuzzleView#_getCurrentAnswers|getCurrentAnswers()}
+	 *
+	 * @returns {Q/Promise} a promise that resolves when the solution has been sent
+	 */
 	_sendSolutionToServer(solution) {
 		const view = this;
 		
@@ -119,6 +203,11 @@ class CrosswordPuzzleView extends Backbone.View {
 		);
 	}
 
+	/**
+	 * Persists the current state of the user's solution.
+	 *
+	 * @private
+	 */
 	_updateAnswer() {
 		const view = this;
 
@@ -129,11 +218,16 @@ class CrosswordPuzzleView extends Backbone.View {
 		view._debouncedSendToServer(answers);
 	}
 
-	_handleCheckSolutions(event) {
+	/**
+	 * Handles the `crossword-check-solutions` event.
+	 *
+	 * @private
+	 */
+	_handleCheckSolutions() {
 		const view = this;
 
 		view.checkSolution();
 	}
 };
 
-exports = module.exports = CrosswordPuzzleView;
+export default CrosswordPuzzleView;

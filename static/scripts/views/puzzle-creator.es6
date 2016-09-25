@@ -1,25 +1,64 @@
 "use strict";
 
-var $                           = require('jquery');
-var _                           = require('lodash');
-var Q                           = require('q');
-var Backbone                    = require('backbone');
-var PUZParser                   = require('xpuz/parsers/puz');
-var IPUZParser                  = require('xpuz/parsers/ipuz');
-var Puzzle                      = require('xpuz/lib/puzzle');
-var puzzleGridAndCluesTemplate  = require('../../templates/partials/xword-grid-and-clues.hbs');
-var clueItemTemplate            = require('../../templates/partials/clue-item.hbs');
+/**
+ * Creates puzzles.
+ *
+ * @module views/puzzle-creator
+ */
 
-exports = module.exports = Backbone.View.extend({
-	events: {
-		'submit .create-puzzle-form': '_handleFormSubmit',
-		'click .cell': '_handleCellClick',
-		'click .export-to-file-button': '_handleClickExportToFile',
-		'change .file-upload': '_handleChangeFileUpload'
-	},
+/**
+ * Backbone view class
+ *
+ * @external Backbone/View
+ * @see {@link http://backbonejs.org/#View|View}
+ */
 
-	initialize: function() {
-		var view = this;
+/**
+ * Puzzle object class
+ *
+ * @external XPuz/Puzzle
+ * @see {@link http://turnerhayes.github.io/xpuz/module-xpuz_puzzle-Puzzle.html|Puzzle}
+ */
+
+import $                          from "jquery";
+import _                          from "lodash";
+import Backbone                   from "backbone";
+import PUZParser                  from "xpuz/parsers/puz";
+import IPUZParser                 from "xpuz/parsers/ipuz";
+import Puzzle                     from "xpuz/lib/puzzle";
+import puzzleGridAndCluesTemplate from "../../templates/partials/xword-grid-and-clues.hbs";
+import clueItemTemplate           from "../../templates/partials/clue-item.hbs";
+
+
+const _events = {
+	'submit .create-puzzle-form': '_handleFormSubmit',
+	'click .cell': '_handleCellClick',
+	'click .export-to-file-button': '_handleClickExportToFile',
+	'change .file-upload': '_handleChangeFileUpload',
+};
+
+/**
+ * Puzzle creator view class
+ *
+ * @extends external:Backbone/View
+ */
+class PuzzleCreatorView extends Backbone.View {
+	/**
+	 * Events object
+	 *
+	 * @type object
+	 */
+	get events() {
+		return _events;
+	}
+
+	/**
+	 * Initializes the view.
+	 *
+	 * @override
+	 */
+	initialize() {
+		const view = this;
 
 		Backbone.View.prototype.initialize.apply(view, arguments);
 
@@ -29,29 +68,41 @@ exports = module.exports = Backbone.View.extend({
 
 		view._puzParser = new PUZParser();
 		view._ipuzParser = new IPUZParser();
-	},
+	}
 
-	render: function() {
-		var view = this;
+	/**
+	 * Renders the view.
+	 *
+	 * @override
+	 *
+	 * @returns {module:views/puzzle-creator~PuzzleCreatorView} this view
+	 */
+	render() {
+		const view = this;
 
 		Backbone.View.prototype.render.apply(view, arguments);
 
 		view._setCellNumbering();
 
 		return view;
-	},
+	}
 
-	generatePuzzleFromBoard: function() {
-		var view = this;
+	/**
+	 * Creates a Puzzle object based on the current state of the board.
+	 *
+	 * @returns {external:XPuz/Puzzle} the generated puzzle
+	 */
+	generatePuzzleFromBoard() {
+		const view = this;
 
-		var board = _.reduce(
+		const board = _.reduce(
 			view._$boardContainer.find('.puzzle-row'),
 			function(board, row) {
 				board.push(
 					_.map(
 						$(row).find('.cell'),
 						function(cellElement) {
-							var $cell = $(cellElement);
+							const $cell = $(cellElement);
 
 							if ($cell.hasClass('block-cell')) {
 								return {
@@ -72,18 +123,18 @@ exports = module.exports = Backbone.View.extend({
 			[]
 		);
 
-		var clues = {
+		const clues = {
 			across: {},
 			down: {}
 		};
 
 
-		var $acrossCluesList = view.$('.clues-list-across');
-		var $downCluesList = view.$('.clues-list-down');
+		const $acrossCluesList = view.$('.clues-list-across');
+		const $downCluesList = view.$('.clues-list-down');
 
 		$acrossCluesList.find('.clues-list-item').each(
 			function() {
-				var $item = $(this);
+				const $item = $(this);
 
 				clues.across[$item.data('clue-number')] = $item.find('.clue-input').val();
 			}
@@ -91,7 +142,7 @@ exports = module.exports = Backbone.View.extend({
 
 		$downCluesList.find('.clues-list-item').each(
 			function() {
-				var $item = $(this);
+				const $item = $(this);
 
 				clues.down[$item.data('clue-number')] = $item.find('.clue-input').val();
 			}
@@ -101,12 +152,21 @@ exports = module.exports = Backbone.View.extend({
 			grid: board,
 			clues: clues
 		});
-	},
+	}
 
-	_setFromPuzzle: function(puzzle) {
-		var view = this;
+	/**
+	 * Sets up the puzzle grid from the {@link external:XPuz/Puzzle} provided.
+	 *
+	 * @private
+	 *
+	 * @param {external:XPuz/Puzzle} puzzle - the puzzle from which to generate the game grid
+	 *
+	 * @returns {module:views/puzzle-creator~PuzzleCreatorView} this view
+	 */
+	_setFromPuzzle(puzzle) {
+		const view = this;
 
-		var grid = puzzleGridAndCluesTemplate({
+		const grid = puzzleGridAndCluesTemplate({
 			puzzle: puzzle,
 			editable: true
 		});
@@ -114,32 +174,50 @@ exports = module.exports = Backbone.View.extend({
 		view._$boardContainer.replaceWith(grid);
 
 		view._$boardContainer = view.$('.grid-and-clues');
-	},
 
-	_setCellNumbering: function() {
-		var view = this;
+		return view;
+	}
 
-		var clueNumber = 0;
+	/**
+	 * Defines a set of across and down clues.
+	 *
+	 * @typedef {object} CluesDefinition
+	 *
+	 * @property {object} across - across clues; keys are clue numbers, values are
+	 *	objects that contain a `length` property with the length of the term
+	 * @property {object} down - down clues; keys are clue numbers, values are
+	 *	objects that contain a `length` property with the length of the term
+	 */
 
-		var clues = {
+	/**
+	 * Sets the clue numbers on the appropriate cells.
+	 *
+	 * @private
+	 *
+	 * @returns {module:views/puzzle-filler~CluesDefinition} the new clue information
+	 */
+	_setCellNumbering() {
+		const view = this;
+
+		let clueNumber = 0;
+
+		const clues = {
 			across: {},
 			down: {}
 		};
 
-		var $rows = view._$boardContainer.find('.puzzle-row');
+		const $rows = view._$boardContainer.find('.puzzle-row');
 
 		$rows.each(
 			function(rowIndex) {
-				var $row = $(this);
-				var $cells = $row.find('.cell');
+				const $row = $(this);
+				const $cells = $row.find('.cell');
 
 				$cells.each(
 					function(columnIndex) {
-						var $cell = $(this);
-						var across = false;
-						var down = false;
-
-						var clueLength;
+						const $cell = $(this);
+						let across = false;
+						let down = false;
 
 						$cell.removeAttr('data-clue-number');
 
@@ -179,7 +257,7 @@ exports = module.exports = Backbone.View.extend({
 							}
 
 							if (down) {
-								clueLength = 1;
+								let clueLength = 1;
 
 								$row.nextAll('.puzzle-row').each(
 									function() {
@@ -204,24 +282,33 @@ exports = module.exports = Backbone.View.extend({
 		view._updateCluesList(clues);
 
 		return clues;
-	},
+	}
 
-	_updateCluesList: function(cluesDefinition) {
-		var view = this;
+	/**
+	 * Updates the clues to match the current cell numbering.
+	 *
+	 * @private
+	 *
+	 * @param {module:views/puzzle-filler~CluesDefinition} cluesDefinition - an object defining the state of the clues
+	 *
+	 * @returns {module:views/puzzle-filler~PuzzleFillerView} this view
+	 */
+	_updateCluesList(cluesDefinition) {
+		const view = this;
 
-		var existingClues = {
+		const existingClues = {
 			across: {},
 			down: {}
 		};
 
-		var $acrossCluesList = view.$('.clues-list-across');
-		var $downCluesList = view.$('.clues-list-down');
+		const $acrossCluesList = view.$('.clues-list-across');
+		const $downCluesList = view.$('.clues-list-down');
 
 		$acrossCluesList.find('.clues-list-item').each(
 			function() {
-				var $clueItem = $(this);
+				const $clueItem = $(this);
 
-				var clueText = $clueItem.find('.clue-input').val();
+				const clueText = $clueItem.find('.clue-input').val();
 
 				if (clueText) {
 					existingClues.across[$clueItem.attr('value')] = clueText;
@@ -231,9 +318,9 @@ exports = module.exports = Backbone.View.extend({
 
 		$downCluesList.find('.clues-list-item').each(
 			function() {
-				var $clueItem = $(this);
+				const $clueItem = $(this);
 
-				var clueText = $clueItem.find('.clue-input').val();
+				const clueText = $clueItem.find('.clue-input').val();
 
 				if (clueText) {
 					existingClues.down[$clueItem.attr('value')] = clueText;
@@ -241,7 +328,7 @@ exports = module.exports = Backbone.View.extend({
 			}
 		);
 
-		var acrossClues = _.map(
+		const acrossClues = _.map(
 			cluesDefinition.across,
 			function(clueDefinition, clueNumber) {
 				return clueItemTemplate({
@@ -252,7 +339,7 @@ exports = module.exports = Backbone.View.extend({
 			}
 		).join('');
 
-		var downClues = _.map(
+		const downClues = _.map(
 			cluesDefinition.down,
 			function(clueDefinition, clueNumber) {
 				return clueItemTemplate({
@@ -266,17 +353,24 @@ exports = module.exports = Backbone.View.extend({
 
 		$acrossCluesList.html(acrossClues);
 		$downCluesList.html(downClues);
-	},
+	}
 
-	_handleFormSubmit: function(event) {
-		var view = this;
+	/**
+	 * Handles the `submit` event on the puzzle definition form.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the submit event
+	 */
+	_handleFormSubmit(event) {
+		const view = this;
 
 		event.preventDefault();
 
-		var width = parseInt(view._$form.find('[name="width"]').val(), 10);
-		var height = parseInt(view._$form.find('[name="height"]').val(), 10);
+		const width = parseInt(view._$form.find('[name="width"]').val(), 10);
+		const height = parseInt(view._$form.find('[name="height"]').val(), 10);
 
-		var grid = puzzleGridAndCluesTemplate({
+		const grid = puzzleGridAndCluesTemplate({
 			width: width,
 			height: height,
 			editable: true
@@ -285,50 +379,69 @@ exports = module.exports = Backbone.View.extend({
 		view._$boardContainer.replaceWith(grid);
 
 		view._$boardContainer = view.$('.grid-and-clues');
-	},
+	}
 
-	_handleCellClick: function(event) {
-		var view = this;
+	/**
+	 * Handles a click of a crossword cell.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the click event
+	 */
+	_handleCellClick(event) {
+		const view = this;
 
-		var $cell = $(event.currentTarget);
+		const $cell = $(event.currentTarget);
 
 		if (event.shiftKey) {
 			$cell.toggleClass('block-cell crossword-cell');
 
 			view._setCellNumbering();
 		}
-	},
+	}
 
-	_handleClickExportToFile: function() {
-		var view = this;
+	/**
+	 * Handles a click of the button that exports the current puzzle to a file.
+	 *
+	 * @private
+	 */
+	_handleClickExportToFile() {
+		const view = this;
 
-		var puzzle = view.generatePuzzleFromBoard();
+		const puzzle = view.generatePuzzleFromBoard();
 
-		var puzzleBuffer = view._puzParser.generate(puzzle);
+		const puzzleBuffer = view._puzParser.generate(puzzle);
 
-		var blob = new Blob([puzzleBuffer]);
+		const blob = new Blob([puzzleBuffer]);
 
-		var url = URL.createObjectURL(blob);
+		const url = URL.createObjectURL(blob);
 
-		var link = document.createElement('a');
+		const link = document.createElement('a');
 
 		link.setAttribute('href', url);
 
 		link.setAttribute('download', 'puzzle.puz');
 
 		link.click();
-	},
+	}
 
-	_handleChangeFileUpload: function(event) {
-		var view = this;
+	/**
+	 * Handles a change of the file upload control.
+	 *
+	 * @private
+	 *
+	 * @param {event} event - the change event
+	 */
+	_handleChangeFileUpload(event) {
+		const view = this;
 
-		var file = event.currentTarget.files[0];
+		const file = event.currentTarget.files[0];
 
 		if (!file) {
 			return;
 		}
 
-		var fr = new FileReader();
+		const fr = new FileReader();
 
 		fr.onload = function(event) {
 			view._puzParser.parse(event.target.result).done(
@@ -342,4 +455,6 @@ exports = module.exports = Backbone.View.extend({
 
 		fr.readAsArrayBuffer(file);
 	}
-});
+}
+
+export default PuzzleCreatorView;
