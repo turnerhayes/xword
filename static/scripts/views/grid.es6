@@ -515,6 +515,8 @@ class GridView extends Backbone.View {
 	/**
 	 * Handles the `input` event on a crossword cell element
 	 *
+	 * @private
+	 *
 	 * @param {event} event - the input event
 	 */
 	_handleCrosswordCellInput(event) {
@@ -526,6 +528,8 @@ class GridView extends Backbone.View {
 
 	/**
 	 * Handles the `keyup` event on a crossword cell element
+	 *
+	 * @private
 	 *
 	 * @param {event} event - the keyup event
 	 */
@@ -543,6 +547,8 @@ class GridView extends Backbone.View {
 
 	/**
 	 * Handles the `keydown` event on a crossword cell element
+	 *
+	 * @private
 	 *
 	 * @param {event} event - the keydown event
 	 */
@@ -615,6 +621,8 @@ class GridView extends Backbone.View {
 	/**
 	 * Handles the `focus` event on a crossword cell element
 	 *
+	 * @private
+	 *
 	 * @param {event} event - the focus event
 	 */
 	_handleCrosswordCellFocus(event) {
@@ -635,6 +643,8 @@ class GridView extends Backbone.View {
 	/**
 	 * Handles the `click` event on a crossword cell element
 	 *
+	 * @private
+	 *
 	 * @param {event} event - the click event
 	 */
 	_handleCrosswordCellClick(event) {
@@ -643,6 +653,8 @@ class GridView extends Backbone.View {
 
 	/**
 	 * Handles the `dblclick` event on a crossword cell element
+	 *
+	 * @private
 	 *
 	 * @param {event} event - the double-click event
 	 */

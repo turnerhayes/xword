@@ -65,6 +65,8 @@ class ViewStarter {
 /**
  * Observer that monitors DOM changes to run the ViewStarter on.
  *
+ * @private
+ *
  * @type external:MutationObserver
  */
 ViewStarter._VIEW_STARTER_OBSERVER = new window.MutationObserver(function(mutations) {

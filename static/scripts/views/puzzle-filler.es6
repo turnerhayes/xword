@@ -848,6 +848,8 @@ class PuzzleFillerView extends Backbone.View {
 	/**
 	 * Ensure that the filled answers are valid (not repeated, all exist, etc.)
 	 *
+	 * @private
+	 *
 	 * @returns {external:Q/Promise} resolves to an object containing information about
 	 * any issues with the answers, or undefined if there are no issues.
 	 */
