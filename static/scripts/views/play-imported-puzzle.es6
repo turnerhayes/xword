@@ -131,6 +131,10 @@ class PlayImportedPuzzleView extends Backbone.View {
 				function(puzzle) {
 					view._setFromPuzzle(puzzle);
 					view._toggleDisplay();
+
+					if (!hiddenPropertyName || !document[hiddenPropertyName]) {
+						view._startTimer();
+					}
 				}
 			);
 		}
