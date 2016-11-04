@@ -6,7 +6,7 @@
 		{{#each ..}}
 			{{#with @index as |columnIndex|}}
 			{{#..}}
-			{{> grid/cell editable=../../editable solution=(lookup (lookup @root.puzzle.userSolution rowIndex) columnIndex)}}
+			{{> grid/cell editable=@root.editable userSolution=(lookup (lookup @root.puzzle.userSolution rowIndex) columnIndex)}}
 			{{/..}}
 			{{/with}}
 		{{/each}}

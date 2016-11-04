@@ -1,0 +1,34 @@
+<div class="puzzle-validation-status-modal modal dialog" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<section class="modal-content">
+			<header class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fa fa-close" aria-hidden="true"></span>
+				</button>
+				<h4 class="modal-title">Puzzle is {{#if isValid}}Valid{{else}}Invalid{{/if}}</h4>
+			</header>
+			<article class="modal-body">
+				{{#if isValid}}
+				Congratulations, the puzzle is valid!
+				{{else}}
+				This puzzle has the following problems:
+
+				{{#errors}}
+				<ul class="error-list">
+					{{#invalid}}
+					<li><span class="term">{{term}}</span> is not a valid term</li>
+					{{/invalid}}
+					{{#repeated}}
+					<li><span class="term">{{term}}</span> occurs multiple times</li>
+					{{/repeated}}
+					{{#missing}}
+					<li><span class="term">{{term}}</span> is missing some letters</li>
+					{{!-- <li><span class="clue-description">{{clueNumber}} {{direction}}</span> is incomplete</li> --}}
+					{{/missing}}
+				</ul>
+				{{/errors}}
+				{{/if}}
+			</article>
+		</section>
+	</div>
+</div>

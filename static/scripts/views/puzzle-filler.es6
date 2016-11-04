@@ -34,16 +34,17 @@
  * @see {@link https://github.com/kriskowal/q/wiki/API-Reference|Q}
  */
 
-import _                           from "lodash";
-import $                           from "jquery";
-import Q                           from "q";
-import Backbone                    from "backbone";
-import Base64ArrayBuffer           from "base64-arraybuffer";
-import XPuz                        from "xpuz";
-import DictionaryData              from "../data/dictionary";
-import puzzleGridAndCluesTemplate  from "../../templates/partials/xword-grid-and-clues.hbs";
-import clueItemTemplate            from "../../templates/partials/clue-item.hbs";
-import answerOptionsDialogTemplate from "../../templates/partials/answer-options-dialog.hbs";
+import _                                    from "lodash";
+import $                                    from "jquery";
+import Q                                    from "q";
+import Backbone                             from "backbone";
+import Base64ArrayBuffer                    from "base64-arraybuffer";
+import XPuz                                 from "xpuz";
+import DictionaryData                       from "../data/dictionary";
+import puzzleGridAndCluesTemplate           from "../../templates/partials/xword-grid-and-clues.hbs";
+import clueItemTemplate                     from "../../templates/partials/clue-item.hbs";
+import answerOptionsDialogTemplate          from "../../templates/partials/answer-options-dialog.hbs";
+import puzzleValidationStatusDialogTemplate from "../../templates/partials/modals/puzzle-validation-status.hbs";
 
 const Puzzle    = XPuz.Puzzle;
 const PUZParser = XPuz.Parsers.PUZ;
@@ -60,15 +61,86 @@ const _events = {
 
 const $body = $(document.body);
 
+const whitespaceRegex = /\s/g;
+
 window._DEVELOPMENT = window._DEVELOPMENT || true;
 
+const USER_REPLACED_ERROR_TYPE = 'user_replaced';
 
-// NOTE: The following functions (_termMatchesLetters, _findAnswers) must remain
+
+// NOTE: The following functions (_substituteTerm, _checkWords, _findAnswers) must remain
 // executable from a worker context--that means no DOM access, no references to
 // imports in this file, nor any import calls of its own--only native JS that can be run in a worker
-function _termMatchesLetters(term, letters) {
-	for (let i = term.length - 1; i >= 0; i--) {
-		if (letters[i] !== void 0 && term[i] !== letters[i]) {
+
+function _substituteTerm(term, adjacentWords, isAcross) {
+	adjacentWords = JSON.parse(JSON.stringify(adjacentWords)); // deep clone
+
+	var i, len, letterIndex, letterCount;
+
+	for (i = 0, len = adjacentWords.length; i < len; i++) {
+		for (
+			letterIndex = 0, letterCount = adjacentWords[i].length;
+			letterIndex < letterCount;
+			letterIndex++
+		) {
+			if (
+				(
+					// If this was the selected cell, let it be replaced
+					adjacentWords[i][letterIndex].isSelectedCellRow &&
+					adjacentWords[i][letterIndex].isSelectedCellColumn
+				) ||
+				(
+					// This cell is on the row or column (as appropriate), so potentially
+					// replace
+					(
+						(isAcross && adjacentWords[i][letterIndex].isSelectedCellRow) ||
+						(!isAcross && adjacentWords[i][letterIndex].isSelectedCellColumn)
+					) &&
+					// If the cell has no value let it be filled
+					!adjacentWords[i][letterIndex].value
+				)
+			) {
+				adjacentWords[i][letterIndex].value = term[letterIndex];
+			}
+			// If the cell value can't be set, and this is in the selected cell's row or column,
+			// then the value has to match the term value
+			else if (
+				(
+					(isAcross && adjacentWords[i][letterIndex].isSelectedCellRow) ||
+					(!isAcross && adjacentWords[i][letterIndex].isSelectedCellColumn)
+				) &&
+				adjacentWords[i][letterIndex].value !== term[i]
+			) {
+				return false;
+			}
+		}
+	}
+
+	return adjacentWords;
+}
+
+function _checkWords(adjacentWords, termString) {
+	var i;
+	var len;
+
+	for (i = 0, len = adjacentWords.length; i < len; i++) {
+		/* Single-cell "words" are not actually adjacent words but parts of the main word
+		 * E.g.
+		 *
+		 * # A B
+		 * C D E
+		 * # F G
+		 *
+		 * C is a "single-cell" word going down, but it's not *really* a down word, just
+		 * a part of the across word that doesn't have any down adjacents. We can ignore
+		 * these for word-checking.
+		 */
+
+		if (adjacentWords[i].length === 1) {
+			continue;
+		}
+
+		if (!(new RegExp(',' + adjacentWords[i].map((l) => l.value || '.').join('') + ',')).test(termString)) {
 			return false;
 		}
 	}
@@ -82,8 +154,28 @@ function _findAnswers(args) {
 	var downIndex = args.downIndex;
 	var acrossLength = args.acrossLength;
 	var downLength = args.downLength;
-	var currentAcrossLetters = args.currentAcrossLetters;
-	var currentDownLetters = args.currentDownLetters;
+	var adjacentDownWords = args.adjacentDownWords;
+	var adjacentAcrossWords = args.adjacentAcrossWords;
+
+	var termString = [];
+
+	var termLength;
+	var i;
+	var len;
+
+	// Cosntruct an object where all the supplied terms are keys. This will
+	// make it easier to check if a given term is valid.
+	for (termLength in terms) {
+		if (!Object.prototype.hasOwnProperty.call(terms, termLength)) {
+			continue;
+		}
+
+		for (i = 0, len = terms[termLength].length; i < len; i++) {
+			termString.push(terms[termLength][i].term);
+		}
+	}
+
+	termString = ',' + termString.join(',') + ',';
 
 	var acrossCandidates;
 
@@ -97,23 +189,41 @@ function _findAnswers(args) {
 		downCandidates = terms[downLength];
 	}
 
-	if (acrossCandidates !== void 0 && currentAcrossLetters !== void 0) {
+	if (acrossCandidates !== void 0) {
 		acrossCandidates = acrossCandidates.filter(
 			function(termItem) {
-				return _termMatchesLetters(termItem.term, currentAcrossLetters);
+				const substituted = _substituteTerm(termItem.term, adjacentDownWords, true);
+
+				if (substituted === false) {
+					return false;
+				}
+
+				return _checkWords(substituted, termString);
 			}
 		);
 	}
 
-	if (acrossCandidates !== void 0 && currentDownLetters !== void 0) {
+	if (downCandidates !== void 0) {
 		downCandidates = downCandidates.filter(
 			function(termItem) {
-				return _termMatchesLetters(termItem.term, currentDownLetters);
+				const substituted = _substituteTerm(termItem.term, adjacentAcrossWords, false);
+				
+				if (substituted === false) {
+					return false;
+				}
+
+				return _checkWords(substituted, termString);
 			}
 		);
 	}
 
 	if (acrossCandidates === void 0) {
+		// there are no across candidates; all down candidates that match the existing
+		// column letters are valid
+		if (downCandidates !== void 0 && downCandidates.length === 0) {
+			return {};
+		}
+		
 		return {
 			'': downCandidates.map(
 				function(term) {
@@ -124,6 +234,8 @@ function _findAnswers(args) {
 	}
 	else {
 		if (downCandidates === void 0) {
+			// there are no down candidates; all across candidates that match the existing
+			// row letters are valid
 			return acrossCandidates.reduce(
 				function(candidates, acrossCandidate) {
 					candidates[acrossCandidate.term] = [];
@@ -135,33 +247,26 @@ function _findAnswers(args) {
 
 		return acrossCandidates.reduce(
 			function(candidates, acrossCandidate) {
-				var downLetters, downs;
+				var acrossWords = JSON.parse(JSON.stringify(adjacentAcrossWords)); // deep clone
 
-				if (currentDownLetters) {
-					downLetters = (currentDownLetters || []).slice(0); // clone
+				// Insert the across candidate into the existing across candidates to check the
+				// down candidate against it
+				acrossWords[downIndex].forEach(
+					function(letter, letterIndex) {
+						letter.value = acrossCandidate.term[letterIndex];
 
-					// Insert the candidate letter to check down terms against
-					downLetters.splice(
-						downIndex,
-						1,
-						acrossCandidate.term[acrossIndex]
-					);
-				}
+						// Prevent any cell in this across word from being replaced, because
+						// the point of this routine is to determine whether each down candidate
+						// would be valid if this across candidate were used
+						letter.isSelectedCellRow = false;
+					}
+				);
 
-
-				downs = downCandidates.reduce(
+				var downs = downCandidates.reduce(
 					function(downCandidatesForAcross, downCandidate) {
-						if (
-							downCandidate.term !== acrossCandidate.term &&
-							downCandidate.term[downIndex] === acrossCandidate.term[acrossIndex] &&
-							(
-								downLetters === void 0 ||
-								_termMatchesLetters(
-									downCandidate.term,
-									downLetters
-								)
-							)
-						) {
+						const substituted = _substituteTerm(downCandidate.term, acrossWords, false);
+
+						if (substituted !== false && _checkWords(substituted, termString)) {
 							downCandidatesForAcross.push(downCandidate.term);
 						}
 
@@ -185,7 +290,9 @@ const _workerContent = `
 	(function(global) {
 		"use strict";
 
-		${_termMatchesLetters}
+		${_substituteTerm}
+
+		${_checkWords}
 
 		${_findAnswers}
 
@@ -289,7 +396,7 @@ class PuzzleFillerView extends Backbone.View {
 
 							return {
 								clueNumber: $cell.data('clue-number'),
-								solution: $cell.find('.letter-input').val() || undefined
+								solution: $cell.find('.letter-input').val().replace(whitespaceRegex, '') || null
 							};
 						}
 					)
@@ -701,7 +808,7 @@ class PuzzleFillerView extends Backbone.View {
 	_getCandidateTerms($cell) {
 		const view = this;
 
-		let cellPosition = view._getCellPosition($cell);
+		const cellPosition = view._getCellPosition($cell);
 
 		let $firstAcrossCell = $cell.prevUntil('.block-cell').last();
 
@@ -717,7 +824,7 @@ class PuzzleFillerView extends Backbone.View {
 
 		let $downCells = $cell;
 
-		let $row = $cell.closest('.puzzle-row');
+		const $row = $cell.closest('.puzzle-row');
 
 		$row.prevAll('.puzzle-row').each(
 			function() {
@@ -752,27 +859,108 @@ class PuzzleFillerView extends Backbone.View {
 
 		let downIndex = $downCells.index($cell);
 
-		let currentAcrossLetters = _.map(
-			$acrossCells.find('.letter-input'),
-			function(input) {
-				return $(input).val() || undefined;
+		const adjacentDownWords = [];
+		const adjacentAcrossWords = [];
+
+		$acrossCells.each(
+			function() {
+				const $acrossCell = $(this);
+
+				const downWord = [];
+
+				const cellIndex = $acrossCell.index();
+
+				$row.prevAll('.puzzle-row').each(
+					function() {
+						const $c = $(this).find('.crossword-cell:nth-child(' + (cellIndex + 1) + ')');
+
+						if ($c.length === 0) {
+							return false;
+						}
+
+						downWord.unshift({
+							isSelectedCellRow: false,
+							isSelectedCellColumn: cellIndex === cellPosition[0],
+							value: $c.find('.letter-input').val().replace(whitespaceRegex, ''),
+						});
+					}
+				);
+
+				downWord.push({
+					isSelectedCellRow: true,
+					isSelectedCellColumn: cellIndex === cellPosition[0],
+					value: $acrossCell.find('.letter-input').val().replace(whitespaceRegex, ''),
+				});
+
+				$row.nextAll('.puzzle-row').each(
+					function() {
+						const $c = $(this).find('.crossword-cell:nth-child(' + (cellIndex + 1) + ')');
+
+						if ($c.length === 0) {
+							return false;
+						}
+
+						downWord.push({
+							isSelectedCellRow: false,
+							isSelectedCellColumn: cellIndex === cellPosition[0],
+							value: $c.find('.letter-input').val().replace(whitespaceRegex, ''),
+						});
+					}
+				);
+
+				adjacentDownWords.push(downWord);
 			}
 		);
 
-		let currentDownLetters = _.map(
-			$downCells.find('.letter-input'),
-			function(input) {
-				return $(input).val() || undefined;
+		$downCells.each(
+			function() {
+				const $downCell = $(this);
+
+				const acrossWord = [];
+
+				const rowIndex = $downCell.closest('.puzzle-row').index();
+
+				$downCell.prevAll('.cell').each(
+					function() {
+						const $c = $(this);
+
+						if ($c.hasClass('block-cell')) {
+							return false;
+						}
+
+						acrossWord.unshift({
+							isSelectedCellRow: rowIndex === cellPosition[1],
+							isSelectedCellColumn: false,
+							value: $c.find('.letter-input').val().replace(whitespaceRegex, ''),
+						});
+					}
+				);
+
+				acrossWord.push({
+					isSelectedCellRow: rowIndex === cellPosition[1],
+					isSelectedCellColumn: true,
+					value: $downCell.find('.letter-input').val().replace(whitespaceRegex, ''),
+				});
+				
+				$downCell.nextAll('.cell').each(
+					function() {
+						const $c = $(this);
+
+						if ($c.hasClass('block-cell')) {
+							return false;
+						}
+
+						acrossWord.push({
+							isSelectedCellRow: rowIndex === cellPosition[1],
+							isSelectedCellColumn: false,
+							value: $c.find('.letter-input').val().replace(whitespaceRegex, ''),
+						});
+					}
+				);
+
+				adjacentAcrossWords.push(acrossWord);
 			}
 		);
-
-		if (_.compact(currentAcrossLetters).length === 0) {
-			currentAcrossLetters = undefined;
-		}
-
-		if (_.compact(currentDownLetters).length === 0) {
-			currentDownLetters = undefined;
-		}
 
 		// One-cell answers are not valid; ignore them.
 		if (acrossLength === 1) {
@@ -787,17 +975,15 @@ class PuzzleFillerView extends Backbone.View {
 			return Q([]);
 		}
 
-		// If we're in a nonempty cell, pretend the cell is empty for matching purposes,
-		// so that we're not constrained to match with the existing letter
-		if (!_.isUndefined(currentAcrossLetters) && !_.isUndefined(acrossIndex)) {
-			currentAcrossLetters[acrossIndex] = undefined;
-		}
-
-		if (!_.isUndefined(currentDownLetters) && !_.isUndefined(downIndex)) {
-			currentDownLetters[downIndex] = undefined;
-		}
-
-		return DictionaryData.findByTermLengths(_.uniq([downLength, acrossLength])).then(
+		return DictionaryData.findByTermLengths(
+			_.uniq(
+				_.concat(
+					[downLength, acrossLength],
+					_.map(adjacentAcrossWords, 'length'),
+					_.map(adjacentDownWords, 'length')
+				)
+			)
+		).then(
 			function(termsByLength) {
 				let args = {
 					terms: _.reduce(
@@ -813,30 +999,48 @@ class PuzzleFillerView extends Backbone.View {
 					downIndex: downIndex,
 					acrossLength: acrossLength,
 					downLength: downLength,
-					currentAcrossLetters: currentAcrossLetters,
-					currentDownLetters: currentDownLetters,
+					adjacentDownWords: adjacentDownWords,
+					adjacentAcrossWords: adjacentAcrossWords,
 				};
 
 
 				if (_.isFunction(window.Worker)) {
-					let deferred = Q.defer();
+					if (view._runningWorkerDeferred) {
+						view._runningWorkerDeferred.reject({
+							error: {
+								type: USER_REPLACED_ERROR_TYPE,
+								message: 'User started another _getCandidateTerms() call'
+							}
+						});
 
-					let worker = new window.Worker(
+						delete view._runningWorkerDeferred;
+					}
+
+					if (view._runningWorker) {
+						view._runningWorker.terminate();
+						delete view._runningWorker;
+					}
+
+					view._runningWorkerDeferred = Q.defer();
+
+					view._runningWorker = new window.Worker(
 						URL.createObjectURL(
 							new Blob([_workerContent], { type: 'text/javascript' })
 						)
 					);
 
-					worker.onmessage = function(message) {
-						deferred.resolve(message.data);
+					view._runningWorker.onmessage = function(message) {
+						view._runningWorkerDeferred.resolve(message.data);
 
-						worker.terminate();
-						worker = undefined;
+						view._runningWorker.terminate();
+
+						delete view._runningWorkerDeferred;
+						delete view._runningWorker;
 					};
 
-					worker.postMessage(args);
+					view._runningWorker.postMessage(args);
 
-					return deferred.promise;
+					return view._runningWorkerDeferred.promise;
 				}
 				else {
 					return _findAnswers(args);
@@ -858,9 +1062,9 @@ class PuzzleFillerView extends Backbone.View {
 
 		let puzzle = view.generatePuzzleFromBoard();
 
-		let acrossSolutions = [];
+		let acrossSolutions = {};
 
-		let downSolutions = [];
+		let downSolutions = {};
 
 		let across = '', down = [];
 
@@ -872,7 +1076,13 @@ class PuzzleFillerView extends Backbone.View {
 					function(cell, cellIndex) {
 						if (cell.isBlockCell) {
 							if (_.size(across) > 1) {
-								acrossSolutions.push(across);
+								acrossSolutions[across] = acrossSolutions[across] || [];
+
+								acrossSolutions[across].push({
+									term: across,
+									direction: 'across',
+									clueNumber: 1
+								});
 							}
 
 							if (_.size(down[cellIndex]) > 1) {
@@ -883,7 +1093,7 @@ class PuzzleFillerView extends Backbone.View {
 
 							across = '';
 						}
-						else if (!_.isUndefined(cell.solution)) {
+						else if (!_.isNull(cell.solution)) {
 							across += cell.solution;
 							down[cellIndex] = (down[cellIndex] || '') + cell.solution;
 						}
@@ -941,7 +1151,6 @@ class PuzzleFillerView extends Backbone.View {
 			function(result) {
 				if (!_.isUndefined(result)) {
 					report.invalidTerms = result;
-
 				}
 
 				return report;
@@ -964,7 +1173,7 @@ class PuzzleFillerView extends Backbone.View {
 	 *
 	 * @returns {module:views/puzzle-filler~PuzzleFillerView} this view
 	 */
-	_dismissAnswersPopup() {
+	_dismissAnswerOptionsPopup() {
 		$body.find('.answer-options-dialog').remove();
 
 		return this;
@@ -1027,7 +1236,7 @@ class PuzzleFillerView extends Backbone.View {
 								acrossClueNumber = $cell.data('containing-clue-across');
 							}
 
-							acrossTerm += $cell.find('.letter-input').val();
+							acrossTerm += $cell.find('.letter-input').val().replace(whitespaceRegex, '');
 							$acrossCells = $acrossCells.add($cell);
 						}
 					}
@@ -1083,7 +1292,7 @@ class PuzzleFillerView extends Backbone.View {
 								downClueNumber = $cell.data('containing-clue-down');
 							}
 
-							downTerm += $cell.find('.letter-input').val();
+							downTerm += $cell.find('.letter-input').val().replace(whitespaceRegex, '');
 							$downCells = $downCells.add($cell);
 						}
 					}
@@ -1169,48 +1378,52 @@ class PuzzleFillerView extends Backbone.View {
 
 		let $row = $cell.closest('.puzzle-row');
 
-		let $firstAcrossCell = $cell.prevUntil('.block-cell').last();
+		if (_.size(across) > 0) {
+			let $firstAcrossCell = $cell.prevUntil('.block-cell').last();
 
-		if ($firstAcrossCell.length === 0) {
-			$firstAcrossCell = $cell;
+			if ($firstAcrossCell.length === 0) {
+				$firstAcrossCell = $cell;
+			}
+
+			$firstAcrossCell.add($firstAcrossCell.nextUntil('.block-cell')).each(
+				function(index) {
+					$(this).find('.letter-input').val(across[index].toUpperCase());
+				}
+			);
 		}
 
-		$firstAcrossCell.add($firstAcrossCell.nextUntil('.block-cell')).each(
-			function(index) {
-				$(this).find('.letter-input').val(across[index].toUpperCase());
-			}
-		);
+		if (_.size(down) > 0) {
+			let $firstDownRow = $();
 
-		let $firstDownRow = $();
+			$row.prevAll('.puzzle-row').each(
+				function() {
+					let $prevRow = $(this);
 
-		$row.prevAll('.puzzle-row').each(
-			function() {
-				let $prevRow = $(this);
+					if ($prevRow.find(':nth-child(' + (cellPosition[0] + 1) + ').crossword-cell').length === 0) {
+						return false;
+					}
 
-				if ($prevRow.find(':nth-child(' + (cellPosition[0] + 1) + ').crossword-cell').length === 0) {
-					return false;
+					$firstDownRow = $prevRow;
 				}
+			);
 
-				$firstDownRow = $prevRow;
+			if ($firstDownRow.length === 0) {
+				$firstDownRow = $row;
 			}
-		);
 
-		if ($firstDownRow.length === 0) {
-			$firstDownRow = $row;
+			$firstDownRow.add($firstDownRow.nextAll('.puzzle-row')).each(
+				function(index) {
+					if (index >= down.length) {
+						return false;
+					}
+
+					$(this).find(':nth-child(' + (cellPosition[0] + 1) + ').crossword-cell .letter-input')
+						.val(down[index].toUpperCase());
+				}
+			);
 		}
 
-		$firstDownRow.add($firstDownRow.nextAll('.puzzle-row')).each(
-			function(index) {
-				if (index >= down.length) {
-					return false;
-				}
-
-				$(this).find(':nth-child(' + (cellPosition[0] + 1) + ').crossword-cell .letter-input')
-					.val(down[index].toUpperCase());
-			}
-		);
-
-		view._dismissAnswersPopup();
+		view._dismissAnswerOptionsPopup();
 	}
 
 	/**
@@ -1221,59 +1434,39 @@ class PuzzleFillerView extends Backbone.View {
 	_handleClickValidatePuzzleButton() {
 		const view = this;
 
-		let map = view._mapTermsToCells();
-
-		view._$boardContainer.find('.crossword-cell.invalid').removeClass('invalid invalid-term repeated-term');
-
 		view._validateAnswers().done(
 			function(report) {
+				const context = {};
+
 				if (_.isUndefined(report)) {
-					return;
+					context.isValid = true;
+				}
+				else {
+					context.isValid = false;
+
+					context.errors = {
+						invalid: _.map(
+							report.invalidTerms,
+							term => {
+								return {term};
+							}
+						),
+						repeated: _.map(
+							report.repeated,
+							term => { 
+								return {term};
+							}
+						),
+						missing: _.map(
+							report.missing,
+							term => {
+								return {term};
+							}
+						)
+					};
 				}
 
-				_.each(
-					report.invalidTerms,
-					function(term) {
-						_.each(
-							map[term],
-							function(termInstance) {
-								termInstance.$cells.addClass('invalid invalid-term').attr('data-invalid-message', 'Term is not in dictionary');
-							}
-						);
-					}
-				);
-
-				_.each(
-					report.repeated,
-					function(term) {
-						_.each(
-							map[term],
-							function(termInstance) {
-								termInstance.$cells.each(
-									function() {
-										let $cell = $(this);
-
-										$cell.addClass('invalid repeated-term');
-
-										let msg = $cell.attr('data-invalid-message');
-
-										if (msg) {
-											msg += '\n'; 
-										}
-										else {
-											msg = '';
-										}
-
-										
-										msg += 'Term is duplicated';
-										
-										$cell.attr('data-invalid-message', msg);
-									}
-								);
-							}
-						);
-					}
-				);
+				$(puzzleValidationStatusDialogTemplate(context)).modal();
 			}
 		);
 	}
@@ -1392,14 +1585,21 @@ class PuzzleFillerView extends Backbone.View {
 
 		view._$findAnswersProgress.removeClass('hidden');
 
-		view._dismissAnswersPopup();
+		view._dismissAnswerOptionsPopup();
 
 		let $cell = $(event.currentTarget);
 
 		$cell.removeClass('no-candidates');
 
-		view._getCandidateTerms($cell).done(
+		console.time('find terms');
+		view._getCandidateTerms($cell).finally(
+			function() {
+				view._$findAnswersProgress.addClass('hidden');
+			}
+		).done(
 			function(candidates) {
+				console.timeEnd('find terms');
+				console.time('render terms');
 				if (_.size(candidates) === 0) {
 					$cell.addClass('no-candidates');
 					return;
@@ -1420,13 +1620,12 @@ class PuzzleFillerView extends Backbone.View {
 					})
 				);
 				$body.append($dialog);
+				console.timeEnd('render terms');
 
 				$dialog.css({
 					top: event.pageY + 'px',
 					left: event.pageX + 'px'
 				});
-
-				view._$findAnswersProgress.addClass('hidden');
 
 				$(document).off('.context-menu.' + view._namespace).on(
 					'click.context-menu.' + view._namespace,
@@ -1439,6 +1638,18 @@ class PuzzleFillerView extends Backbone.View {
 						}
 					}
 				);
+			},
+			function(error) {
+				console.log('failed to find candidates');
+				console.timeEnd('find terms');
+				if (error.error) {
+					if (error.error.type === USER_REPLACED_ERROR_TYPE) {
+						// ignore
+						return;
+					}
+				}
+
+				throw error;
 			}
 		);
 	}
