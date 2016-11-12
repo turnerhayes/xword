@@ -1,3 +1,4 @@
+import _        from "lodash";
 import React    from "react";
 import ReactDOM from "react-dom";
 import $        from "jquery";
@@ -7,9 +8,34 @@ function range(max) {
 	return [...Array(max).keys()];
 }
 
+function _ensureGrid(nextProps) {
+	
+}
+
 class XWordGrid extends React.Component {
 	state = {
 		grid: null
+	}
+
+	componentWillMount() {
+		if (this.props.width && this.props.height) {
+			this.setState({grid: this.generateEmptyGrid(this.props.width, this.props.height)});
+		}
+		else if (this.props.puzzle) {
+			this.setState({grid: _.cloneDeep(this.props.puzzle.grid)});
+		}
+	}
+
+	componentWillReceiveProps(nextProps) {
+		if (
+			(nextProps.width && nextProps.height) &&
+			(nextProps.width !== this.props.width || nextProps.height !== this.props.height)
+		) {
+			this.setState({grid: this._generateEmptyGrid(nextProps.width, nextProps.height)});
+		}
+		else if (nextProps.puzzle && nextProps.puzzle.grid !== this.state.grid) {
+			this.setState({grid: _.cloneDeep(nextProps.puzzle.grid)});
+		}
 	}
 
 	_setCellNumbering = (grid) => {
@@ -29,7 +55,7 @@ class XWordGrid extends React.Component {
 									row[columnIndex - 1].isBlockCell
 								) && (
 									columnIndex + 1 < row.length &&
-									row[columnIndex + 1].isBlockCell
+									!row[columnIndex + 1].isBlockCell
 								)
 							) {
 								across = true;
@@ -40,8 +66,8 @@ class XWordGrid extends React.Component {
 									rowIndex === 0 ||
 									grid[rowIndex - 1][columnIndex].isBlockCell
 								) && (
-									rowIndex + 1 < this.props.grid.length &&
-									grid[rowIndex + 1][columnIndex].isBlockCell
+									rowIndex + 1 < grid.length &&
+									!grid[rowIndex + 1][columnIndex].isBlockCell
 								)
 							) {
 								down = true;
@@ -55,6 +81,8 @@ class XWordGrid extends React.Component {
 				)
 			)
 		);
+
+		return grid;
 	}
 
 	handleCellChange = (event) => {
@@ -71,7 +99,7 @@ class XWordGrid extends React.Component {
 		const cellPosition = $cell.data('cell-position');
 
 		if (event.shiftKey) {
-			const grid = JSON.parse(JSON.stringify(this.props.grid));
+			const grid = _.cloneDeep(this.state.grid);
 
 			grid[cellPosition[1]][cellPosition[0]].isBlockCell = !grid[cellPosition[1]][cellPosition[0]].isBlockCell;
 
@@ -126,9 +154,11 @@ class XWordGrid extends React.Component {
 	}
 
 	generateEmptyGrid = (width, height) => {
-		return range(height).map(
-			() => range(width).map(
-				() => ({})
+		return this._setCellNumbering(
+			range(height).map(
+				() => range(width).map(
+					() => ({})
+				)
 			)
 		);
 	}
@@ -142,6 +172,7 @@ class XWordGrid extends React.Component {
 						rowIndex,
 						columnIndex,
 						isBlockCell: cell.isBlockCell,
+						clueNumber: cell.clueNumber,
 						containingClues: cell.containingClues || {},
 						cellPosition: [columnIndex, rowIndex],
 						enableToggleClick: options.editable,
@@ -157,9 +188,7 @@ class XWordGrid extends React.Component {
 			<table className="crossword-grid">
 				<tbody>
 					{this.generatePuzzleGrid(
-						this.props.puzzle ?
-							this.props.puzzle.grid :
-							this.generateEmptyGrid(this.props.width, this.props.height),
+						this.state.grid,
 						{
 							editable: this.props.editable || !this.props.puzzle
 						}
