@@ -1,0 +1,36 @@
+{
+  "name": "xword-server",
+  "version": "1.0.0",
+  "description": "Server component of XWords website",
+  "main": "app.js",
+  "scripts": {
+    "test": "mocha ../"
+  },
+  "author": "Turner Hayes <dev@turnerhayes.com>",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "connect-mongo": "^1.3.2",
+    "cookie-parser": "^1.4.3",
+    "debug": "^2.2.0",
+    "dotenv": "^2.0.0",
+    "express": "^4.14.0",
+    "express-hbs": "^1.0.3",
+    "express-session": "^1.14.2",
+    "lodash": "^4.16.6",
+    "mongoose": "^4.6.6",
+    "morgan": "^1.7.0",
+    "passport": "^0.3.2",
+    "passport-facebook": "^2.1.1",
+    "passport-google-oauth": "^1.0.0",
+    "passport-local": "^1.0.0",
+    "q": "^1.4.1",
+    "serve-favicon": "^2.3.0",
+    "webpack": "^1.13.3",
+    "xpuz": "0.0.8"
+  },
+  "devDependencies": {
+    "webpack-dev-middleware": "^1.8.4",
+    "webpack-hot-middleware": "^2.13.1"
+  }
+}

@@ -1,0 +1,49 @@
+.crossword-grid {
+	border-collapse: collapse;
+	table-layout: fixed;
+
+	.cell {
+		width: 5em;
+		height: 5em;
+		min-width: 5em;
+		min-height: 5em;
+		max-width: 5em;
+		max-height: 5em;
+		border: 1px solid black;
+		padding: 1em;
+	}
+	
+	.block-cell {
+		background: black;
+	}
+
+	.letter-input {
+		font-size: 2em;
+		text-align: center;
+		width: 100%;
+		background-color: transparent;
+		text-transform: uppercase;
+
+		&,
+		&:focus,
+		&:hover {
+			outline: none;
+			border: none;
+			box-shadow: none;
+		}
+	}
+
+	.crossword-cell {
+		position: relative;
+
+		&[data-clue-number]:after {
+			content: attr(data-clue-number);
+			display: block;
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+
+
+	}
+}

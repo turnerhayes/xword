@@ -5,7 +5,7 @@ var fs     = require('fs');
 var _      = require('lodash');
 var assert = require('assert');
 
-var staticPath = path.resolve(__dirname, '..', '..', 'static');
+var staticPath = path.resolve(__dirname, '..', '..', '..', 'static');
 var templatesPath = path.join(staticPath, 'templates');
 var partialsPath = path.join(templatesPath, 'partials');
 
@@ -20,6 +20,9 @@ var Config = {
 			"externalPort": process.env.CONFIG_APP_ADDRESS_EXTERNAL_PORT || null,
 			"insecurePort": process.env.CONFIG_APP_ADDRESS_INSECURE_PORT || null
 		}
+	},
+	"static": {
+		"host": process.env.CONFIG_STATIC_HOST || null
 	},
 	"session": {
 		"key": process.env.CONFIG_SESSION_KEY,

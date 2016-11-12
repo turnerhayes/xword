@@ -1,5 +1,6 @@
 "use strict";
 
+const _             = require('lodash');
 const express       = require('express');
 const path          = require('path');
 const fs            = require('fs');
@@ -12,6 +13,7 @@ const bodyParser    = require('body-parser');
 const hbs           = require('express-hbs');
 const session       = require('./session');
 const setupPassport = require('./passport-authentication');
+const hbsHelpers    = require('../hbs-helpers');
 
 const config = require('./lib/utils/config');
 
@@ -21,6 +23,8 @@ const puzzleRoutes         = require('./routes/puzzles');
 const dictionaryRoutes     = require('./routes/dictionary');
 
 const faviconDirectory = path.join(config.paths.static, 'dist', 'favicons');
+
+const faviconPath = path.join(faviconDirectory, 'favicon.ico');
 
 mongoose.Promise = require('q').Promise;
 
@@ -32,7 +36,11 @@ if (process.env.DEBUG_DB) {
 
 const app = express();
 
-app.use(favicon(path.join(faviconDirectory, 'favicon.ico')));
+fs.stat(faviconPath, (err) => {
+	if (!err || err.code !== 'ENOENT') {
+		app.use(favicon(faviconPath));
+	}
+});
 
 // view engine setup
 app.engine('hbs', hbs.express4({
@@ -40,20 +48,60 @@ app.engine('hbs', hbs.express4({
 	partialsDir: config.paths.partials,
 }));
 
-hbs.registerHelper(require(path.join(__dirname, "hbs-helpers"))(hbs.handlebars));
+hbs.registerHelper(hbsHelpers(hbs.handlebars));
 
 app.set('views', config.paths.templates);
 app.set('view engine', 'hbs');
 
 app.set('env', config.app.environment);
+
 app.locals.IS_DEVELOPMENT = config.app.environment === 'development';
+app.locals.STATIC_HOST = (config.static.host ?
+	config.app.static.host :
+	'/static/dist'
+).replace(/\/$/, '');
+
+if (app.locals.IS_DEVELOPMENT) {
+	const webpack              = require('webpack');
+	const webpackDevMiddleware = require('webpack-dev-middleware');
+	const webpackHotMiddleware = require('webpack-hot-middleware');
+	const webpackConfig        = require('../webpack.config');
+
+	_.each(
+		webpackConfig.entry,
+		(entry) => {
+			entry.unshift(...[
+				'webpack/hot/dev-server',
+				'webpack-hot-middleware/client'
+	        ]);
+		}
+	);
+
+	webpackConfig.context = __dirname;
+
+	const compiler = webpack(webpackConfig);
+
+	app.use(webpackDevMiddleware(compiler, {
+		publicPath: webpackConfig.output.publicPath,
+		stats: {
+			colors: true
+		}
+	}));
+
+	app.use(webpackHotMiddleware(compiler, {
+		log: console.log,
+		reload: true,
+	}))
+}
+else {
+	app.use('/static', express.static(config.paths.static, { maxAge: '7 days' }));
+}
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(session.instance);
-app.use('/static', express.static(config.paths.static, { maxAge: '7 days' }));
 // Ensure favicons can be found at the root
 app.use('/', express.static(faviconDirectory, { maxAge: '30 days' }));
 

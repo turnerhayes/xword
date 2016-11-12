@@ -1,6 +1,5 @@
 "use strict";
 
-var _                = require('lodash');
 var passport         = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
 var GoogleStrategy   = require('passport-google-oauth').OAuth2Strategy;
@@ -123,7 +122,7 @@ passport.use(new GoogleStrategy(
 
 				var image;
 
-				if (_.size(profile.photos) > 0) {
+				if (profile.photos && profile.photos.length > 0) {
 					image = profile.photos[0].value;
 				}
 

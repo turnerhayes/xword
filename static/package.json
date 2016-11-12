@@ -17,6 +17,8 @@
     "jquery": "^2.2.0",
     "lodash": "^4.0.0",
     "q": "^1.4.1",
+    "react": "^15.3.2",
+    "react-dom": "^15.3.2",
     "xpuz": "~0.0.8"
   },
   "devDependencies": {}

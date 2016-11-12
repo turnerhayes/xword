@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>{{title}}</title>
-	<link rel="stylesheet" href="/static/dist/css/build.css">
+	<link rel="stylesheet" href="{{STATIC_HOST}}/app.bundle.css">
 	{{{block styles}}}
 	<meta name="viewport" content="width=device-width">
 	<meta name="apple-mobile-web-app-capable" content="yes" />
@@ -18,20 +18,20 @@
 <meta name="theme-color" content="#ffffff"></head>
 <body>
 	<main class="page-layout--content">
-		<section class="page-layout--content--main-content">
+		<section class="page-layout--content--main-content" id="page-main">
 		{{{body}}}
 		</section>
-		<nav class="page-layout--content--left-panel">
+		<nav class="page-layout--content--left-panel" id="page-left-panel">
 		</nav>
-		<aside class="page-layout--content--right-panel">
+		<aside class="page-layout--content--right-panel" id="page-right-panel">
 		</aside>
 	</main>
-	<header class="page-layout--header">
+	<header class="page-layout--header" id="page-header">
 		{{#block 'page-header'}}
 		{{> top-nav}}
 		{{/block}}
 	</header>
-	<script src="/static/dist/js/build.js"></script>
+	<script src="{{STATIC_HOST}}/app.bundle.js"></script>
 	{{{block scripts}}}
 </body>
 </html>

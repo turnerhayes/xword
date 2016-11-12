@@ -1,16 +1,16 @@
 "use strict";
 
-var session    = require('express-session');
-var debug      = require('debug')('xword:session');
-var MongoStore = require('connect-mongo/es5')(session);
-var config     = require('./lib/utils/config');
+const session    = require('express-session');
+const debug      = require('debug')('xword:session');
+const MongoStore = require('connect-mongo/es5')(session);
+const config     = require('./lib/utils/config');
 
 debug('Connecting to session store at ', config.session.store.url);
-var sessionStore = new MongoStore({
+const sessionStore = new MongoStore({
 	url: config.session.store.url
 });
 
-var sessionInstance = session({
+const sessionInstance = session({
 	key: config.session.key,
 	store: sessionStore,
 	secret: config.app.secret,
