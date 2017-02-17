@@ -69,12 +69,10 @@ if (app.locals.IS_DEVELOPMENT) {
 
 	_.each(
 		webpackConfig.entry,
-		(entry) => {
-			entry.unshift(...[
-				'webpack/hot/dev-server',
-				'webpack-hot-middleware/client'
-	        ]);
-		}
+		entry => entry.unshift(...[
+			'webpack/hot/dev-server',
+			'webpack-hot-middleware/client?path=' + config.app.baseURL + '/__webpack_hmr'
+        ])
 	);
 
 	webpackConfig.context = __dirname;
@@ -82,6 +80,7 @@ if (app.locals.IS_DEVELOPMENT) {
 	const compiler = webpack(webpackConfig);
 
 	app.use(webpackDevMiddleware(compiler, {
+		noInfo: true,
 		publicPath: webpackConfig.output.publicPath,
 		stats: {
 			colors: true
@@ -124,7 +123,14 @@ app.use(function(err, req, res, next) {
 	var status = err.status || 500;
 	res.status(status);
 
-	console.error(err);
+	if (status === 404) {
+		console.error('404 for url ' + req.url);
+	}
+	else {
+		console.error(err);
+	}
+
+	debugger;
 
 	res.format({
 		json: function() {
@@ -132,7 +138,7 @@ app.use(function(err, req, res, next) {
 				error: err.message
 			});
 		},
-		default: function() {
+		html: function() {
 			const errorTemplateName = path.join('errors', '' + status);
 			const errorTemplatePath = path.join(config.paths.templates, errorTemplateName + '.hbs');
 

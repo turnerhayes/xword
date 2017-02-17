@@ -3,7 +3,9 @@
 <head>
 	<meta charset="utf-8">
 	<title>{{title}}</title>
+	{{#unless error}}
 	<link rel="stylesheet" href="{{STATIC_HOST}}/app.bundle.css">
+	{{/unless}}
 	{{{block styles}}}
 	<meta name="viewport" content="width=device-width">
 	<meta name="apple-mobile-web-app-capable" content="yes" />
@@ -28,10 +30,14 @@
 	</main>
 	<header class="page-layout--header" id="page-header">
 		{{#block 'page-header'}}
+		{{#unless error}}
 		{{> top-nav}}
+		{{/unless}}
 		{{/block}}
 	</header>
+	{{#unless error}}
 	<script src="{{STATIC_HOST}}/app.bundle.js"></script>
+	{{/unless}}
 	{{{block scripts}}}
 </body>
 </html>

@@ -86,6 +86,22 @@ var Config = {
 	}
 };
 
+const externalPort = Config.app.address.externalPort || Config.app.address.port;
+
+Object.defineProperties(
+	Config.app,
+	{
+		baseURL: {
+			value: 'http' + (Config.app.address.isSecure ? 's' : '') + '://' +
+				Config.app.address.host + (
+					(externalPort + '') === '80' ?
+						'' :
+						':' + externalPort
+				)
+		}
+	}
+);
+
 assert(
 	!Config.app.address.isSecure || (Config.ssl.key && Config.ssl.cert),
 	"Both `ssl.key` and `ssl.cert` are required to run a secure server"

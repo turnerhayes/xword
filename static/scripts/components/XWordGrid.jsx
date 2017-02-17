@@ -135,7 +135,7 @@ class XWordGrid extends React.Component {
 			<td
 				{...properties}
 				key={`cell-${args.rowIndex}-${args.columnIndex}`}
-				className={'cell ' + (args.isBlockCell ? 'block-cell' : 'crossword-cell')}
+				className={`cell ${args.isBlockCell ? 'block-cell' : 'crossword-cell'}`}
 			>
 				{!args.isBlockCell && (
 				<input

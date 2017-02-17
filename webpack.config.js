@@ -31,9 +31,6 @@ exports = module.exports = {
 				test: /\.jsx?$/,
 				exclude: /node_modules/,
 				loader: 'babel',
-				query: {
-					presets: ['es2015', 'stage-1', 'react']
-				}
 			},
 			{
 				test: /\.scss$/,
@@ -72,7 +69,12 @@ exports = module.exports = {
 	},
 
 	plugins: [
+		// Webpack 1.0
+		new webpack.optimize.OccurenceOrderPlugin(),
+		// Webpack 2.0 fixed this mispelling
+		// new webpack.optimize.OccurrenceOrderPlugin(),
 		new webpack.HotModuleReplacementPlugin(),
+		new webpack.NoErrorsPlugin(),
 		new ExtractTextPlugin('[name].bundle.css', {
             allChunks: true
         })
