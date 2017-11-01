@@ -9,7 +9,7 @@ import configureStore   from "project/scripts/redux/configure-store";
 import UserRecord       from "project/scripts/records/user";
 import UsersStateRecord from "project/scripts/records/state/users";
 
-const userData = JSON.parse(document.body.dataset.user || "");
+const userData = JSON.parse(document.body.dataset.user || "null");
 
 const currentUser = userData ? new UserRecord(userData) : null;
 
