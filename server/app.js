@@ -1,167 +1,144 @@
 "use strict";
 
-const _             = require('lodash');
-const express       = require('express');
-const path          = require('path');
-const fs            = require('fs');
-const favicon       = require('serve-favicon');
-const debug         = require('debug')('xword:app');
-const mongoose      = require('mongoose');
-const logger        = require('morgan');
-const cookieParser  = require('cookie-parser');
-const bodyParser    = require('body-parser');
-const hbs           = require('express-hbs');
-const session       = require('./session');
-const setupPassport = require('./passport-authentication');
-const hbsHelpers    = require('../hbs-helpers');
-
-const config = require('./lib/utils/config');
-
-const routes               = require('./routes/index');
-const authenticationRoutes = require('./routes/authentication');
-const puzzleRoutes         = require('./routes/puzzles');
-const dictionaryRoutes     = require('./routes/dictionary');
-
-const faviconDirectory = path.join(config.paths.static, 'dist', 'favicons');
-
-const faviconPath = path.join(faviconDirectory, 'favicon.ico');
-
-mongoose.Promise = require('q').Promise;
-
-debug('Connecting to database at ', config.data.store.url);
-mongoose.connect(config.data.store.url);
-if (process.env.DEBUG_DB) {
-	mongoose.set('debug', true);
-}
+const express            = require("express");
+const path               = require("path");
+// const favicon            = require("serve-favicon");
+const cookieParser       = require("cookie-parser");
+const handlebars         = require("handlebars");
+const hbs                = require("express-hbs");
+const cors               = require("cors");
+const HTTPStatusCodes    = require("http-status-codes");
+const rfr                = require("rfr");
+const session            = rfr("server/session");
+const Loggers            = rfr("server/lib/loggers");
+const Config             = rfr("server/lib/config");
+const passportMiddleware = rfr("server/lib/passport");
+// Make sure to set up the default Mongoose connection
+rfr("server/persistence/db-connection");
 
 const app = express();
 
-fs.stat(faviconPath, (err) => {
-	if (!err || err.code !== 'ENOENT') {
-		app.use(favicon(faviconPath));
-	}
-});
+app.locals.IS_DEVELOPMENT = Config.app.isDevelopment;
 
-// view engine setup
-app.engine('hbs', hbs.express4({
-	defaultLayout: path.join(config.paths.templates, 'layout.hbs'),
-	partialsDir: config.paths.partials,
-}));
+const TEMPLATES_DIR = path.join(__dirname, "views");
 
-hbs.registerHelper(hbsHelpers(hbs.handlebars));
+const SITE_RESTRICTED_CORS_OPTIONS = {
+	origin: Config.app.address.origin
+};
 
-app.set('views', config.paths.templates);
-app.set('view engine', 'hbs');
-
-app.set('env', config.app.environment);
-
-app.locals.IS_DEVELOPMENT = config.app.environment === 'development';
-app.locals.STATIC_HOST = (config.static.host ?
-	config.app.static.host :
-	'/static/dist'
-).replace(/\/$/, '');
-
-if (app.locals.IS_DEVELOPMENT) {
-	const webpack              = require('webpack');
-	const webpackDevMiddleware = require('webpack-dev-middleware');
-	const webpackHotMiddleware = require('webpack-hot-middleware');
-	const webpackConfig        = require('../webpack.config');
-
-	_.each(
-		webpackConfig.entry,
-		entry => entry.unshift(...[
-			'webpack/hot/dev-server',
-			'webpack-hot-middleware/client?path=' + config.app.baseURL + '/__webpack_hmr'
-        ])
-	);
-
-	webpackConfig.context = __dirname;
-
-	const compiler = webpack(webpackConfig);
-
-	app.use(webpackDevMiddleware(compiler, {
-		noInfo: true,
-		publicPath: webpackConfig.output.publicPath,
-		stats: {
-			colors: true
-		}
-	}));
-
-	app.use(webpackHotMiddleware(compiler, {
-		log: console.log,
-		reload: true,
-	}))
-}
-else {
-	app.use('/static', express.static(config.paths.static, { maxAge: '7 days' }));
-}
-
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(session.instance);
-// Ensure favicons can be found at the root
-app.use('/', express.static(faviconDirectory, { maxAge: '30 days' }));
-
-setupPassport(app);
-
-app.use('/', routes);
-app.use('/', authenticationRoutes);
-app.use('/puzzles/', puzzleRoutes);
-app.use('/dictionary/', dictionaryRoutes);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-	var err = new Error('Not Found');
+function raise404(req, res, next) {
+	const err = new Error("Not Found");
 	err.status = 404;
 	next(err);
+}
+
+// view engine setup
+app.engine(
+	"hbs",
+	hbs.express4({
+		partialsDir: TEMPLATES_DIR,
+		layoutsDir: TEMPLATES_DIR,
+		handlebars: handlebars
+	})
+);
+
+handlebars.registerHelper("ToJSON", function(value, options) {
+	const args = [value, (key, value) => {
+		if (value === null) {
+			return undefined;
+		}
+
+		return value;
+	}];
+
+	if (options.hash.pretty) {
+		args.push("\t");
+	}
+
+	return JSON.stringify(...args);
 });
 
-// error handlers
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "hbs");
+
+app.locals.STATIC_URL = Config.staticContent.url;
+
+// app.use(favicon());
+app.use(Loggers.http);
+app.use(cookieParser(Config.session.secret));
+
+
+app.use(session);
+
+passportMiddleware(app);
+
+app.use(
+	"/static/fonts/font-awesome",
+	express.static(
+		// Need to do this ugly resolve; using requre.resolve() doesn't seem to work,
+		// possibly because the font-awesome package contains no main entry or index.js,
+		// so Node treats it as not a package.
+		path.resolve(__dirname, "..", "node_modules", "font-awesome", "fonts"),
+		{
+			fallthrough: false
+		}
+	)
+);
+
+app.use("/", cors(SITE_RESTRICTED_CORS_OPTIONS), require("./routes/authentication"));
+// Make sure no /api calls get caught by the below catch-all route handler, so that
+// /api calls can 404 correctly
+app.use("/api", cors(), require("./routes/api"), raise404);
+
+if (Config.staticContent.inline) {
+	app.use("/static/", express.static(Config.paths.dist), raise404);
+}
+
+app.get(
+	"*",
+	cors(SITE_RESTRICTED_CORS_OPTIONS),
+	(req, res, next) => {
+
+		// If what we're serving is supposed to be HTML, serve the base page.
+		if (!/^\/(auth|api|static)\//.test(req.path) && req.accepts(["html", "json"]) === "html") {
+			res.render("index", {
+				user: req.user &&  req.user.toFrontendObject()
+			});
+		}
+		else {
+			next();
+		}
+	}
+);
+
+/// catch 404 and forwarding to error handler
+app.use(raise404);
+
+/// error handlers
+
+// eslint-disable-next-line no-unused-vars
 app.use(function(err, req, res, next) {
-	var status = err.status || 500;
-	res.status(status);
+	res.status(err.status || HTTPStatusCodes.INTERNAL_SERVER_ERROR);
 
-	if (status === 404) {
-		console.error('404 for url ' + req.url);
-	}
-	else {
-		console.error(err);
-	}
+	const errData = {
+		message: err.message,
+		error: Config.app.isDevelopment ?
+			{
+				message: err.message,
+				stack: err.stack
+			} :
+			{}
+	};
 
-	debugger;
+	if (err.status !== HTTPStatusCodes.NOT_FOUND) {
+		Loggers.errors.error(err);
+	}
 
 	res.format({
-		json: function() {
-			res.json({
-				error: err.message
-			});
-		},
-		html: function() {
-			const errorTemplateName = path.join('errors', '' + status);
-			const errorTemplatePath = path.join(config.paths.templates, errorTemplateName + '.hbs');
-
-
-			fs.stat(
-				errorTemplatePath,
-				function(statError) {
-					if (statError && statError.code === 'ENOENT') {
-						errorTemplateName = 'errors/500';
-					}
-
-					res.render(errorTemplateName, {
-						req: req,
-						message: err.message,
-						// no stacktraces leaked to user in production
-						error: config.app.environment === 'development' ?
-							err :
-							{}
-					});
-				}
-			);
-		}
+		json: () => res.json(errData),
+		default: () => res.render("error", errData)
 	});
 });
+
 
 module.exports = app;

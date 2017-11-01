@@ -1,27 +1,23 @@
 "use strict";
 
-const session    = require('express-session');
-const debug      = require('debug')('xword:session');
-const MongoStore = require('connect-mongo/es5')(session);
-const config     = require('./lib/utils/config');
+const session            = require("express-session");
+const MongoStore         = require("connect-mongo")(session);
+const rfr                = require("rfr");
+const Config             = rfr("server/lib/config");
 
-debug('Connecting to session store at ', config.session.store.url);
-const sessionStore = new MongoStore({
-	url: config.session.store.url
-});
+// eslint-disable-next-line no-magic-numbers
+const THIRTY_DAYS_IN_MILLISECONDS = 30 * 24 * 60 * 60 * 1000;
 
-const sessionInstance = session({
-	key: config.session.key,
-	store: sessionStore,
-	secret: config.app.secret,
-	cookie: {
-		domain: '.' + config.app.address.host
-	},
+exports = module.exports = session({
+	store: new MongoStore({
+		url: Config.session.db.url
+	}),
+	secret: Config.session.secret,
+	name: Config.session.cookieName,
+	resave: false,
 	saveUninitialized: true,
-	resave: false
+	cookie: {
+		maxAge: THIRTY_DAYS_IN_MILLISECONDS,
+		secure: false
+	}
 });
-
-exports = module.exports = {
-	store: sessionStore,
-	instance: sessionInstance,
-};

@@ -1,0 +1,12 @@
+/**
+ * Client-specific codebase.
+ *
+ * @namespace client
+ */
+
+ /**
+  * React components for rendering the application.
+  *
+  * @namespace react-components
+  * @memberof client
+  */

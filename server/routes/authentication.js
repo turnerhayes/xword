@@ -1,63 +1,58 @@
 "use strict";
 
-var express  = require('express');
-var passport = require('passport');
-var config   = require('../lib/utils/config');
+const express  = require("express");
+const passport = require("passport");
+const rfr      = require("rfr");
+const Config   = rfr("server/lib/config");
 
-var router = express.Router();
+const router = express.Router();
 
-router.route('/login')
-	.get(function(req, res, next) {
-		res.render(
-			'login',
-			{
-				title: 'Login',
-				req: req
-			}
-		);
+function route({ provider, extraAuthenticateArgs }) {
+	if (Config.auth[provider].isEnabled) {
+		router.route(`/auth/${provider}`)
+			.get(
+				(req, res, next) => { req.session.redirectTo = req.query.redirectTo; next(); },
+				passport.authenticate(provider, extraAuthenticateArgs)
+			);
+
+		router.route(Config.auth[provider].callbackURL)
+			.get(
+				(req, res, next) => {
+					passport.authenticate(
+						provider,
+						{
+							successRedirect: req.session.redirectTo || "/",
+							failureRedirect: req.session.redirectTo || "/",
+							failureFlash: true,
+						}
+					)(req, res, next);
+
+					delete req.session.redirectTo;
+				}
+			);
 	}
-);
+}
 
-router.route('/logout')
+route({
+	provider: "facebook",
+	extraAuthenticateArgs: { scope: Config.auth.facebook.scope || [] }
+});
+
+route({
+	provider: "google",
+	extraAuthenticateArgs: { scope: Config.auth.google.scope || [] }
+});
+
+route({
+	provider: "twitter"
+});
+
+router.route("/logout")
 	.get(
-		function(req, res) {
+		(req, res) => {
 			req.logout();
-			res.redirect('/');
+			res.redirect(req.query.redirectTo || "/");
 		}
-	);
-
-router.route('/auth/fb')
-	.get(
-		passport.authenticate('facebook', { "scope": config.authentication.facebook.scope || [] })
-	);
-
-router.route(config.authentication.facebook.callbackURL)
-	.get(
-		passport.authenticate(
-			'facebook',
-			{
-				successRedirect: '/',
-				failureRedirect: '/login',
-				failureFlash: true,
-			}
-		)
-	);
-
-router.route('/auth/google')
-	.get(
-		passport.authenticate('google', { "scope": config.authentication.google.scope || "login" })
-	);
-
-router.route(config.authentication.google.callbackURL)
-	.get(
-		passport.authenticate(
-			'google',
-			{
-				successRedirect: '/',
-				failureRedirect: '/login',
-				failureFlash: true,
-			}
-		)
 	);
 
 module.exports = router;

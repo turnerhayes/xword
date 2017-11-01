@@ -1,0 +1,8 @@
+{
+	"verbose": true,
+	"watch": [
+		"server",
+		"server/views/index.hbs"
+	],
+	"ignore": ["client", "tools", "logs"]
+}
