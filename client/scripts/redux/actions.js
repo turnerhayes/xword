@@ -126,6 +126,17 @@ export function addPuzzle({ puzzle, setAsCurrent }) {
 	};
 }
 
+export const SET_GENERATED_PUZZLE = "@XWORD/PUZZLES/GENERATED/SET";
+
+export function setGeneratedPuzzle({ puzzle }) {
+	return {
+		type: SET_GENERATED_PUZZLE,
+		payload: {
+			puzzle
+		}
+	};
+}
+
 export const UPDATE_GENERATED_PUZZLE_CELL = "@XWORD/PUZZLES/GENERATED/UPDATE_CELL";
 
 export function updateGeneratedPuzzleCell({ columnIndex, rowIndex, cell }) {

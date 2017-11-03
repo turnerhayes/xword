@@ -19,6 +19,11 @@ function PuzzleGeneratorControls(props) {
 					tooltip="Clear puzzle"
 					onClick={() => props.onClearPuzzle && props.onClearPuzzle()}
 				/>
+				<IconButton
+					iconClassName={`fa fa-square${props.shouldPlaceBlocks ? "" : "-o"}`}
+					tooltip={`Place ${props.shouldPlaceBlocks ? "block" : "input"} cells`}
+					onClick={() => props.onShouldPlaceBlocksChange && props.onShouldPlaceBlocksChange()}
+				/>
 			</ToolbarGroup>
 		</Toolbar>
 	);
@@ -26,6 +31,8 @@ function PuzzleGeneratorControls(props) {
 
 PuzzleGeneratorControls.propTypes = {
 	onClearPuzzle: PropTypes.func,
+	onShouldPlaceBlocksChange: PropTypes.func,
+	shouldPlaceBlocks: PropTypes.bool,
 };
 
 export default PuzzleGeneratorControls;

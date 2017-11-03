@@ -13,6 +13,7 @@ import {
 import CrosswordGrid           from "project/scripts/components/CrosswordGrid";
 import PuzzleGeneratorControls from "project/scripts/components/PuzzleGeneratorControls";
 import {
+	setGeneratedPuzzle,
 	updateGeneratedPuzzleCell,
 	updateGeneratedPuzzleGrid
 }                              from "project/scripts/redux/actions";
@@ -29,19 +30,6 @@ function generateEmptyGrid({ width, height }) {
 	);
 }
 
-function generateEmptyPuzzle({ width, height }) {
-	return new ImmutablePuzzle({
-		grid: generateEmptyGrid({ width, height }),
-		clues: {
-			across: {},
-			down: {},
-		},
-		info: {
-			title: "",
-			author: "",
-		},
-	});
-}
 
 class GeneratePuzzle extends React.Component {
 	static propTypes = {
@@ -54,6 +42,38 @@ class GeneratePuzzle extends React.Component {
 	static defaultProps = {
 		width: 10,
 		height: 10,
+	}
+
+	state = {
+		shouldPlaceBlocks: false,
+	}
+
+	componentWillMount() {
+		if (!this.props.puzzle) {
+			this.setGeneratedPuzzle();
+		}
+	}
+
+	generateEmptyPuzzle = () => {
+		return new ImmutablePuzzle({
+			grid: generateEmptyGrid({ width: this.props.width, height: this.props.height, }),
+			clues: {
+				across: {},
+				down: {},
+			},
+			info: {
+				title: "",
+				author: "",
+			},
+		});
+	}
+
+	setGeneratedPuzzle = () => {
+		const puzzle = this.generateEmptyPuzzle();
+
+		this.props.dispatch(setGeneratedPuzzle({
+			puzzle
+		}));
 	}
 
 	updatePuzzleCell = (columnIndex, rowIndex, cell) => {
@@ -70,10 +90,10 @@ class GeneratePuzzle extends React.Component {
 		}));
 	}
 
-	handleCellClick = ({ event, cell, position }) => {
-		if (event.shiftKey) {
+	handleCellClick = ({ cell, position }) => {
+		if (cell.get("isBlockCell") !== this.state.shouldPlaceBlocks) {
 			this.updatePuzzleCell(position[0], position[1], {
-				isBlockCell: !cell.isBlockCell,
+				isBlockCell: this.state.shouldPlaceBlocks,
 			});
 		}
 	}
@@ -85,15 +105,23 @@ class GeneratePuzzle extends React.Component {
 		}));
 	}
 
+	toggleShouldPlaceBlocks = () => {
+		this.setState({ shouldPlaceBlocks: !this.state.shouldPlaceBlocks });
+	}
+
 	render() {
 		return (
 			<div
 				className="c_generate-puzzle"
+				onKeyDown={(event) => !event.repeat && event.key === "Shift" && this.toggleShouldPlaceBlocks()}
+				onKeyUp={(event) => event.key === "Shift" && this.toggleShouldPlaceBlocks()}
 			>
 				{
 					this.props.puzzle && (
 						<PuzzleGeneratorControls
 							onClearPuzzle={this.handleClearPuzzle}
+							onShouldPlaceBlocksChange={() => this.toggleShouldPlaceBlocks()}
+							shouldPlaceBlocks={this.state.shouldPlaceBlocks}
 						/>
 					)
 				}
@@ -126,12 +154,6 @@ export default connect(
 		if (puzzlesState.isRehydrated) {
 			if (puzzlesState.generatedPuzzle) {
 				props.puzzle = puzzlesState.generatedPuzzle;
-			}
-			else {
-				props.puzzle = generateEmptyPuzzle({
-					width: GeneratePuzzle.defaultProps.width,
-					height: GeneratePuzzle.defaultProps.height,
-				});
 			}
 		}
 

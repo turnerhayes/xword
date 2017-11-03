@@ -13,6 +13,7 @@ import {
 	ADD_PUZZLE,
 	SET_CURRENT_PUZZLE_INDEX,
 	SET_PUZZLE_CELL_CONTENT,
+	SET_GENERATED_PUZZLE,
 	UPDATE_GENERATED_PUZZLE_CELL,
 	UPDATE_GENERATED_PUZZLE_GRID
 }                         from "project/scripts/redux/actions";
@@ -42,6 +43,10 @@ export default function puzzlesReducer(state = new PuzzlesStateRecord(), action)
 
 			const { position, value } = action.payload;
 			return state.setIn(["puzzles", action.payload.puzzleIndex, "userSolution", position[1], position[0]], fromJS(value));
+		}
+
+		case SET_GENERATED_PUZZLE: {
+			return state.set("generatedPuzzle", action.payload.puzzle);
 		}
 
 		case UPDATE_GENERATED_PUZZLE_CELL: {

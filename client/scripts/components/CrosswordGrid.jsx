@@ -159,7 +159,13 @@ function handleInputCellKeyDown({ event, position, props }) {
 	}
 
 	if (!/^[a-zA-Z]$/.test(event.key)) {
-		event.preventDefault();
+		if (event.key.length === 1) {
+			// If the key name is 1 character long, assume it's a printable character (e.g.
+			// digit, punctuation). If it's longer than 1 character, it's probably a non-printable
+			// key (e.g. "F1", "Insert", ...). We don't want to trap those keys, so we don't
+			// prevent their default, we just return.
+			event.preventDefault();
+		}
 		return;
 	}
 
