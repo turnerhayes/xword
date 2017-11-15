@@ -1,0 +1,13 @@
+/**
+ * @namespace Types
+ */
+
+/**
+ * Any item that React is able to render; number, string, React component, DOM node, etc.
+ *
+ * @typedef {*} RenderableElement
+ * @memberof Types
+ *
+ * @see {@link https://reactjs.org/docs/typechecking-with-proptypes.html} - corresponds to the
+ *	`element` PropType
+ */

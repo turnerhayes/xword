@@ -1,0 +1,11 @@
+{
+	"extends": "../.eslintrc.json",
+	"plugins": [
+		"mocha"
+	],
+	"rules": {
+		"mocha/no-exclusive-tests": "error",
+		"mocha/no-identical-title": "error",
+		"mocha/no-return-and-callback": "error"
+	}
+}

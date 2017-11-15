@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title><%= htmlWebpackPlugin.options.title %></title>
+	<%= _.map(
+			htmlWebpackPlugin.files.css,
+			(path) => `<link rel="stylesheet" href="${htmlWebpackPlugin.options.staticContentURL}${path}" />`
+		).join("")
+	%>
+</head>
+<body data-user='{{ToJSON user}}'>
+	<main id="app" class="page-layout__main">
+	</main>
+
+	<%= _.map(
+			htmlWebpackPlugin.files.js,
+			(path) => {
+				let async = "";
+
+				if (/\/main-/.test(path)) {
+					async = "async";
+				}
+				
+				return `<script src="${htmlWebpackPlugin.options.staticContentURL}${path}" ${async}></script>`;
+			}
+		).join("")
+	%>
+</body>
+</html>
