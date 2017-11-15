@@ -1,28 +1,18 @@
 import React              from "react";
 import PropTypes          from "prop-types";
 import ImmutablePropTypes from "react-immutable-proptypes";
-import {
-	connect
-}                         from "react-redux";
 import Popover            from "material-ui/Popover";
 import IconButton         from "material-ui/IconButton";
 import Icon               from "material-ui/Icon";
 import {
 	ImmutablePuzzle
 }                         from "xpuz";
-import {
-	addPuzzle,
-	setCurrentPuzzleIndex,
-	setPuzzleCellContent,
-	setUIState
-}                         from "project/scripts/redux/actions";
-import CrosswordGrid      from "project/scripts/components/CrosswordGrid";
+import CrosswordGrid      from "project/scripts/containers/CrosswordGrid";
 import CrosswordClues     from "project/scripts/components/CrosswordClues";
 import PuzzlePicker       from "project/scripts/components/PuzzlePicker";
-import PuzzleSettings     from "project/scripts/components/PuzzleSettings";
+import PuzzleSettings     from "project/scripts/containers/PuzzleSettings";
 import {
-	DIRECTIONS,
-	ERROR_OPTIONS
+	DIRECTIONS
 }                         from "project/scripts/constants";
 import                         "project/styles/solve-puzzle.less";
 
@@ -52,7 +42,6 @@ class SolvePuzzle extends React.Component {
 	 * @prop {Types.RenderableElement} [children=[]] - child(ren) of the component
 	 */
 	static propTypes = {
-		dispatch: PropTypes.func.isRequired,
 		children: PropTypes.oneOfType([
 			PropTypes.arrayOf(PropTypes.node),
 			PropTypes.node
@@ -60,16 +49,17 @@ class SolvePuzzle extends React.Component {
 		puzzle: PropTypes.instanceOf(ImmutablePuzzle),
 		existingPuzzles: ImmutablePropTypes.listOf(PropTypes.instanceOf(ImmutablePuzzle)),
 		currentPuzzleIndex: PropTypes.number,
-		fontAdjust: PropTypes.number,
 		selectedCellPosition: ImmutablePropTypes.listOf(PropTypes.number),
+		onPuzzleSelected: PropTypes.func,
+		onInputCellSelect: PropTypes.func,
+		setDirection: PropTypes.func,
+		addPuzzle: PropTypes.func,
+		setPuzzleCellContent: PropTypes.func,
 		currentDirection: PropTypes.oneOf(Object.values(DIRECTIONS)),
-		errorOption: PropTypes.oneOf(Object.values(ERROR_OPTIONS)),
 	}
 
 	static defaultProps = {
 		children: [],
-		fontAdjust: 0,
-		errorOption: ERROR_OPTIONS.Hidden,
 	}
 
 	state = {
@@ -77,24 +67,8 @@ class SolvePuzzle extends React.Component {
 		settingsPopoverAnchorEl: null,
 	}
 
-	setUIState = (settings) => {
-		this.props.dispatch(setUIState({
-			section: "SolvePuzzle",
-			settings,
-		}));
-	}
-
-	handleFontAdjustChange = (adjust) => {
-		this.setUIState({
-			fontAdjust: adjust
-		});
-	}
-
 	handleFileUpload = ({ puzzle }) => {
-		this.props.dispatch(addPuzzle({
-			puzzle,
-			setAsCurrent: true
-		}));
+		this.props.addPuzzle && this.props.addPuzzle({ puzzle });
 	}
 
 	handleFileUploadFailure = (error) => {
@@ -102,35 +76,19 @@ class SolvePuzzle extends React.Component {
 	}
 
 	handlePuzzleSelected = ({ index }) => {
-		this.props.dispatch(setCurrentPuzzleIndex({
-			index
-		}));
-
-		this.setUIState({
-			currentDirection: null,
-			selectedCellPosition: null,
-		});
+		this.props.onPuzzleSelected && this.props.onPuzzleSelected({ index });
 	}
 
 	handleInputCellSelect = ({ cell, position }) => {
-		const settings = {
-			selectedCellPosition: position,
-		};
-
-		if (!this.props.currentDirection) {
-			settings.currentDirection = cell.getIn(["containingClues", "across"]) ?
-				DIRECTIONS.Across :
-				DIRECTIONS.Down;
-		}
-		this.setUIState(settings);
+		this.props.onInputCellSelect && this.props.onInputCellSelect({ cell, position });
 	}
 
 	handleCellChange = ({ position, value, wasDelete }) => {
-		this.props.dispatch(setPuzzleCellContent({
+		this.props.setPuzzleCellContent({
 			puzzleIndex: this.props.currentPuzzleIndex,
 			position,
 			value,
-		}));
+		});
 
 		if (!wasDelete) {
 			this.handleMoveFocus({
@@ -143,6 +101,7 @@ class SolvePuzzle extends React.Component {
 
 	handleMoveFocus = ({ currentPosition, isForward, direction }) => {
 		let newFocusCellPosition;
+		let newFocusCell;
 		const { grid } = this.props.puzzle;
 		const height = grid.size;
 		const width = grid.first().size;
@@ -156,6 +115,7 @@ class SolvePuzzle extends React.Component {
 
 				if (!cell.get("isBlockCell")) {
 					newFocusCellPosition = [columnIndex, rowIndex];
+					newFocusCell = cell;
 				}
 				
 				rowIndex += isForward ? 1 : -1;
@@ -168,28 +128,24 @@ class SolvePuzzle extends React.Component {
 
 				if (cell && !cell.get("isBlockCell")) {
 					newFocusCellPosition = [columnIndex, rowIndex];
+					newFocusCell = cell;
 				}
 			}
 		}
 
 		if (newFocusCellPosition) {
-			this.setUIState({
-				selectedCellPosition: newFocusCellPosition,
+			this.props.onInputCellSelect && this.props.onInputCellSelect({
+				position: newFocusCellPosition,
+				cell: newFocusCell,
 			});
 		}
-	}
-
-	handleErrorOptionChange = (event, value) => {
-		this.setUIState({
-			errorOption: value
-		});
 	}
 
 	toggleDirection = ({ position }) => {
 		const cell = this.props.puzzle.grid.getIn([position[1], position[0]]);
 
-		this.setUIState({
-			currentDirection: this.props.currentDirection === DIRECTIONS.Across || !cell.getIn(["containingClues", "across"]) ?
+		this.props.setDirection({
+			direction: this.props.currentDirection === DIRECTIONS.Across || !cell.getIn(["containingClues", "across"]) ?
 				DIRECTIONS.Down :
 				DIRECTIONS.Across,
 		});
@@ -230,10 +186,7 @@ class SolvePuzzle extends React.Component {
 					transformOrigin={{horizontal: "right", vertical: "top"}}
 				>
 					<PuzzleSettings
-						onErrorOptionChange={this.handleErrorOptionChange}
-						errorOption={this.props.errorOption}
-						currentFontSizeAdjust={this.props.fontAdjust}
-						onFontSizeAdjustChange={this.handleFontAdjustChange}
+						uiSection="SolvePuzzle"
 						maxFontSizeAdjust={3}
 						minFontSizeAdjust={-2}
 					/>
@@ -275,17 +228,14 @@ class SolvePuzzle extends React.Component {
 						(
 							<div>
 								<CrosswordGrid
+									uiSection="SolvePuzzle"
 									className="c_solve-puzzle--crossword-grid-container"
-									fontAdjust={this.props.fontAdjust}
 									puzzle={this.props.puzzle}
-									currentDirection={this.props.currentDirection}
 									onInputCellSelect={this.handleInputCellSelect}
 									onCellChange={this.handleCellChange}
 									selectedCellPosition={this.props.selectedCellPosition}
 									toggleDirection={this.toggleDirection}
 									onMoveFocus={this.handleMoveFocus}
-									errorOption={this.props.errorOption}
-
 								/>
 								<CrosswordClues
 									puzzle={this.props.puzzle}
@@ -300,28 +250,4 @@ class SolvePuzzle extends React.Component {
 	}
 }
 
-export default connect(
-	function mapStateToProps(state) {
-		const props = {};
-
-		const uiState = state.get("ui");
-
-		["fontAdjust", "selectedCellPosition", "currentDirection", "errorOption"].forEach(
-			(prop) => {
-				if (uiState.hasIn(["SolvePuzzle", prop])) {
-					props[prop] = uiState.getIn(["SolvePuzzle", prop]);
-				}
-			}
-		);
-
-		const puzzlesState = state.get("puzzles");
-		props.existingPuzzles = puzzlesState.puzzles;
-		props.currentPuzzleIndex = puzzlesState.currentPuzzleIndex;
-
-		if (props.currentPuzzleIndex !== null) {
-			props.puzzle = props.existingPuzzles.get(props.currentPuzzleIndex);
-		}
-
-		return props;
-	}
-)(SolvePuzzle);
+export default SolvePuzzle;

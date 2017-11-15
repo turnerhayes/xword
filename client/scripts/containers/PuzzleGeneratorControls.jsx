@@ -28,17 +28,15 @@ export default connect(
 		return props;
 	},
 	function mapDispatchToProps(dispatch, ownProps) {
-		const props = {};
-
-		props.onDimensionChange = ({ dimension, value }) => {
-			dispatch(setUIState({
-				section: ownProps.uiSection,
-				settings: {
-					[dimension]: value
-				}
-			}));
+		return {
+			onDimensionChange({ dimension, value }) {
+				dispatch(setUIState({
+					section: ownProps.uiSection,
+					settings: {
+						[dimension]: value
+					}
+				}));
+			},
 		};
-
-		return props;
 	}
 )(PuzzleGeneratorControls);

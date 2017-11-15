@@ -11,7 +11,7 @@ import { history }      from "project/scripts/redux/configure-store";
 import getStore         from "project/scripts/redux/store";
 import App              from "project/scripts/components/App";
 import Home             from "project/scripts/components/Home";
-import SolvePuzzle      from "project/scripts/components/SolvePuzzle";
+import SolvePuzzle      from "project/scripts/containers/SolvePuzzle";
 import GeneratePuzzle   from "project/scripts/containers/GeneratePuzzle";
 
 ReactDOM.render(
