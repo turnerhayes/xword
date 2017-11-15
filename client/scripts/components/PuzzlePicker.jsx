@@ -3,8 +3,8 @@ import PropTypes          from "prop-types";
 import ImmutablePropTypes from "react-immutable-proptypes";
 import Select             from "react-select";
 import Dropzone           from "react-dropzone";
-import FontIcon           from "material-ui/FontIcon";
-import FlatButton         from "material-ui/FlatButton";
+import Icon               from "material-ui/Icon";
+import Button             from "material-ui/Button";
 import {
 	Parsers,
 	ImmutablePuzzle
@@ -49,10 +49,11 @@ function PuzzlePicker(props) {
 				className="c_puzzle-picker--dropzone"
 				onDrop={(files) => handleFileUpload(props, files)}
 			>
-				<FlatButton
-					icon={<FontIcon className="fa fa-upload" />}
-					label="Upload a .puz file"
-				/>
+				<Button
+				>
+					<Icon className="fa fa-upload"/>
+					Upload a .puz file
+				</Button>
 			</Dropzone>
 			{
 				props.existingPuzzles && !props.existingPuzzles.isEmpty() && (

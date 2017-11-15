@@ -1,8 +1,8 @@
 "use strict";
 
-var mongoose = require('mongoose');
+let mongoose = require("mongoose");
 
-var UserSchema = new mongoose.Schema({
+let UserSchema = new mongoose.Schema({
 	name: {
 		first: {
 			type: String,
@@ -22,7 +22,7 @@ var UserSchema = new mongoose.Schema({
 	},
 	preferredDisplayName: {
 		type: String,
-		"default": null
+		default: null
 	},
 	email: {
 		type: String,
@@ -43,17 +43,17 @@ var UserSchema = new mongoose.Schema({
 	},
 });
 
-UserSchema.pre('validate', function(next) {
+UserSchema.pre("validate", function(next) {
 	if (
 		(this.username && this.sessionId) ||
 		(!this.username && !this.sessionId)
 	) {
-		next(new Error('User must have either a username or a session ID, but not both'));
+		next(new Error("User must have either a username or a session ID, but not both"));
 		return;
 	}
 
 	if (this.username && !this.name.first) {
-		next(new Error('Non-anonymous users (users with a username) must have a first name'));
+		next(new Error("Non-anonymous users (users with a username) must have a first name"));
 	}
 
 	next();

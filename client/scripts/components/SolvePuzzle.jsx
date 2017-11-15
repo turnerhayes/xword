@@ -6,6 +6,7 @@ import {
 }                         from "react-redux";
 import Popover            from "material-ui/Popover";
 import IconButton         from "material-ui/IconButton";
+import Icon               from "material-ui/Icon";
 import {
 	ImmutablePuzzle
 }                         from "xpuz";
@@ -226,7 +227,7 @@ class SolvePuzzle extends React.Component {
 						settingsPopoverIsOpen: false,
 					})}
 					anchorOrigin={{horizontal: "right", vertical: "bottom"}}
-					targetOrigin={{horizontal: "right", vertical: "top"}}
+					transformOrigin={{horizontal: "right", vertical: "top"}}
 				>
 					<PuzzleSettings
 						onErrorOptionChange={this.handleErrorOptionChange}
@@ -239,12 +240,15 @@ class SolvePuzzle extends React.Component {
 				</Popover>
 				<IconButton
 					className="c_solve-puzzle--puzzle-settings-button"
-					iconClassName="fa fa-gear"
 					onClick={(event) => this.setState({
 						settingsPopoverIsOpen: true,
 						settingsPopoverAnchorEl: event.target,
 					})}
-				/>
+				>
+					<Icon
+						className="fa fa-gear"
+					/>
+				</IconButton>
 				<PuzzlePicker
 					onUploadSuccess={this.handleFileUpload}
 					onUploadFailure={this.handleFileUploadFailure}

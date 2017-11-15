@@ -276,15 +276,23 @@ function CrosswordGrid(props) {
 													ref.ref = (input) => input && input.focus();
 												}
 
-												let cellValue = userSolution;
+												let cellValue;
 
-												if (props.errorOption === ERROR_OPTIONS.Reveal && !userSolution) {
+												if (props.showUserSolutions) {
+													cellValue = userSolution;
+													
+													if (props.errorOption === ERROR_OPTIONS.Reveal && !userSolution) {
+														cellValue = cell.get("solution");
+													}
+
+													if (!cellValue) {
+														cellValue = "";
+													}
+												}
+												else {
 													cellValue = cell.get("solution");
 												}
 
-												if (!cellValue) {
-													cellValue = "";
-												}
 
 												return (
 													<td
@@ -296,7 +304,7 @@ function CrosswordGrid(props) {
 															<input
 																className="letter-input"
 																type="text"
-																value={cellValue}
+																value={cellValue || ""}
 																onChange={() => {}}
 																onFocus={() => handleInputCellFocus({
 																	props,
@@ -338,10 +346,12 @@ CrosswordGrid.propTypes = {
 	onCellClick: PropTypes.func,
 	onCellChange: PropTypes.func,
 	toggleDirection: PropTypes.func,
+	showUserSolutions: PropTypes.bool,
 };
 
 CrosswordGrid.defaultProps = {
 	fontAdjust: 0,
+	showUserSolutions: true,
 };
 
 export default CrosswordGrid;

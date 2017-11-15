@@ -161,6 +161,28 @@ export function updateGeneratedPuzzleGrid({ grid }) {
 	};
 }
 
+export const UPDATE_GENERATED_PUZZLE_CLUE = "@XWORD/PUZZLES/GENERATED/UPDATE_CLUE";
+
+export function updateGeneratedPuzzleClue({ clueNumber, clueText, direction }) {
+	return {
+		type: UPDATE_GENERATED_PUZZLE_CLUE,
+		payload: {
+			clueNumber,
+			clueText,
+			direction
+		}
+	};
+}
+
+export const CLEAR_GENERATED_PUZZLE_CLUES = "@XWORD/PUZZLES/GENERATED/CLEAR_CLUES";
+
+export function clearGeneratedPuzzleClues() {
+	return {
+		type: CLEAR_GENERATED_PUZZLE_CLUES,
+		payload: {}
+	};
+}
+
 export const SET_CURRENT_PUZZLE_INDEX = "@XWORD/PUZZLES/SET_CURRENT_INDEX";
 
 export function setCurrentPuzzleIndex({ index }) {

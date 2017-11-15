@@ -12,8 +12,7 @@ import getStore         from "project/scripts/redux/store";
 import App              from "project/scripts/components/App";
 import Home             from "project/scripts/components/Home";
 import SolvePuzzle      from "project/scripts/components/SolvePuzzle";
-import GeneratePuzzle   from "project/scripts/components/GeneratePuzzle";
-
+import GeneratePuzzle   from "project/scripts/containers/GeneratePuzzle";
 
 ReactDOM.render(
 	<Provider store={getStore()}>

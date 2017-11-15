@@ -1,15 +1,15 @@
 "use strict";
 
-var mongoose = require('mongoose');
-var _        = require('lodash');
+let mongoose = require("mongoose");
+let _        = require("lodash");
 
-var PuzzleSchema = new mongoose.Schema({
+let PuzzleSchema = new mongoose.Schema({
 	puzzle_id: {
 		type: String,
 	},
 	user: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: 'User'
+		ref: "User"
 	},
 	solution: {
 		type: [
@@ -17,7 +17,7 @@ var PuzzleSchema = new mongoose.Schema({
 		],
 		validate: {
 			validator: function(val) {
-				var i, len;
+				let i, len;
 
 				if (_.isUndefined(val)) {
 					return true;

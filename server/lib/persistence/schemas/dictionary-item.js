@@ -1,8 +1,8 @@
 "use strict";
 
-var mongoose = require('mongoose');
+let mongoose = require("mongoose");
 
-var DictionaryItemSchema = new mongoose.Schema({
+let DictionaryItemSchema = new mongoose.Schema({
 	term: {
 		type: String,
 		index: true,
@@ -11,6 +11,6 @@ var DictionaryItemSchema = new mongoose.Schema({
 	definitions: {
 		type: [String]
 	}
-}, { collection: 'dictionary' });
+}, { collection: "dictionary" });
 
 exports = module.exports = DictionaryItemSchema;

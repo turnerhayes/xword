@@ -1,18 +1,17 @@
 "use strict";
 
-var _               = require('lodash');
-var express         = require('express');
-var mongoose        = require('mongoose');
-var DictionaryStore = require('../lib/persistence/stores/dictionary');
+let _               = require("lodash");
+let express         = require("express");
+let DictionaryStore = require("../lib/persistence/stores/dictionary");
 
-var router = express.Router();
+let router = express.Router();
 
-router.route('/manage')
-	.get(function(req, res, next) {
-		var renderArgs = [
-			'manage-dictionary',
+router.route("/manage")
+	.get((req, res, next) => {
+		let renderArgs = [
+			"manage-dictionary",
 			{
-				title: 'Dictionary',
+				title: "Dictionary",
 				req: req
 			}
 		];
@@ -20,82 +19,74 @@ router.route('/manage')
 		if (req.query && req.query.pattern) {
 			DictionaryStore.findTerm({
 				pattern: req.query.pattern
-			}).done(
-				function(results) {
+			}).then(
+				(results) => {
 					renderArgs[1].results = results;
 
-					res.render.apply(res, renderArgs);
+					res.render(res, ...renderArgs);
 				}
-			);
+			).catch(next);
 
 			return;
 		}
 
-		res.render.apply(res, renderArgs);
+		res.render(...renderArgs);
 	}
 );
 
-router.route('/add')
-	.get(function(req, res, next) {
+router.route("/add")
+	.get((req, res) => {
 		res.render(
-			'add-to-dictionary',
+			"add-to-dictionary",
 			{
-				title: 'Add to Dictionary',
+				title: "Add to Dictionary",
 				req: req
 			}
 		);
 	}
 );
 
-router.route('/term')
+router.route("/term")
 	.post(
-		function(req, res, next) {
+		(req, res, next) => {
 			DictionaryStore.addDefinitions({
 				data: req.body
-			}).done(
-				function() {
-					res.end();
-				}
-			);
+			}).then(() => res.end())
+			.catch(next);
 		}
 	);
 
-router.route('/termList')
+router.route("/termList")
 	.get(
-		function(req, res, next) {
-			var page = req.query.page || 1;
+		(req, res, next) => {
+			let page = req.query.page || 1;
 
-			var pattern = req.query.pattern;
+			let pattern = req.query.pattern;
 
 			DictionaryStore.findTerm({
 				pattern: pattern,
 				frame: {
 					start: page - 1
 				}
-			}).done(
-				function(results) {
-					res.json({
-						results: results
-					});
-				}
-			);
+			}).then(
+				(results) => res.json({
+					results: results
+				})
+			).catch(next);
 		}
 	).post(
-		function(req, res, next) {
+		(req, res, next) => {
 			DictionaryStore.updateDefinitions({
 				data: req.body
-			}).done(
-				function() {
-					res.end();
-				}
-			);
+			}).then(() => res.end())
+			.catch(next);
 		}
 	);
 
-router.route('/terms')
+router.route("/terms")
 	.get(
-		function(req, res, next) {
-			var options = {};
+		(req, res, next) => {
+			let options = {};
 
 			if (req.query.pattern) {
 				options.pattern = req.query.pattern;
@@ -115,43 +106,32 @@ router.route('/terms')
 				}
 			}
 
-			DictionaryStore.findTerms(options).done(
-				function(results) {
-					res.json(results || []);
-				},
-				function(err) {
-					next(err);
-				}
-			);
+			DictionaryStore.findTerms(options).then(
+				(results) => res.json(results || [])
+			).catch(next);
 		}
 	);
 
-router.route('/terms/check')
+router.route("/terms/check")
 	.post(
-		function(req, res) {
+		(req, res, next) => {
 			let terms = req.body.terms;
 
 			DictionaryStore.verifyValidTerms({
 				terms: terms
-			}).done(
-				function(results) {
-					res.json(results);
-				}
-			);
+			}).then((results) => res.json(results))
+			.catch(next);
 		}
 	);
 
-router.route('/update')
-	.post(function(req, res, next) {
-		var terms = req.body;
+router.route("/update")
+	.post((req, res, next) => {
+		let terms = req.body;
 
 		DictionaryStore.updateDefinitions({
 			data: terms
-		}).done(
-			function() {
-				res.end();
-			}
-		);
+		}).then(() => res.end())
+		.catch(next);
 	});
 
 module.exports = router;

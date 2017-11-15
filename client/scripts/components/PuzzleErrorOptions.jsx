@@ -1,32 +1,35 @@
 import React     from "react";
 import PropTypes from "prop-types";
+import Radio, {
+	RadioGroup
+}                from "material-ui/Radio";
 import {
-	RadioButton,
-	RadioButtonGroup
-}                from "material-ui/RadioButton";
+	FormControlLabel
+} from "material-ui/Form";
 import {
 	ERROR_OPTIONS
 }                from "project/scripts/constants";
 
 function PuzzleErrorOptions(props) {
 	return (
-		<RadioButtonGroup
-			valueSelected={props.errorOption}
+		<RadioGroup
+			value={props.errorOption}
 			onChange={props.onChange}
 			name="error-option"
 		>
 			{
 				Object.keys(ERROR_OPTIONS).map(
 					(key) => (
-						<RadioButton
+						<FormControlLabel
 							key={key}
-							value={ERROR_OPTIONS[key]}
+							value={ERROR_OPTIONS[key] || ""}
+							control={<Radio />}
 							label={key}
 						/>
 					)
 				)
 			}
-		</RadioButtonGroup>
+		</RadioGroup>
 	);
 }
 

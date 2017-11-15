@@ -1,17 +1,17 @@
 "use strict";
 
-var mongoose             = require('mongoose');
-var DictionaryItemSchema = require('../schemas/dictionary-item');
+let mongoose             = require("mongoose");
+let DictionaryItemSchema = require("../schemas/dictionary-item");
 
-var DictionaryItemModel = mongoose.model('Dictionary', DictionaryItemSchema);
+let DictionaryItemModel = mongoose.model("Dictionary", DictionaryItemSchema);
 
 Object.defineProperties(DictionaryItemModel.prototype, {
 	toFrontendObject: {
 		enumerable: true,
 		value: function() {
-			var user = this;
+			let user = this;
 
-			var obj = user.toObject({
+			let obj = user.toObject({
 				virtuals: true
 			});
 

@@ -1,9 +1,9 @@
 "use strict";
 
-var Q         = require('q');
-var UserModel = require('../models/user');
+let Q         = require("q");
+let UserModel = require("../models/user");
 
-var UserStore = Object.create(Object.prototype, {
+let UserStore = Object.create(Object.prototype, {
 	getUserByID: {
 		value: function(id) {
 			return Q(

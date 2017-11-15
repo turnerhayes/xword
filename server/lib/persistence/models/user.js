@@ -1,17 +1,17 @@
 "use strict";
 
-var mongoose   = require('mongoose');
-var UserSchema = require('../schemas/user');
+let mongoose   = require("mongoose");
+let UserSchema = require("../schemas/user");
 
-var UserModel = mongoose.model('User', UserSchema);
+let UserModel = mongoose.model("User", UserSchema);
 
 Object.defineProperties(UserModel.prototype, {
 	toFrontendObject: {
 		enumerable: true,
 		value: function() {
-			var user = this;
+			let user = this;
 
-			var obj = user.toObject({
+			let obj = user.toObject({
 				virtuals: true
 			});
 

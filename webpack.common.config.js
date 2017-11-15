@@ -118,9 +118,10 @@ exports = module.exports = {
 			NODE_ENV: Config.app.environment,
 			WEB_SOCKETS_URL: null,
 			STATIC_CONTENT_URL: null,
-			CREDENTIALS_FACEBOOK_IS_ENABLED: Config.auth.facebook.isEnabled,
-			CREDENTIALS_GOOGLE_IS_ENABLED: Config.auth.google.isEnabled,
-			CREDENTIALS_TWITTER_IS_ENABLED: Config.auth.twitter.isEnabled,
+			IS_DEVELOPMENT: Config.app.isDevelopment || false,
+			CREDENTIALS_FACEBOOK_IS_ENABLED: Config.auth.facebook.isEnabled || false,
+			CREDENTIALS_GOOGLE_IS_ENABLED: Config.auth.google.isEnabled || false,
+			CREDENTIALS_TWITTER_IS_ENABLED: Config.auth.twitter.isEnabled || false,
 		}),
 
 		new ExtractTextPlugin({

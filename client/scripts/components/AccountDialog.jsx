@@ -2,6 +2,7 @@ import React      from "react";
 import PropTypes  from "prop-types";
 import { Link }   from "react-router-dom";
 import IconButton from "material-ui/IconButton";
+import Icon       from "material-ui/Icon";
 import UserRecord from "project/scripts/records/user";
 import {
 	login,
@@ -32,33 +33,42 @@ function renderNotLoggedIn(dispatch) {
 				Config.auth.facebook.isEnabled && (
 					<IconButton
 						className="login-link"
-						iconClassName={`fa ${PROVIDER_ICON_MAP.facebook}`}
 						title="Log in with Facebook"
 						aria-label="Log in with Facebook"
 						onClick={() => handleLoginClicked({ dispatch, provider: "facebook" })}
-					/>
+					>
+						<Icon
+							className={`fa ${PROVIDER_ICON_MAP.facebook}`}
+						/>
+					</IconButton>
 				)
 			}
 			{
 				Config.auth.google.isEnabled && (
 					<IconButton
 						className="login-link"
-						iconClassName={`fa ${PROVIDER_ICON_MAP.google}`}
 						title="Log in with Google"
 						aria-label="Log in with Google"
 						onClick={() => handleLoginClicked({ dispatch, provider: "google" })}
-					/>
+					>
+						<Icon
+							className={`fa ${PROVIDER_ICON_MAP.google}`}
+						/>
+					</IconButton>
 				)
 			}
 			{
 				Config.auth.twitter.isEnabled && (
 					<IconButton
 						className="login-link"
-						iconClassName={`fa ${PROVIDER_ICON_MAP.twitter}`}
 						title="Log in with Google"
 						aria-label="Log in with Google"
 						onClick={() => handleLoginClicked({ dispatch, provider: "twitter" })}
-					/>
+					>
+						<Icon
+							className={`fa ${PROVIDER_ICON_MAP.twitter}`}
+						/>
+					</IconButton>
 				)
 			}
 		</div>
@@ -104,12 +114,14 @@ function AccountDialog(props) {
 					{
 						props.loggedInUser && (
 							<IconButton
-								type="button"
-								iconClassName="fa fa-sign-out"
 								aria-label="Log out"
 								title="Log out"
 								onClick={handleLogoutButtonClicked}
-							/>
+							>
+								<Icon
+									className="fa fa-sign-out"
+								/>
+							</IconButton>
 						)
 					}
 					{

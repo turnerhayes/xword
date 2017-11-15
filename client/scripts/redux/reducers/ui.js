@@ -18,7 +18,7 @@ export default function uiStateReducer(state = new UIStateRecord(), action) {
 		}
 
 		case REHYDRATE: {
-			return state.merge(action.payload.ui);
+			return state.merge(action.payload.ui).set("isRehydrated", true);
 		}
 
 		default:

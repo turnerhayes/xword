@@ -1,24 +1,24 @@
 "use strict";
 
-var passport         = require('passport');
-var FacebookStrategy = require('passport-facebook').Strategy;
-var GoogleStrategy   = require('passport-google-oauth').OAuth2Strategy;
-var LocalStrategy    = require('passport-local').Strategy;
-var UserStore        = require('./lib/persistence/stores/user');
-var UserModel        = require('./lib/persistence/models/user');
-var config           = require('./lib/utils/config');
+let passport         = require("passport");
+let FacebookStrategy = require("passport-facebook").Strategy;
+let GoogleStrategy   = require("passport-google-oauth").OAuth2Strategy;
+let LocalStrategy    = require("passport-local").Strategy;
+let UserStore        = require("./lib/persistence/stores/user");
+let UserModel        = require("./lib/persistence/models/user");
+let config           = require("./lib/utils/config");
 
-var baseCallbackURL = "http" + (config.app.address.isSecure ? "s" : "") + "://" + config.app.address.host;
-var port = config.app.address.externalPort && Number(config.app.address.externalPort);
+let baseCallbackURL = "http" + (config.app.address.isSecure ? "s" : "") + "://" + config.app.address.host;
+let port = config.app.address.externalPort && Number(config.app.address.externalPort);
 
 // If the port is 80, don't bother adding it
 if (port && port !== 80) {
 	baseCallbackURL += ":" + port;
 }
 
-var facebookCallbackURL = baseCallbackURL + config.authentication.facebook.callbackURL;
+let facebookCallbackURL = baseCallbackURL + config.authentication.facebook.callbackURL;
 
-var googleCallbackUrl = baseCallbackURL + config.authentication.google.callbackURL;
+let googleCallbackUrl = baseCallbackURL + config.authentication.google.callbackURL;
 
 passport.serializeUser(function(user, done) {
 	done(null, user._id);
@@ -41,7 +41,7 @@ passport.use(
 		},
 		function(req, accessToken, refreshToken, profile, done) {
 			if (!profile) {
-				done(new Error('Got no profile'));
+				done(new Error("Got no profile"));
 				return;
 			}
 
@@ -55,13 +55,13 @@ passport.use(
 						return user;
 					}
 
-					var email;
+					let email;
 
 					if (profile.emails && profile.emails.length > 0) {
 						email = profile.emails[0].value;
 					}
 
-					var username = profile.username || email;
+					let username = profile.username || email;
 
 					return UserStore.addUser(
 						new UserModel({
@@ -98,7 +98,7 @@ passport.use(new GoogleStrategy(
 	},
 	function(token, tokenSecret, profile, done) {
 		if (!profile) {
-			done(new Error('Got no profile'));
+			done(new Error("Got no profile"));
 			return;
 		}
 
@@ -112,15 +112,15 @@ passport.use(new GoogleStrategy(
 					return user;
 				}
 
-				var email;
+				let email;
 
 				if (profile.emails && profile.emails.length > 0) {
 					email = profile.emails[0].value;
 				}
 
-				var username = profile.username || email || 'google-' + profile.id;
+				let username = profile.username || email || "google-" + profile.id;
 
-				var image;
+				let image;
 
 				if (profile.photos && profile.photos.length > 0) {
 					image = profile.photos[0].value;
@@ -164,7 +164,7 @@ passport.use(new LocalStrategy(
 				}
 
 				// check password
-				var passwordVerified = true;
+				let passwordVerified = true;
 
 				if (passwordVerified) {
 					return done(null, user);

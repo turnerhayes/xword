@@ -1,9 +1,9 @@
 "use strict";
 
-const _                   = require('lodash');
-const assert              = require('assert');
-const Q                   = require('q');
-const DictionaryItemModel = require('../models/dictionary-item');
+const _                   = require("lodash");
+const assert              = require("assert");
+const Q                   = require("q");
+const DictionaryItemModel = require("../models/dictionary-item");
 
 const DEFAULT_FRAME_START = 0;
 const DEFAULT_FRAME_END = 10;
@@ -17,7 +17,7 @@ function _toPatternRegex(pattern) {
 		return pattern;
 	}
 
-	return new RegExp('^' + pattern.replace(/_/g, '.') + '$');	
+	return new RegExp("^" + pattern.replace(/_/g, ".") + "$");	
 }
 
 class DictionaryStore {
@@ -31,7 +31,7 @@ class DictionaryStore {
 
 		let termCheck = {};
 
-		termCheck.term = _toPatternRegex(options.pattern || '');
+		termCheck.term = _toPatternRegex(options.pattern || "");
 
 		let query = DictionaryItemModel.find(termCheck).limit(frame.length);
 
@@ -84,13 +84,13 @@ class DictionaryStore {
 	}
 
 	static updateDefinitions(options) {
-		assert(options, 'DictionaryStore.updateDefinitions() cannot be called without options');
+		assert(options, "DictionaryStore.updateDefinitions() cannot be called without options");
 
 		let data = options.data;
 
 		let terms = _.keys(data);
 
-		assert(data, 'No updates specified for DictionaryStore.updateDefinitions()');
+		assert(data, "No updates specified for DictionaryStore.updateDefinitions()");
 
 		return Q.all(
 			_.map(
@@ -110,13 +110,13 @@ class DictionaryStore {
 	}
 
 	static addDefinitions(options) {
-		assert(options, 'DictionaryStore.addDefinitions() cannot be called without options');
+		assert(options, "DictionaryStore.addDefinitions() cannot be called without options");
 
 		let data = options.data;
 
 		let terms = _.keys(data);
 
-		assert(data, 'No updates specified for DictionaryStore.addDefinitions()');
+		assert(data, "No updates specified for DictionaryStore.addDefinitions()");
 
 		return Q(
 			DictionaryItemModel.find({
@@ -186,7 +186,7 @@ class DictionaryStore {
 		return Q(query).then(
 			function(foundTerms) {
 				return {
-					missingTerms: _.difference(terms, _.map(foundTerms, 'term')),
+					missingTerms: _.difference(terms, _.map(foundTerms, "term")),
 				};
 			}
 		);

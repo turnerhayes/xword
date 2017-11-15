@@ -1,5 +1,6 @@
 import {
 	List,
+	Map,
 	fromJS
 }                         from "immutable";
 import {
@@ -15,7 +16,9 @@ import {
 	SET_PUZZLE_CELL_CONTENT,
 	SET_GENERATED_PUZZLE,
 	UPDATE_GENERATED_PUZZLE_CELL,
-	UPDATE_GENERATED_PUZZLE_GRID
+	UPDATE_GENERATED_PUZZLE_GRID,
+	UPDATE_GENERATED_PUZZLE_CLUE,
+	CLEAR_GENERATED_PUZZLE_CLUES
 }                         from "project/scripts/redux/actions";
 
 export default function puzzlesReducer(state = new PuzzlesStateRecord(), action) {
@@ -59,6 +62,39 @@ export default function puzzlesReducer(state = new PuzzlesStateRecord(), action)
 			return state.update("generatedPuzzle", (puzzle) => puzzle.updateCell(columnIndex, rowIndex, cell));
 		}
 
+		case CLEAR_GENERATED_PUZZLE_CLUES: {
+			if (!state.get("generatedPuzzle")) {
+				return state;
+			}
+
+			const clues = state.getIn(["generatedPuzzle", "grid"]).reduce(
+				(clues, row) => {
+					row.forEach(
+						(cell) => {
+							const acrossClueNumber = cell.getIn(["containingClues", "across"]);
+							const downClueNumber = cell.getIn(["containingClues", "down"]);
+
+							if (acrossClueNumber) {
+								clues.setIn(["across", acrossClueNumber], "");
+							}
+
+							if (downClueNumber) {
+								clues.setIn(["down", downClueNumber], "");
+							}
+						}
+					);
+
+					return clues;
+				},
+				Map({
+					across: Map(),
+					down: Map(),
+				})
+			);
+
+			return state.setIn(["generatedPuzzle", "clues"], clues);
+		}
+
 		case UPDATE_GENERATED_PUZZLE_GRID: {
 			if (!state.get("generatedPuzzle")) {
 				return state;
@@ -67,6 +103,16 @@ export default function puzzlesReducer(state = new PuzzlesStateRecord(), action)
 			const { grid } = action.payload;
 
 			return state.update("generatedPuzzle", (puzzle) => puzzle.updateGrid(grid));
+		}
+
+		case UPDATE_GENERATED_PUZZLE_CLUE: {
+			if (!state.get("generatedPuzzle")) {
+				return state;
+			}
+
+			const { clueNumber, clueText, direction } = action.payload;
+
+			return state.update("generatedPuzzle", (puzzle) => puzzle.setIn(["clues", direction, clueNumber + ""], clueText));
 		}
 
 		case REHYDRATE: {
