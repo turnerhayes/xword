@@ -104,7 +104,6 @@ const Config = {
 			cert: sslCertPath,
 		}
 	},
-	game: sharedConfig.game,
 	paths: {
 		root: PROJECT_ROOT,
 		client: CLIENT_PATH,
