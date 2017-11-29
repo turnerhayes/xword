@@ -32,17 +32,32 @@ const CrosswordGridContainer = connect(
 
 	function mapDispatchToProps(dispatch, ownProps) {
 		return {
-			toggleDirection: ownProps.toggleDirection || function toggleDirection({ currentDirection, position }) {
-				dispatch(setUIState({
-					section: ownProps.uiSection,
-					settings: {
-						currentDirection: currentDirection === DIRECTIONS.Across ||
-							!ownProps.puzzle.grid.getIn([position[1], position[0], "containingClues", "across"]) ?
-								DIRECTIONS.Down :
-								DIRECTIONS.Across,
+			toggleDirection: ownProps.toggleDirection === undefined ?
+				function toggleDirection({ currentDirection, position }) {
+					dispatch(setUIState({
+						section: ownProps.uiSection,
+						settings: {
+							currentDirection: currentDirection === DIRECTIONS.Across ||
+								!ownProps.puzzle.grid.getIn([position[1], position[0], "containingClues", "across"]) ?
+									DIRECTIONS.Down :
+									DIRECTIONS.Across,
+						}
+					}));
+				} :
+				ownProps.toggleDirection,
+
+			onMoveFocus: ownProps.onMoveFocus === undefined ?
+				function onMoveFocus({ nextPosition }) {
+					if (nextPosition) {
+						dispatch(setUIState({
+							section: ownProps.uiSection,
+							settings: {
+								selectedCellPosition: nextPosition,
+							}
+						}));
 					}
-				}));
-			},
+				} :
+				ownProps.onMoveFocus,
 		};
 	}
 )(CrosswordGrid);

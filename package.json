@@ -107,7 +107,7 @@
     "webpack-merge": "^4.1.0",
     "winston": "^2.3.1",
     "wordnet": "^0.1.2",
-    "xpuz": "file:../../xpuz"
+    "xpuz": "git@github.com:turnerhayes/xpuz.git"
   },
   "devDependencies": {
     "expect": "^1.20.2",

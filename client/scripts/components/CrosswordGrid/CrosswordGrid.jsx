@@ -65,63 +65,13 @@ class CrosswordGrid extends React.PureComponent {
 		this.props.onCellClick && this.props.onCellClick({ event, cell, position });
 	}
 
-	defaultMoveFocusHandler = ({ currentPosition, isForward, direction }) => {
-		let newFocusCellPosition;
-		let newFocusCell;
-		const { grid } = this.props.puzzle;
-		const height = grid.size;
-		const width = grid.first().size;
-		let [columnIndex, rowIndex] = currentPosition;
-
-		if (direction === DIRECTIONS.Down) {
-			rowIndex += isForward ? 1 : -1;
-
-			while (!newFocusCellPosition && rowIndex < height && rowIndex >= 0) {
-				let cell = grid.getIn([rowIndex, columnIndex]);
-
-				if (!cell.get("isBlockCell")) {
-					newFocusCellPosition = [columnIndex, rowIndex];
-					newFocusCell = cell;
-				}
-				
-				rowIndex += isForward ? 1 : -1;
-			}
-		}
-		else {
-			while (!newFocusCellPosition && columnIndex < width && columnIndex >= 0) {
-				columnIndex += isForward ? 1 : -1;
-				let cell = grid.getIn([rowIndex, columnIndex]);
-
-				if (cell && !cell.get("isBlockCell")) {
-					newFocusCellPosition = [columnIndex, rowIndex];
-					newFocusCell = cell;
-				}
-			}
-		}
-
-		if (newFocusCellPosition) {
-			this.props.onInputCellSelect && this.props.onInputCellSelect({
-				position: newFocusCellPosition,
-				cell: newFocusCell,
-				currentDirection: direction,
-			});
-		}
-	}
-
-	onMoveFocus = ({ currentPosition, isForward, direction }) => {
-		if (this.props.onMoveFocus) {
-			this.props.onMoveFocus({currentPosition, isForward, direction});
-		}
-		else if (this.props.onMoveFocus === undefined) {
-			this.defaultMoveFocusHandler({ currentPosition, isForward, direction });
-		}
-	}
-
-	triggerMoveFocus = ({ currentPosition, isForward, direction }) => {
-		this.onMoveFocus({
+	onMoveFocus = ({ currentPosition, isForward, direction, nextPosition, nextCell }) => {
+		this.props.onMoveFocus && this.props.onMoveFocus({
 			currentPosition,
 			isForward,
 			direction,
+			nextPosition,
+			nextCell
 		});
 	}
 
@@ -137,8 +87,8 @@ class CrosswordGrid extends React.PureComponent {
 	}
 
 	getNextPosition = ({ currentPosition, isForward, direction }) => {
-		let newPosition;
-		let newCell;
+		let nextPosition;
+		let nextCell;
 		const { grid } = this.props.puzzle;
 		const height = grid.size;
 		const width = grid.first().size;
@@ -147,74 +97,110 @@ class CrosswordGrid extends React.PureComponent {
 		if (direction === DIRECTIONS.Down) {
 			rowIndex += isForward ? 1 : -1;
 
-			while (!newPosition && rowIndex < height && rowIndex >= 0) {
+			while (!nextPosition && rowIndex < height && rowIndex >= 0) {
 				let cell = grid.getIn([rowIndex, columnIndex]);
 
 				if (!cell.get("isBlockCell")) {
-					newPosition = [columnIndex, rowIndex];
-					newCell = cell;
+					nextPosition = [columnIndex, rowIndex];
+					nextCell = cell;
 				}
 				
 				rowIndex += isForward ? 1 : -1;
 			}
 		}
 		else {
-			while (!newPosition && columnIndex < width && columnIndex >= 0) {
+			while (!nextPosition && columnIndex < width && columnIndex >= 0) {
 				columnIndex += isForward ? 1 : -1;
 				let cell = grid.getIn([rowIndex, columnIndex]);
 
 				if (cell && !cell.get("isBlockCell")) {
-					newPosition = [columnIndex, rowIndex];
-					newCell = cell;
+					nextPosition = [columnIndex, rowIndex];
+					nextCell = cell;
 				}
 			}
 		}
 
-		if (!newPosition) {
+		if (!nextPosition) {
 			return null;
 		}
 
 		return {
-			position: newPosition,
-			cell: newCell,
+			nextPosition,
+			nextCell,
 		};
 	}
 
 	handleInputCellKeyDown = ({ event, position }) => {
 		switch(event.key) {
 			case "ArrowRight":
-				this.triggerMoveFocus({
-					currentPosition: position,
-					isForward: true,
-					direction: "across",
-				});
+				this.onMoveFocus(
+					Object.assign(
+						{
+							currentPosition: position,
+							isForward: true,
+							direction: DIRECTIONS.Across,
+						},
+						this.getNextPosition({
+							currentPosition: position,
+							isForward: true,
+							direction: DIRECTIONS.Across,
+						}),
+					)
+				);
 				event.preventDefault();
 				return;
 
 			case "ArrowDown":
-				this.triggerMoveFocus({
-					currentPosition: position,
-					isForward: true,
-					direction: "down",
-				});
+				this.onMoveFocus(
+					Object.assign(
+						{
+							currentPosition: position,
+							isForward: true,
+							direction: DIRECTIONS.Down,
+						},
+						this.getNextPosition({
+							currentPosition: position,
+							isForward: true,
+							direction: DIRECTIONS.Down,
+						}),
+					)
+				);
 				event.preventDefault();
 				return;
 
 			case "ArrowLeft":
-				this.triggerMoveFocus({
-					currentPosition: position,
-					isForward: false,
-					direction: "across",
-				});
+				this.onMoveFocus(
+					Object.assign(
+						{
+							currentPosition: position,
+							isForward: false,
+							direction: DIRECTIONS.Across,
+						},
+						this.getNextPosition({
+							currentPosition: position,
+							isForward: false,
+							direction: DIRECTIONS.Across,
+						}),
+					)
+				);
 				event.preventDefault();
 				return;
 
 			case "ArrowUp":
-				this.triggerMoveFocus({
-					currentPosition: position,
-					isForward: false,
-					direction: "down",
-				});
+				this.onMoveFocus(
+					Object.assign(
+						{
+							currentPosition: position,
+							isForward: false,
+							direction: DIRECTIONS.Down,
+						},
+						this.getNextPosition({
+							currentPosition: position,
+							isForward: false,
+							direction: DIRECTIONS.Down,
+						}),
+					)
+				);
 				event.preventDefault();
 				return;
 
@@ -230,11 +216,20 @@ class CrosswordGrid extends React.PureComponent {
 				let value = event.target.value;
 
 				if (value.length === 0) {
-					this.triggerMoveFocus({
-						currentPosition: position,
-						direction: this.props.currentDirection,
-						isForward: false,
-					});
+					this.onMoveFocus(
+						Object.assign(
+							{
+								currentPosition: position,
+								direction: this.props.currentDirection,
+								isForward: false,
+							},
+							this.getNextPosition({
+								currentPosition: position,
+								isForward: false,
+								direction: this.props.currentDirection,
+							}),
+						)
+					);
 
 					this.triggerCellContentChange({
 						event,
