@@ -9,7 +9,7 @@ import {
 	logout
 }                 from "project/scripts/redux/actions";
 import Config     from "project/scripts/config";
-import                 "project/styles/account-dialog.less";
+import                 "./AccountDialog.less";
 
 const PROVIDER_ICON_MAP = {
 	facebook: "fa-facebook-square",

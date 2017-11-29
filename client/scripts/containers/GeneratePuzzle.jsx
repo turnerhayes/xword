@@ -62,12 +62,12 @@ export default connect(
 				}));
 			},
 
-			onChangeFocusedCell({ position, cell }) {
+			onChangeSelectedCell({ position, cell, currentDirection }) {
 				const settings = {
 					selectedCellPosition: position,
 				};
 
-				if (!ownProps.currentDirection) {
+				if (position !== null && !currentDirection) {
 					settings.currentDirection = cell.getIn(["containingClues", "across"]) ?
 						DIRECTIONS.Across :
 						DIRECTIONS.Down;

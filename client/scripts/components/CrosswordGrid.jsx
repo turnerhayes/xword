@@ -5,6 +5,7 @@ import classnames         from "classnames";
 import {
 	ImmutablePuzzle
 }                         from "xpuz";
+import Cell               from "project/scripts/components/CrosswordGrid/Cell";
 import {
 	DIRECTIONS,
 	ERROR_OPTIONS
@@ -13,10 +14,10 @@ import                         "project/styles/crossword-grid.less";
 
 const FONT_SIZE_STEP = 0.1;
 
-function handleInputCellFocus({ props, position }) {
+function handleInputCellFocus({ props, position, cell }) {
 	props.onInputCellSelect && props.onInputCellSelect({
 		position,
-		cell: props.puzzle.grid.getIn([position[1], position[0]]),
+		cell,
 	});
 }
 
@@ -194,164 +195,168 @@ function handleInputCellKeyDown({ event, position, props }) {
 	});
 }
 
-function CrosswordGrid(props) {
-	const fontSize = 1 + (props.fontAdjust * FONT_SIZE_STEP);
-	const highlightErrors = props.errorOption === ERROR_OPTIONS.Highlight || props.errorOption === ERROR_OPTIONS.Reveal;
-
-	const rootProps = {
-		className: classnames(
-			"c_crossword-grid",
-			props.className,
-			{
-				"show-errors": highlightErrors,
-			}
-		),
-	};
-
-	if (fontSize !== 1) {
-		rootProps.style = {
-			fontSize: `${fontSize}em`,
-		};
+class CrosswordGrid extends React.PureComponent {
+	static propTypes = {
+		puzzle: PropTypes.instanceOf(ImmutablePuzzle).isRequired,
+		className: PropTypes.string,
+		fontAdjust: PropTypes.number,
+		selectedCellPosition: ImmutablePropTypes.listOf(PropTypes.number),
+		focusSelectedCell: PropTypes.bool,
+		currentDirection: PropTypes.oneOf(Object.values(DIRECTIONS)),
+		errorOption: PropTypes.oneOf(Object.values(ERROR_OPTIONS)),
+		onInputCellSelect: PropTypes.func,
+		onCellClick: PropTypes.func,
+		onCellChange: PropTypes.func,
+		toggleDirection: PropTypes.func,
+		showUserSolutions: PropTypes.bool,
 	}
 
-	const selectedCell = props.selectedCellPosition &&
-		props.puzzle.grid.getIn([props.selectedCellPosition.get(1), props.selectedCellPosition.get(0)]);
+	static defaultProps = {
+		fontAdjust: 0,
+		showUserSolutions: true,
+		focusSelectedCell: true,
+	}
 
-	const highlightedClueNumber = selectedCell && selectedCell.getIn(["containingClues", props.currentDirection]);
+	componentDidMount() {
+		if (this.selectedCellInput && this.props.focusSelectedCell) {
+			this.selectedCellInput.focus();
+		}
+	}
 
-	return (
-		<div
-			{...rootProps}
-		>
-			<table
-				className="c_crossword-grid--grid"
+	render() {
+		const {
+			puzzle,
+			fontAdjust,
+			errorOption,
+			className,
+			selectedCellPosition,
+			currentDirection,
+			showUserSolutions
+		} = this.props;
+
+		const fontSize = 1 + (fontAdjust * FONT_SIZE_STEP);
+		const highlightErrors = errorOption === ERROR_OPTIONS.Highlight || errorOption === ERROR_OPTIONS.Reveal;
+
+		const rootProps = {
+			className: classnames(
+				"c_crossword-grid",
+				className,
+				{
+					"show-errors": highlightErrors,
+				}
+			),
+		};
+
+		if (fontSize !== 1) {
+			rootProps.style = {
+				fontSize: `${fontSize}em`,
+			};
+		}
+
+		const selectedCell = selectedCellPosition &&
+			puzzle.grid.getIn([selectedCellPosition.get(1), selectedCellPosition.get(0)]);
+
+		const highlightedClueNumber = selectedCell && selectedCell.getIn(["containingClues", currentDirection]);
+
+		return (
+			<div
+				{...rootProps}
 			>
-				<tbody>
-					{
-						props.puzzle.grid.map(
-							(row, rowIndex) => (
-								<tr
-									key={rowIndex}
-									className="c_crossword-grid--grid--row"
-								>
-									{
-										row.map(
-											(cell, columnIndex) => {
-												const userSolution = props.puzzle.userSolution &&
-													props.puzzle.userSolution.getIn([rowIndex, columnIndex]);
+				<table
+					className="c_crossword-grid--grid"
+				>
+					<tbody>
+						{
+							puzzle.grid.map(
+								(row, rowIndex) => (
+									<tr
+										key={rowIndex}
+										className="c_crossword-grid--grid--row"
+									>
+										{
+											row.map(
+												(cell, columnIndex) => {
+													const userSolution = puzzle.userSolution &&
+														puzzle.userSolution.getIn([rowIndex, columnIndex]);
 
+													// Highlight all cells in the current direction with the same clue number
+													const highlighted = !cell.get("isBlockCell") &&
+														highlightedClueNumber &&
+														highlightedClueNumber === cell.getIn(["containingClues", currentDirection]);
+													const position = [columnIndex, rowIndex];
+													let isSelected = false;
 
-												// Highlight all cells in the current direction with the same clue number
-												const highlighted = !cell.get("isBlockCell") &&
-													highlightedClueNumber &&
-													highlightedClueNumber === cell.getIn(["containingClues", props.currentDirection]);
-												const position = [columnIndex, rowIndex];
+													const ref = {};
 
-												const cellProps = {
-													className: classnames(
-														"c_crossword-grid--grid--cell",
-														{
-															"block-cell": cell.get("isBlockCell"),
-															"input-cell": !cell.get("isBlockCell"),
-															"is-highlighted": highlighted,
-															"is-error": highlightErrors && !cell.get("isBlockCell") && userSolution &&
-																userSolution !== cell.get("solution"),
-															"has-user-solution": !cell.get("isBlockCell") && !!userSolution,
+													if (
+														selectedCellPosition &&
+														selectedCellPosition.get(0) === position[0] &&
+														selectedCellPosition.get(1) === position[1]
+													) {
+														isSelected = true;
+														ref.ref = (input) => this.selectedCellInput = input;
+													}
+
+													let cellValue;
+
+													if (showUserSolutions) {
+														cellValue = userSolution;
+														
+														if (errorOption === ERROR_OPTIONS.Reveal && !userSolution) {
+															cellValue = cell.get("solution");
 														}
-													),
-													onClick: (event) => handleCellClick({ props, event, cell, position }),
-												};
 
-												if (cell.get("clueNumber")) {
-													cellProps["data-clue-number"] = cell.get("clueNumber");
-												}
-
-												const ref = {};
-
-												if (
-													props.selectedCellPosition &&
-													props.selectedCellPosition.get(0) === position[0] &&
-													props.selectedCellPosition.get(1) === position[1]
-												) {
-													ref.ref = (input) => input && input.focus();
-												}
-
-												let cellValue;
-
-												if (props.showUserSolutions) {
-													cellValue = userSolution;
-													
-													if (props.errorOption === ERROR_OPTIONS.Reveal && !userSolution) {
+														if (!cellValue) {
+															cellValue = "";
+														}
+													}
+													else {
 														cellValue = cell.get("solution");
 													}
 
-													if (!cellValue) {
-														cellValue = "";
-													}
+													return (
+														<Cell
+															key={`${rowIndex}-${columnIndex}`}
+															className="c_crossword-grid--grid--cell"
+															clueNumber={cell.get("clueNumber")}
+															isBlockCell={cell.get("isBlockCell")}
+															isHighlighted={highlighted}
+															isSelected={isSelected}
+															hasError={highlightErrors && (!userSolution ||
+																userSolution !== cell.get("solution"))}
+															hasUserSolution={!!userSolution}
+															value={cellValue}
+															onClick={(event) => handleCellClick({
+																props: this.props,
+																event,
+																cell,
+																position
+															})}
+															onFocus={() => handleInputCellFocus({
+																props: this.props,
+																cell,
+																position,
+															})}
+															onKeyDown={(event) => handleInputCellKeyDown({
+																event,
+																position,
+																props: this.props,
+															})}
+															inputProps={ref}
+														/>
+													);
 												}
-												else {
-													cellValue = cell.get("solution");
-												}
-
-
-												return (
-													<td
-														key={`${rowIndex}-${columnIndex}`}
-														{...cellProps}
-													>
-													{
-														!cell.isBlockCell && (
-															<input
-																className="letter-input"
-																type="text"
-																value={cellValue || ""}
-																onChange={() => {}}
-																onFocus={() => handleInputCellFocus({
-																	props,
-																	cell,
-																	position,
-																})}
-																onKeyDown={(event) => handleInputCellKeyDown({
-																	event,
-																	position,
-																	props,
-																})}
-																{...ref}
-															/>
-														)
-													}
-													</td>
-												);
-											}
-										)
-									}
-								</tr>
-							)
-						)
-					}
-				</tbody>
-			</table>
-		</div>
-	);
+											).toArray()
+										}
+									</tr>
+								)
+							).toArray()
+						}
+					</tbody>
+				</table>
+			</div>
+		);
+	}
 }
-
-CrosswordGrid.propTypes = {
-	puzzle: PropTypes.instanceOf(ImmutablePuzzle).isRequired,
-	className: PropTypes.string,
-	fontAdjust: PropTypes.number,
-	selectedCellPosition: ImmutablePropTypes.listOf(PropTypes.number),
-	currentDirection: PropTypes.oneOf(Object.values(DIRECTIONS)),
-	errorOption: PropTypes.oneOf(Object.values(ERROR_OPTIONS)),
-	onInputCellSelect: PropTypes.func,
-	onCellClick: PropTypes.func,
-	onCellChange: PropTypes.func,
-	toggleDirection: PropTypes.func,
-	showUserSolutions: PropTypes.bool,
-};
-
-CrosswordGrid.defaultProps = {
-	fontAdjust: 0,
-	showUserSolutions: true,
-};
 
 export default CrosswordGrid;

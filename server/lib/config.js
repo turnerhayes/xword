@@ -40,6 +40,8 @@ const sharedConfig = rfr("shared-lib/config");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 const CLIENT_PATH = path.join(PROJECT_ROOT, "client");
+const SERVER_PATH = path.join(PROJECT_ROOT, "server");
+const TEST_PATH = path.join(PROJECT_ROOT, "test");
 const DIST_PATH = path.join(PROJECT_ROOT, "dist");
 const LOGS_DIRECTORY = path.resolve(PROJECT_ROOT, process.env.LOGS_DIRECTORY || "logs");
 
@@ -107,6 +109,8 @@ const Config = {
 	paths: {
 		root: PROJECT_ROOT,
 		client: CLIENT_PATH,
+		server: SERVER_PATH,
+		test: TEST_PATH,
 		dist: DIST_PATH,
 		logs: LOGS_DIRECTORY
 	},

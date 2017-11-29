@@ -32,7 +32,6 @@ if (Config.app.ssl.cert) {
 }
 
 const devServer = {
-	hot: true,
 	port: 8200,
 	headers: {
 		"Access-Control-Allow-Origin": "*"
@@ -66,6 +65,7 @@ if (sslKey && sslCert) {
 exports = module.exports = webpackMerge.smart(common, {
 	plugins: [
 		new webpack.NamedModulesPlugin(),
+		new webpack.HotModuleReplacementPlugin(),
 	],
 
 	devtool: "source-map",

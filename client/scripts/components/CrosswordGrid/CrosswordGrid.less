@@ -1,0 +1,25 @@
+.c_crossword-grid {
+	@cell-width: 4em;
+
+	&--grid {
+		border-collapse: collapse;
+		table-layout: fixed;
+		// This prevents selecting, but not focusing into fields; this is here
+		// because there doesn't seem to be a legitimate use case for selecting
+		// a bunch of cells, so it would likely be unintended. This becomes
+		// particularly perilous when it comes to Rebus puzzles, where a single
+		// cell can have more than one character; we dont want to select across
+		// cells into the middle of a cell with multiple characters
+		user-select: none;
+
+		&--cell {
+			position: relative;
+		}
+	}
+
+	&.show-errors {
+		.c_crossword-grid--grid--cell.input-cell {
+			
+		}
+	}
+}

@@ -1,6 +1,6 @@
 import React          from "react";
 import PropTypes      from "prop-types";
-import                     "project/styles/home.less";
+import                     "./Home.less";
 
 /*
  * Component representing the home page.

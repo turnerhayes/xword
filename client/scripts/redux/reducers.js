@@ -9,5 +9,4 @@ export default combineReducers({
 	puzzles: puzzlesReducer,
 	ui: uiReducer,
 	routing: routerReducer,
-	lastAction: (state, action) => action
 });

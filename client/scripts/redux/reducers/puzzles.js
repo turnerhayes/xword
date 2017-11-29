@@ -1,11 +1,11 @@
 import {
-	List,
+	// List,
 	Map,
 	fromJS
 }                         from "immutable";
-import {
-	ImmutablePuzzle
-}                         from "xpuz";
+// import {
+// 	ImmutablePuzzle
+// }                         from "xpuz";
 import PuzzlesStateRecord from "project/scripts/records/state/puzzles";
 import {
 	REHYDRATE
@@ -119,14 +119,6 @@ export default function puzzlesReducer(state = new PuzzlesStateRecord(), action)
 			let incoming = action.payload.puzzles;
 
 			if (incoming) {
-				if (incoming.get("puzzles")) {
-					incoming = incoming.setIn(["puzzles"], List(incoming.get("puzzles").map(puzzle => new ImmutablePuzzle(puzzle.toJS()))));
-				}
-
-				if (incoming.get("generatedPuzzle")) {
-					incoming = incoming.set("generatedPuzzle", new ImmutablePuzzle(incoming.get("generatedPuzzle").toJS()));
-				}
-
 				state = state.mergeDeep(incoming);
 			}
 

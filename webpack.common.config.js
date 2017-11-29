@@ -1,14 +1,17 @@
-require("dotenv").config();
+const rfr                       = require("rfr");
+rfr("utils/read-env");
 
 const path                      = require("path");
 const webpack                   = require("webpack");
 const ExtractTextPlugin         = require("extract-text-webpack-plugin");
 const HTMLWebpackPlugin         = require("html-webpack-plugin");
 const HTMLWebpackHarddiskPlugin = require("html-webpack-harddisk-plugin");
-const rfr                       = require("rfr");
 const Config                    = rfr("server/lib/config");
 
 const jsxFilenameRegex = /\.jsx?$/;
+
+const stylesDirectory = path.join(Config.paths.client, "styles");
+const scriptsDirectory = path.join(Config.paths.client, "scripts");
 
 exports = module.exports = {
 	entry: ["babel-polyfill", "./client/scripts/index.jsx"],
@@ -23,7 +26,7 @@ exports = module.exports = {
 		rules: [
 			{
 				test: jsxFilenameRegex,
-				exclude: /node_modules/,
+				include: scriptsDirectory,
 				use: ["babel-loader", "eslint-loader"]
 			},
 
@@ -147,15 +150,16 @@ exports = module.exports = {
 
 	resolve: {
 		extensions: [".js", ".jsx", ".json", ".less", ".css"],
-		modules: [
-			"node_modules",
-			Config.paths.client,
-			path.join(Config.paths.client, "styles")
-		],
+		// modules: [
+		// 	"node_modules",
+		// 	Config.paths.client,
+		// 	path.join(Config.paths.client, "styles")
+		// ],
 		alias: {
 			"project/shared-lib": path.join(__dirname, "shared-lib"),
-			"project/scripts": path.join(Config.paths.client, "scripts"),
-			"project/styles": path.join(Config.paths.client, "styles"),
+			"project/scripts": scriptsDirectory,
+			"project/styles": stylesDirectory,
+			immutable: require.resolve("immutable"),
 		}
 	},
 

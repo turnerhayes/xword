@@ -1,16 +1,13 @@
 import { Map }           from "immutable";
 import { connect }       from "react-redux";
+import PropTypes         from "prop-types";
 import PuzzleSettings    from "project/scripts/components/PuzzleSettings";
 import { setUIState }    from "project/scripts/redux/actions";
 import { ERROR_OPTIONS } from "project/scripts/constants";
 
-export default connect(
+const PuzzleSettingsContainer = connect(
 	function mapStateToProps(state, ownProps) {
 		const props = {};
-
-		if (!ownProps.uiSection) {
-			throw new Error("uiSection prop is required");
-		} 
 
 		let uiState = state.get("ui");
 
@@ -44,3 +41,11 @@ export default connect(
 		};
 	}
 )(PuzzleSettings);
+
+PuzzleSettingsContainer.propTypes = {
+	uiSection: PropTypes.string.isRequired,
+};
+
+PuzzleSettingsContainer.displayName = "PuzzleSettingsContainer";
+
+export default PuzzleSettingsContainer;

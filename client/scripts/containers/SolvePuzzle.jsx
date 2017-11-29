@@ -58,12 +58,12 @@ export default connect(
 				resetUI();
 			},
 
-			onInputCellSelect({ cell, position }) {
+			onInputCellSelect({ cell, position, currentDirection }) {
 				const settings = {
 					selectedCellPosition: position,
 				};
 
-				if (!ownProps.currentDirection) {
+				if (!currentDirection) {
 					settings.currentDirection = cell.getIn(["containingClues", "across"]) ?
 						DIRECTIONS.Across :
 						DIRECTIONS.Down;

@@ -5,21 +5,16 @@ import Icon           from "material-ui/Icon";
 import IconButton     from "material-ui/IconButton";
 import Button         from "material-ui/Button";
 import TextField      from "material-ui/TextField";
-import { withStyles } from "material-ui/styles";
 import {
 	GRID_DIMENSIONS,
 	MINIMUM_GRID_DIMENSIONS,
-	CELL_PLACEMENT_MODES
+	CELL_PLACEMENT_MODES,
+	DIRECTIONS
 }                     from "project/scripts/constants";
+import classHelper    from "project/scripts/classes";
+import                     "./PuzzleGeneratorControls.less";
 
-const styles = {
-	dimensionInput: {
-		width: "3em",
-	},
-	right: {
-		marginLeft: "auto",
-	},
-};
+const classes = classHelper("puzzle-generator-controls");
 
 const placementModeConfig = {
 	[CELL_PLACEMENT_MODES.Blocks]: {
@@ -36,14 +31,15 @@ class PuzzleGeneratorControls extends React.PureComponent {
 	static propTypes = {
 		onClearPuzzle: PropTypes.func,
 		onCellPlacementModeChange: PropTypes.func,
+		onDirectionChange: PropTypes.func,
 		onDimensionChange: PropTypes.func,
 		onDimensionsChange: PropTypes.func,
-		cellPlacementMode: PropTypes.oneOf(Object.values(CELL_PLACEMENT_MODES)),
+		cellPlacementMode: PropTypes.oneOf(Object.values(CELL_PLACEMENT_MODES)).isRequired,
+		currentDirection: PropTypes.oneOf(Object.values(DIRECTIONS)).isRequired,
 		width: PropTypes.number.isRequired,
 		height: PropTypes.number.isRequired,
 		uiWidth: PropTypes.number,
 		uiHeight: PropTypes.number,
-		classes: PropTypes.object,
 	}
 
 	state = {
@@ -72,15 +68,34 @@ class PuzzleGeneratorControls extends React.PureComponent {
 		this.props.onCellPlacementModeChange && this.props.onCellPlacementModeChange({ mode });
 	}
 
+	handleDirectionClick = ({ currentDirection }) => {
+		this.props.onDirectionChange && this.props.onDirectionChange({
+			direction: currentDirection === DIRECTIONS.Across ?
+				DIRECTIONS.Down :
+				DIRECTIONS.Across,
+		});
+	}
+
 	render() {
+		const {
+			onClearPuzzle,
+			cellPlacementMode,
+			uiWidth,
+			uiHeight,
+			currentDirection,
+			width,
+			height,
+			onDimensionsChange,
+		} = this.props;
+
 		return (
 			<Toolbar
-				className="c_puzzle-generator-controls"
+				{...classes()}
 			>
 				{
-					this.props.onClearPuzzle && (
+					onClearPuzzle && (
 						<IconButton
-							onClick={() => this.props.onClearPuzzle()}
+							onClick={() => onClearPuzzle()}
 						>
 							<Icon
 								title="Clear puzzle"
@@ -89,33 +104,39 @@ class PuzzleGeneratorControls extends React.PureComponent {
 						</IconButton>
 					)
 				}
-				{
-					this.props.cellPlacementMode && (
-							<IconButton
-								title={placementModeConfig[this.props.cellPlacementMode].label}
-								onClick={() => this.handleCellPlacementModeOptionClick({
-									mode: this.props.cellPlacementMode === CELL_PLACEMENT_MODES.Blocks ?
-										CELL_PLACEMENT_MODES.Input :
-										CELL_PLACEMENT_MODES.Blocks,
-								})}
-							>
-								<Icon
-									className={`fa ${placementModeConfig[this.props.cellPlacementMode].icon}`}
-								/>
-							</IconButton>
-					)
-				}
+				<IconButton
+					title={placementModeConfig[cellPlacementMode].label}
+					onClick={() => this.handleCellPlacementModeOptionClick({
+						mode: cellPlacementMode === CELL_PLACEMENT_MODES.Blocks ?
+							CELL_PLACEMENT_MODES.Input :
+							CELL_PLACEMENT_MODES.Blocks,
+					})}
+				>
+					<Icon
+						className={`fa ${placementModeConfig[cellPlacementMode].icon}`}
+					/>
+				</IconButton>
+				<IconButton
+					title={`Current Direction: ${currentDirection}`}
+					onClick={() => this.handleDirectionClick({
+						currentDirection
+					})}
+				>
+					<Icon
+						className={`fa ${currentDirection === DIRECTIONS.Across ? "fa-arrow-right" : "fa-arrow-down"}`}
+					/>
+				</IconButton>
 				<div
-					className={this.props.classes.right}
+					{...classes("dimension-controls")}
 				>
 					<TextField
 						required
 						error={!!this.state.widthInputError}
-						className={this.props.classes.dimensionInput}
+						{...classes("dimension-input")}
 						type="number"
 						name="puzzle-width"
 						placeholder="Width"
-						value={this.props.uiWidth || ""}
+						value={uiWidth || ""}
 						inputProps={{
 							min: MINIMUM_GRID_DIMENSIONS[GRID_DIMENSIONS.Width]
 						}}
@@ -126,11 +147,11 @@ class PuzzleGeneratorControls extends React.PureComponent {
 					/> x <TextField
 						required
 						error={!!this.state.heightInputError}
-						className={this.props.classes.dimensionInput}
+						{...classes("dimension-input")}
 						type="number"
 						name="puzzle-height"
 						placeholder="Height"
-						value={this.props.uiHeight || ""}
+						value={uiHeight || ""}
 						inputProps={{
 							min: MINIMUM_GRID_DIMENSIONS[GRID_DIMENSIONS.Height]
 						}}
@@ -142,11 +163,11 @@ class PuzzleGeneratorControls extends React.PureComponent {
 
 					<Button
 						disabled={
-							this.props.uiWidth === this.props.width &&
-							this.props.uiHeight === this.props.height
+							uiWidth === width &&
+							uiHeight === height
 						}
-						onClick={() => this.props.onDimensionsChange &&
-							this.props.onDimensionsChange({ width: this.props.uiWidth, height: this.props.uiHeight })}
+						onClick={() => onDimensionsChange &&
+							onDimensionsChange({ width: uiWidth, height: uiHeight })}
 					>
 						Change
 					</Button>
@@ -156,4 +177,4 @@ class PuzzleGeneratorControls extends React.PureComponent {
 	}
 }
 
-export default withStyles(styles)(PuzzleGeneratorControls);
+export default PuzzleGeneratorControls;

@@ -14,7 +14,10 @@ import PuzzleSettings     from "project/scripts/containers/PuzzleSettings";
 import {
 	DIRECTIONS
 }                         from "project/scripts/constants";
-import                         "project/styles/solve-puzzle.less";
+import classesHelper      from "project/scripts/classes";
+import                         "./SolvePuzzle.less";
+
+const classes = classesHelper("solve-puzzle");
 
 function capitalize(str) {
 	if (!str) {
@@ -72,6 +75,8 @@ class SolvePuzzle extends React.Component {
 	}
 
 	handleFileUploadFailure = (error) => {
+		// TODO: figure out how to handle errors
+		// eslint-disable-next-line no-console
 		console.error(error);
 	}
 
@@ -80,75 +85,7 @@ class SolvePuzzle extends React.Component {
 	}
 
 	handleInputCellSelect = ({ cell, position }) => {
-		this.props.onInputCellSelect && this.props.onInputCellSelect({ cell, position });
-	}
-
-	handleCellChange = ({ position, value, wasDelete }) => {
-		this.props.setPuzzleCellContent({
-			puzzleIndex: this.props.currentPuzzleIndex,
-			position,
-			value,
-		});
-
-		if (!wasDelete) {
-			this.handleMoveFocus({
-				currentPosition: position,
-				isForward: true,
-				direction: this.props.currentDirection,
-			});
-		}
-	}
-
-	handleMoveFocus = ({ currentPosition, isForward, direction }) => {
-		let newFocusCellPosition;
-		let newFocusCell;
-		const { grid } = this.props.puzzle;
-		const height = grid.size;
-		const width = grid.first().size;
-		let [columnIndex, rowIndex] = currentPosition;
-
-		if (direction === DIRECTIONS.Down) {
-			rowIndex += isForward ? 1 : -1;
-
-			while (!newFocusCellPosition && rowIndex < height && rowIndex >= 0) {
-				let cell = grid.getIn([rowIndex, columnIndex]);
-
-				if (!cell.get("isBlockCell")) {
-					newFocusCellPosition = [columnIndex, rowIndex];
-					newFocusCell = cell;
-				}
-				
-				rowIndex += isForward ? 1 : -1;
-			}
-		}
-		else {
-			while (!newFocusCellPosition && columnIndex < width && columnIndex >= 0) {
-				columnIndex += isForward ? 1 : -1;
-				let cell = grid.getIn([rowIndex, columnIndex]);
-
-				if (cell && !cell.get("isBlockCell")) {
-					newFocusCellPosition = [columnIndex, rowIndex];
-					newFocusCell = cell;
-				}
-			}
-		}
-
-		if (newFocusCellPosition) {
-			this.props.onInputCellSelect && this.props.onInputCellSelect({
-				position: newFocusCellPosition,
-				cell: newFocusCell,
-			});
-		}
-	}
-
-	toggleDirection = ({ position }) => {
-		const cell = this.props.puzzle.grid.getIn([position[1], position[0]]);
-
-		this.props.setDirection({
-			direction: this.props.currentDirection === DIRECTIONS.Across || !cell.getIn(["containingClues", "across"]) ?
-				DIRECTIONS.Down :
-				DIRECTIONS.Across,
-		});
+		this.props.onInputCellSelect && this.props.onInputCellSelect({ cell, position, currentDirection: this.props.currentDirection });
 	}
 
 	/**
@@ -174,7 +111,7 @@ class SolvePuzzle extends React.Component {
 
 		return (
 			<div
-				className="c_solve-puzzle"
+				{...classes()}
 			>
 				<Popover
 					open={this.state.settingsPopoverIsOpen}
@@ -192,7 +129,7 @@ class SolvePuzzle extends React.Component {
 					/>
 				</Popover>
 				<IconButton
-					className="c_solve-puzzle--puzzle-settings-button"
+					{...classes("puzzle-settings-button")}
 					onClick={(event) => this.setState({
 						settingsPopoverIsOpen: true,
 						settingsPopoverAnchorEl: event.target,
@@ -212,7 +149,7 @@ class SolvePuzzle extends React.Component {
 				{
 					selectedClue && (
 						<dl
-							className="c_solve-puzzle--current-clue"
+							{...classes("current-clue")}
 						>
 							<dt>
 								{selectedClue.number} {capitalize(this.props.currentDirection)}:
@@ -229,13 +166,11 @@ class SolvePuzzle extends React.Component {
 							<div>
 								<CrosswordGrid
 									uiSection="SolvePuzzle"
-									className="c_solve-puzzle--crossword-grid-container"
+									{...classes("crossword-grid-container")}
 									puzzle={this.props.puzzle}
 									onInputCellSelect={this.handleInputCellSelect}
 									onCellChange={this.handleCellChange}
 									selectedCellPosition={this.props.selectedCellPosition}
-									toggleDirection={this.toggleDirection}
-									onMoveFocus={this.handleMoveFocus}
 								/>
 								<CrosswordClues
 									puzzle={this.props.puzzle}

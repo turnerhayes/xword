@@ -1,11 +1,9 @@
-import { Record, Map, Set } from "immutable";
-import UserRecord           from "project/scripts/records/user";
+import { Record, Map } from "immutable";
+import UserRecord      from "project/scripts/records/user";
 
 const schema = {
 	items: Map(),
 	currentID: null,
-	subscriptions: Set(),
-	isChangingSubscription: false
 };
 
 class UsersStateRecord extends Record(schema, "UsersState") {

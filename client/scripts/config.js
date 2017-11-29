@@ -1,21 +1,15 @@
 /* global process */
 
-import { merge } from "lodash";
 import sharedConfig from "project/shared-lib/config";
 
-export default merge(
-	sharedConfig,
-	{
-		auth: {
-			facebook: {
-				isEnabled: process.env.CREDENTIALS_FACEBOOK_IS_ENABLED
-			},
-			google: {
-				isEnabled: process.env.CREDENTIALS_GOOGLE_IS_ENABLED
-			},
-			twitter: {
-				isEnabled: process.env.CREDENTIALS_TWITTER_IS_ENABLED
-			}
-		}
-	}
+sharedConfig.auth = sharedConfig.auth || {};
+
+[
+	["facebook", process.env.CREDENTIALS_FACEBOOK_IS_ENABLED],
+	["google", process.env.CREDENTIALS_GOOGLE_IS_ENABLED],
+	["twitter", process.env.CREDENTIALS_TWITTER_IS_ENABLED],
+].forEach(
+	([authID, isEnabled]) => sharedConfig.auth[authID] = { isEnabled }
 );
+
+export default sharedConfig;

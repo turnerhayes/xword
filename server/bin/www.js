@@ -2,14 +2,14 @@
 
 "use strict";
 
-require("dotenv").config();
+const rfr             = require("rfr");
+rfr("utils/read-env");
 
 const debug           = require("debug")("xword:server");
 const http            = require("http");
 const fs              = require("fs");
 const spdy            = require("spdy");
 const HTTPStatusCodes = require("http-status-codes");
-const rfr             = require("rfr");
 const app             = rfr("server/app");
 const Config          = rfr("server/lib/config");
 

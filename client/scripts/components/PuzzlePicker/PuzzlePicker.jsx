@@ -11,7 +11,7 @@ import {
 }                         from "xpuz";
 import                         "react-select/dist/react-select.css";
 import                         "font-awesome/less/font-awesome.less";
-import                         "project/styles/puzzle-picker.less";
+import                         "./PuzzlePicker.less";
 
 function handleFileUpload(props, files) {
 	const file = files && files[0];

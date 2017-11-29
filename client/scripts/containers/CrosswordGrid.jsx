@@ -1,15 +1,18 @@
 import { Map }           from "immutable";
 import { connect }       from "react-redux";
+import PropTypes         from "prop-types";
 import CrosswordGrid     from "project/scripts/components/CrosswordGrid";
-import { ERROR_OPTIONS } from "project/scripts/constants";
+import {
+	ERROR_OPTIONS,
+	DIRECTIONS
+}                        from "project/scripts/constants";
+import {
+	setUIState
+}                        from "project/scripts/redux/actions";
 
-export default connect(
+const CrosswordGridContainer = connect(
 	function mapStateToProps(state, ownProps) {
 		const props = {};
-
-		if (!ownProps.uiSection) {
-			throw new Error("uiSection prop is required");
-		} 
 
 		let uiState = state.get("ui");
 
@@ -27,8 +30,27 @@ export default connect(
 		return props;
 	},
 
-	function mapDispatchToProps(/*dispatch, ownProps*/) {
+	function mapDispatchToProps(dispatch, ownProps) {
 		return {
+			toggleDirection: ownProps.toggleDirection || function toggleDirection({ currentDirection, position }) {
+				dispatch(setUIState({
+					section: ownProps.uiSection,
+					settings: {
+						currentDirection: currentDirection === DIRECTIONS.Across ||
+							!ownProps.puzzle.grid.getIn([position[1], position[0], "containingClues", "across"]) ?
+								DIRECTIONS.Down :
+								DIRECTIONS.Across,
+					}
+				}));
+			},
 		};
 	}
 )(CrosswordGrid);
+
+CrosswordGridContainer.propTypes = {
+	uiSection: PropTypes.string.isRequired,
+};
+
+CrosswordGridContainer.displayName = "CrosswordGridContainer";
+
+export default CrosswordGridContainer;

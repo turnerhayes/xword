@@ -1,17 +1,19 @@
 import React                   from "react";
 import PropTypes               from "prop-types";
 import ImmutablePropTypes      from "react-immutable-proptypes";
+import DocumentEvents          from "react-document-events";
 import classnames              from "classnames";
 import {
 	Map,
-	List
+	List,
+	is
 }                              from "immutable";
 import { withStyles }          from "material-ui/styles";
 import TextField               from "material-ui/TextField";
 import {
 	ImmutablePuzzle
 }                              from "xpuz";
-import CrosswordGrid           from "project/scripts/components/CrosswordGrid";
+import CrosswordGrid           from "project/scripts/containers/CrosswordGrid";
 import PuzzlePicker            from "project/scripts/components/PuzzlePicker";
 import PuzzleGeneratorControls from "project/scripts/containers/PuzzleGeneratorControls";
 import {
@@ -66,7 +68,7 @@ class GeneratePuzzle extends React.PureComponent {
 		onUpdatePuzzleCell: PropTypes.func,
 		onUpdateGrid: PropTypes.func,
 		onCellPlacementModeChange: PropTypes.func,
-		onChangeFocusedCell: PropTypes.func,
+		onChangeSelectedCell: PropTypes.func,
 		onClueChange: PropTypes.func,
 		onClearClues: PropTypes.func,
 	}
@@ -79,6 +81,44 @@ class GeneratePuzzle extends React.PureComponent {
 	componentWillMount() {
 		if (!this.props.puzzle) {
 			this.setGeneratedPuzzle();
+		}
+	}
+
+	componentDidMount() {
+		if (!this.props.selectedCellPosition) {
+			this.selectFirstInputCell();
+		}
+	}
+
+	componentDidUpdate(oldProps) {
+		if (!is(oldProps.puzzle, this.props.puzzle)) {
+			this.selectFirstInputCell();
+		}
+	}
+
+	selectFirstInputCell() {
+		if (!this.props.puzzle) {
+			return null;
+		}
+
+		let inputCell;
+		let inputCellPosition = null;
+
+		for (let rowIndex = 0; inputCellPosition === null && rowIndex < this.props.puzzle.grid.size; rowIndex++) {
+			const row = this.props.puzzle.grid.get(rowIndex);
+
+			for (let columnIndex = 0; inputCellPosition === null && columnIndex < row.size; columnIndex++) {
+				const cell = row.get(columnIndex);
+
+				if (!cell.get("isBlockCell")) {
+					inputCellPosition = List([columnIndex, rowIndex]);
+					inputCell = cell;
+				}
+			}
+		}
+
+		if (inputCellPosition) {
+			this.handleInputCellSelect({ cell: inputCell, position: inputCellPosition });
 		}
 	}
 
@@ -130,7 +170,11 @@ class GeneratePuzzle extends React.PureComponent {
 	}
 
 	handleInputCellSelect = ({ cell, position }) => {
-		this.props.onChangeFocusedCell && this.props.onChangeFocusedCell({ cell, position });
+		this.props.onChangeSelectedCell && this.props.onChangeSelectedCell({
+			cell,
+			position,
+			currentDirection: this.props.currentDirection,
+		});
 	}
 
 	handleClueTextChange = ({ clueNumber, clueText}) => {
@@ -231,9 +275,12 @@ class GeneratePuzzle extends React.PureComponent {
 		return (
 			<div
 				className={`c_generate-puzzle ${this.props.classes.root}`}
-				onKeyDown={(event) => !event.repeat && event.key === "Shift" && this.toggleShouldPlaceBlockCells()}
-				onKeyUp={(event) => event.key === "Shift" && this.toggleShouldPlaceBlockCells()}
 			>
+				<DocumentEvents
+					enabled={true}
+					onKeyDown={(event) => !event.repeat && event.key === "Shift" && this.toggleShouldPlaceBlockCells()}
+					onKeyUp={(event) => event.key === "Shift" && this.toggleShouldPlaceBlockCells()}
+				/>
 				<PuzzlePicker
 					onUploadSuccess={this.handlePuzzleUpload}
 				/>
@@ -273,12 +320,14 @@ class GeneratePuzzle extends React.PureComponent {
 				{
 					this.props.puzzle && (
 						<CrosswordGrid
+							uiSection="GeneratePuzzle"
 							puzzle={this.props.puzzle}
 							onCellClick={this.handleCellClick}
 							onInputCellSelect={this.handleInputCellSelect}
 							onCellChange={this.handleCellContentChange}
 							selectedCellPosition={this.props.selectedCellPosition}
 							showUserSolutions={false}
+							focusSelectedCell={false}
 						/>
 					)
 				}

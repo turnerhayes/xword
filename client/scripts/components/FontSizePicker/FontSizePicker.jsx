@@ -1,7 +1,7 @@
 import React     from "react";
 import PropTypes from "prop-types";
 import                "font-awesome/less/font-awesome.less";
-import                "project/styles/font-size-picker.less";
+import                "./FontSizePicker.less";
 
 function handleAdjustChange(props, up) {
 	let newValue = props.currentAdjust + (up ? 1 : -1);

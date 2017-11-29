@@ -6,12 +6,15 @@ import FontSizePicker     from "project/scripts/components/FontSizePicker";
 import {
 	ERROR_OPTIONS
 }                         from "project/scripts/constants";
-import                         "project/styles/puzzle-settings.less";
+import classHelper        from "project/scripts/classes";
+import                         "./PuzzleSettings.less";
+
+const classes = classHelper("puzzle-settings");
 
 function PuzzleSettings(props) {
 	return (
 		<div
-			className="c_puzzle-settings"
+			{...classes()}
 		>
 			<div
 			>

@@ -14,7 +14,7 @@ function PuzzleErrorOptions(props) {
 	return (
 		<RadioGroup
 			value={props.errorOption}
-			onChange={props.onChange}
+			onChange={(event, value) => props.onChange && props.onChange({ errorOption: value })}
 			name="error-option"
 		>
 			{

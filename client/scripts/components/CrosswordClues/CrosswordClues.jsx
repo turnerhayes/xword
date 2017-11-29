@@ -4,7 +4,7 @@ import classnames from "classnames";
 import {
 	ImmutablePuzzle
 }                 from "xpuz";
-import                 "project/styles/crossword-clues.less";
+import                 "./CrosswordClues.less";
 
 function CrosswordClues(props) {
 	return (

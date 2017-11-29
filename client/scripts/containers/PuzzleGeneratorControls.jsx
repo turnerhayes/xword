@@ -1,9 +1,10 @@
 import { Map }                 from "immutable";
 import { connect }             from "react-redux";
+import PropTypes               from "prop-types";
 import PuzzleGeneratorControls from "project/scripts/components/PuzzleGeneratorControls";
 import { setUIState }          from "project/scripts/redux/actions";
 
-export default connect(
+const PuzzleGeneratorControlsContainer = connect(
 	function mapStateToProps(state, ownProps) {
 		const props = {};
 
@@ -14,6 +15,8 @@ export default connect(
 		}
 
 		uiState = uiState || Map();
+
+		props.currentDirection = uiState.get("currentDirection");
 
 		props.uiWidth = uiState.get("width");
 		if (props.uiWidth === null) {
@@ -33,10 +36,27 @@ export default connect(
 				dispatch(setUIState({
 					section: ownProps.uiSection,
 					settings: {
-						[dimension]: value
+						[dimension]: value,
+					}
+				}));
+			},
+
+			onDirectionChange({ direction }) {
+				dispatch(setUIState({
+					section: ownProps.uiSection,
+					settings: {
+						currentDirection: direction,
 					}
 				}));
 			},
 		};
 	}
 )(PuzzleGeneratorControls);
+
+PuzzleGeneratorControlsContainer.propTypes = {
+	uiSection: PropTypes.string.isRequired,
+};
+
+PuzzleGeneratorControlsContainer.displayName = "PuzzleGeneratorControlsContainer";
+
+export default PuzzleGeneratorControlsContainer;
