@@ -1,26 +1,46 @@
 "use strict";
 
-let mongoose             = require("mongoose");
-let DictionaryItemSchema = require("../schemas/dictionary-item");
+const mongoose             = require("mongoose");
 
-let DictionaryItemModel = mongoose.model("Dictionary", DictionaryItemSchema);
-
-Object.defineProperties(DictionaryItemModel.prototype, {
-	toFrontendObject: {
-		enumerable: true,
-		value: function() {
-			let user = this;
-
-			let obj = user.toObject({
-				virtuals: true
-			});
-
-			obj.id = obj._id;
-			delete obj._id;
-
-			return obj;
-		}
+const DictionaryItemSchema = new mongoose.Schema({
+	term: {
+		type: String,
+		index: true,
+		unique: true,
 	},
+	definitions: {
+		type: [String],
+	},
+	termLength: {
+		type: Number,
+		index: true,
+		required: true,
+	}
+}, { collection: "dictionary" });
+
+DictionaryItemSchema.pre("save", function(next) {
+	const termLength = this.term.length;
+
+	if (termLength !== this.termLength) {
+		this.termLength = termLength;
+	}
+
+	next();
 });
+
+DictionaryItemSchema.methods.toFrontendObject = function toFrontendObject() {
+	const obj = this.toObject({
+		virtuals: true,
+	});
+
+	obj.id = obj._id;
+
+	delete obj._id;
+	delete obj.__v;
+
+	return obj;
+};
+
+const DictionaryItemModel = mongoose.model("Dictionary", DictionaryItemSchema);
 
 exports = module.exports = DictionaryItemModel;

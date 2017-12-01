@@ -3,7 +3,7 @@
 const Promise   = require("bluebird");
 const passport  = require("passport");
 const rfr       = require("rfr");
-const UserStore = rfr("server/persistence/stores/user");
+const UserStore = rfr("server/lib/persistence/stores/user");
 const Config    = rfr("server/lib/config");
 
 passport.serializeUser(function(user, done) {

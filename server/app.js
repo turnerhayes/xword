@@ -14,7 +14,7 @@ const Loggers            = rfr("server/lib/loggers");
 const Config             = rfr("server/lib/config");
 const passportMiddleware = rfr("server/lib/passport");
 // Make sure to set up the default Mongoose connection
-rfr("server/persistence/db-connection");
+rfr("server/lib/persistence/db-connection");
 
 const app = express();
 
