@@ -37,10 +37,9 @@ DictionaryItemSchema.methods.toFrontendObject = function toFrontendObject() {
 
 	delete obj._id;
 	delete obj.__v;
+	delete obj.termLength;
 
 	return obj;
 };
 
-const DictionaryItemModel = mongoose.model("Dictionary", DictionaryItemSchema);
-
-exports = module.exports = DictionaryItemModel;
+exports = module.exports = mongoose.model("Dictionary", DictionaryItemSchema);

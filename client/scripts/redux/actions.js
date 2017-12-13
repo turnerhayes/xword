@@ -1,5 +1,6 @@
-import { Set }    from "immutable";
-import UserUtils  from "project/scripts/utils/user";
+import { Set }         from "immutable";
+import UserUtils       from "project/scripts/utils/user";
+import DictionaryUtils from "project/scripts/utils/dictionary";
 
 function getCurrentPagePath() {
 	return `${document.location.pathname}${document.location.search}${document.location.hash}`;
@@ -73,7 +74,7 @@ export function getUsers({ userIDs }) {
 			type: GET_USERS,
 			payload: UserUtils.getUsers({
 				userIDs: userIDs.toArray()
-			})
+			}),
 		});
 	};
 }
@@ -85,7 +86,7 @@ export function updateUserProfile({ user }) {
 		type: UPDATE_USER_PROFILE,
 		payload: {
 			user
-		}
+		},
 	};
 }
 
@@ -97,7 +98,7 @@ export function changeUserProfile({ userID, updates }) {
 		payload: {
 			userID,
 			updates
-		}
+		},
 	};
 }
 
@@ -110,7 +111,7 @@ export function setUIState({ section, settings }) {
 		payload: {
 			section,
 			settings
-		}
+		},
 	};
 }
 
@@ -122,7 +123,7 @@ export function addPuzzle({ puzzle, setAsCurrent }) {
 		payload: {
 			puzzle,
 			setAsCurrent,
-		}
+		},
 	};
 }
 
@@ -133,7 +134,7 @@ export function setGeneratedPuzzle({ puzzle }) {
 		type: SET_GENERATED_PUZZLE,
 		payload: {
 			puzzle
-		}
+		},
 	};
 }
 
@@ -146,7 +147,7 @@ export function updateGeneratedPuzzleCell({ columnIndex, rowIndex, cell }) {
 			columnIndex,
 			rowIndex,
 			cell
-		}
+		},
 	};
 }
 
@@ -157,7 +158,7 @@ export function updateGeneratedPuzzleGrid({ grid }) {
 		type: UPDATE_GENERATED_PUZZLE_GRID,
 		payload: {
 			grid
-		}
+		},
 	};
 }
 
@@ -170,7 +171,7 @@ export function updateGeneratedPuzzleClue({ clueNumber, clueText, direction }) {
 			clueNumber,
 			clueText,
 			direction
-		}
+		},
 	};
 }
 
@@ -179,7 +180,6 @@ export const CLEAR_GENERATED_PUZZLE_CLUES = "@XWORD/PUZZLES/GENERATED/CLEAR_CLUE
 export function clearGeneratedPuzzleClues() {
 	return {
 		type: CLEAR_GENERATED_PUZZLE_CLUES,
-		payload: {}
 	};
 }
 
@@ -188,7 +188,7 @@ export const SET_CURRENT_PUZZLE_INDEX = "@XWORD/PUZZLES/SET_CURRENT_INDEX";
 export function setCurrentPuzzleIndex({ index }) {
 	return {
 		type: SET_CURRENT_PUZZLE_INDEX,
-		payload: index
+		payload: index,
 	};
 }
 
@@ -201,6 +201,15 @@ export function setPuzzleCellContent({ puzzleIndex, position, value }) {
 			puzzleIndex,
 			position,
 			value,
-		}
+		},
+	};
+}
+
+export const FIND_TERMS = "@XWORD/TERMS/FIND";
+
+export function findTerms(searchArgs) {
+	return {
+		type: FIND_TERMS,
+		payload: DictionaryUtils.findTerms(searchArgs),
 	};
 }

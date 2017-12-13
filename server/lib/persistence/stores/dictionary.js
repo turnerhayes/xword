@@ -1,12 +1,14 @@
 "use strict";
 
-const _                   = require("lodash");
+const without             = require("lodash/without");
+const uniq                = require("lodash/uniq");
+const difference          = require("lodash/difference");
 const assert              = require("assert");
-const Q                   = require("q");
+const Promise             = require("bluebird");
 const DictionaryItemModel = require("../models/dictionary-item");
 
 const DEFAULT_FRAME_START = 0;
-const DEFAULT_FRAME_END = 10;
+const DEFAULT_FRAME_LENGTH = 10;
 
 function _toPatternRegex(pattern) {
 	pattern = pattern.toUpperCase();
@@ -20,18 +22,33 @@ function _toPatternRegex(pattern) {
 	return new RegExp("^" + pattern.replace(/_/g, ".") + "$");	
 }
 
+function defaultFrame(frame) {
+	frame = frame || {};
+
+	if (frame.start === undefined) {
+		frame.start = DEFAULT_FRAME_START;
+	}
+
+	if (frame.length === undefined) {
+		frame.length = DEFAULT_FRAME_LENGTH;
+	}
+
+	if (frame.length === Infinity) {
+		delete frame.length;
+	}
+
+	return frame;
+}
+
 class DictionaryStore {
 	static findTerm(options) {
 		options = options || {};
 
-		let frame = _.defaults({}, options.frame, {
-			start: DEFAULT_FRAME_START,
-			length: DEFAULT_FRAME_END
-		});
-
+		let frame = defaultFrame(options.frame);
 		let termCheck = {};
 
-		termCheck.term = _toPatternRegex(options.pattern || "");
+		termCheck.term = (options.term && options.term.toUpperCase()) ||
+			_toPatternRegex(options.pattern || "");
 
 		let query = DictionaryItemModel.find(termCheck).limit(frame.length);
 
@@ -39,24 +56,15 @@ class DictionaryStore {
 			query = query.skip(frame.start);
 		}
 
-		return Q(query);
+		return query.exec();
 	}
 
 	static findTerms(options) {
 		let termCheck = {};
-		let frame;
 
 		options = options || {};
 
-		frame = _.defaults({}, options.frame, {
-			start: DEFAULT_FRAME_START,
-			length: DEFAULT_FRAME_END
-		});
-
-		if (frame.length === Infinity) {
-			delete frame.length;
-		}
-
+		options.frame = defaultFrame(options.frame);
 
 		if (options.pattern) {
 			termCheck.term = _toPatternRegex(options.pattern);
@@ -64,47 +72,42 @@ class DictionaryStore {
 
 		if (options.termLengths) {
 			termCheck.termLength = {
-				$in: _.isArray(options.termLengths) ?
+				$in: Array.isArray(options.termLengths) ?
 					options.termLengths :
 					[options.termLengths]
 			};
 		}
 		
-		let query = DictionaryItemModel.find(termCheck, { _id: false, termLength: false });
+		let query = DictionaryItemModel.find(termCheck);
 
-		if (!_.isUndefined(frame.length)) {
-			query.limit(frame.length);
+		if (options.frame.length !== undefined) {
+			query.limit(options.frame.length);
 		}
 
-		if (frame.start > 0) {
+		if (options.frame.start > 0) {
 			query = query.skip(frame.start);
 		}
 
-		return Q(query);
+		return query.exec();
 	}
 
 	static updateDefinitions(options) {
 		assert(options, "DictionaryStore.updateDefinitions() cannot be called without options");
 
-		let data = options.data;
+		const terms = Object.keys(options.data).map((term) => term.toUpperCase());
 
-		let terms = _.keys(data);
+		assert(options.data && (terms.length > 0), "No updates specified for DictionaryStore.updateDefinitions()");
 
-		assert(data, "No updates specified for DictionaryStore.updateDefinitions()");
-
-		return Q.all(
-			_.map(
-				terms,
-				function(term) {
-					DictionaryItemModel.update(
-						{
-							term: term
-						},
-						{
-							definitions: data[term]
-						}
-					).exec();
-				}
+		return Promise.all(
+			terms.map(
+				(term) => DictionaryItemModel.update(
+					{
+						term,
+					},
+					{
+						definitions: options.data[term],
+					}
+				).exec()
 			)
 		);
 	}
@@ -112,83 +115,63 @@ class DictionaryStore {
 	static addDefinitions(options) {
 		assert(options, "DictionaryStore.addDefinitions() cannot be called without options");
 
-		let data = options.data;
+		let terms = Object.keys(options.data).map((term) => term.toUpperCase());
 
-		let terms = _.keys(data);
+		assert(options.data && (terms.length > 0), "No updates specified for DictionaryStore.addDefinitions()");
 
-		assert(data, "No updates specified for DictionaryStore.addDefinitions()");
+		return DictionaryItemModel.find({
+			term: { $in: terms }
+		}).then(
+			(items) => Promise.all(
+				items.map(
+					(item) => {
+						if (item) {
+							item.definitions = uniq(
+								item.definitions.concat(options.data[item.term])
+							);
 
-		return Q(
-			DictionaryItemModel.find({
-				term: { $in: terms }
-			})
-		).then(
-			function(items) {
-				return Q.all(
-					_.map(
-						items,
-						function(item) {
-							if (item) {
-								item.definitions = _.uniq(
-									item.definitions.concat(data[item.term])
-								);
+							terms = without(terms, item.term);
 
-								terms = _.without(terms, item.term);
-
-								return item.save();
-							}
-
-							return Q();
+							return item.save();
 						}
-					)
-				);
-			}
+					}
+				)
+			)
 		).then(
-			function() {
-				return Q.all(
-					_.map(
-						terms,
-						function(term) {
-							if (!data[term]) {
-								return Q();
-							}
-
-							return DictionaryItemModel.create({
-								term: term,
-								definitions: data[term]
-							});
+			() => Promise.all(
+				terms.map(
+					(term) => {
+						if (!options.data[term]) {
+							return;
 						}
-					)
-				);
-			}
+
+						return DictionaryItemModel.create({
+							term,
+							definitions: options.data[term],
+						});
+					}
+				)
+			)
 		);
 	}
 
 	static verifyValidTerms(options) {
 		options = options || {};
 
-		let terms = _.map(_.uniq(options.terms || []), (t) => t.toUpperCase());
+		let terms = ((terms && uniq(options.terms)) || []).map((term) => term.toUpperCase());
 
-		assert(_.size(terms) > 0, "No terms specified to check in `verifyValidTerms`");
+		assert(terms.length > 0, "No terms specified to check in `verifyValidTerms`");
 
-		let query = DictionaryItemModel.find(
+		return DictionaryItemModel.find(
 			{
 				term: {
 					$in: terms
 				}
-			},
-			{
-				term: true,
-				_id: false
 			}
-		);
-
-		return Q(query).then(
-			function(foundTerms) {
-				return {
-					missingTerms: _.difference(terms, _.map(foundTerms, "term")),
-				};
-			}
+		).then(
+			(foundTerms) => ({
+				missingTerms: difference(terms, foundTerms.map((result) => result.term)),
+			})
 		);
 	} 
 }

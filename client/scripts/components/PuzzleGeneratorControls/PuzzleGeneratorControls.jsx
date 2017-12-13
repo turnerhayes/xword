@@ -18,11 +18,11 @@ const classes = classHelper("puzzle-generator-controls");
 
 const placementModeConfig = {
 	[CELL_PLACEMENT_MODES.Blocks]: {
-		icon: "fa-square",
+		icon: "input square",
 		label: "Place block cells",
 	},
 	[CELL_PLACEMENT_MODES.Input]: {
-		icon: "fa-square-o",
+		icon: "block square",
 		label: "Remove block cells",
 	},
 };
@@ -99,8 +99,8 @@ class PuzzleGeneratorControls extends React.PureComponent {
 						>
 							<Icon
 								title="Clear puzzle"
-								className="fa fa-eraser"
-							/>
+								className="icon"
+							>clear puzzle</Icon>
 						</IconButton>
 					)
 				}
@@ -113,8 +113,8 @@ class PuzzleGeneratorControls extends React.PureComponent {
 					})}
 				>
 					<Icon
-						className={`fa ${placementModeConfig[cellPlacementMode].icon}`}
-					/>
+						className="icon"
+					>{placementModeConfig[cellPlacementMode].icon}</Icon>
 				</IconButton>
 				<IconButton
 					title={`Current Direction: ${currentDirection}`}
@@ -123,8 +123,8 @@ class PuzzleGeneratorControls extends React.PureComponent {
 					})}
 				>
 					<Icon
-						className={`fa ${currentDirection === DIRECTIONS.Across ? "fa-arrow-right" : "fa-arrow-down"}`}
-					/>
+						className="icon"
+					>{currentDirection}</Icon>
 				</IconButton>
 				<div
 					{...classes("dimension-controls")}

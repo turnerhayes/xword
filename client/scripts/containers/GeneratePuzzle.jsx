@@ -36,6 +36,7 @@ export default connect(
 			props.cellPlacementMode = uiState.getIn([uiSection, "cellPlacementMode"]);
 			props.selectedCellPosition = uiState.getIn([uiSection, "selectedCellPosition"]);
 			props.currentDirection = uiState.getIn([uiSection, "currentDirection"]);
+			props.isDictionaryLookupDialogOpen = uiState.getIn([uiSection, "isDictionaryLookupDialogOpen"]);
 
 			if (props.selectedCellPosition && !props.currentDirection) {
 				props.currentDirection = DIRECTIONS.Across;
@@ -112,6 +113,15 @@ export default connect(
 			onClearClues() {
 				dispatch(clearGeneratedPuzzleClues());
 			},
+
+			onToggleDictionaryLookupDialogOpen(state) {
+				dispatch(setUIState({
+					section: uiSection,
+					settings: {
+						isDictionaryLookupDialogOpen: !!state,
+					},
+				}));
+			}
 		};
 	}
 )(GeneratePuzzle);

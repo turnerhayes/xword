@@ -77,8 +77,8 @@ class TopNavigation extends React.Component {
 						})}
 					>
 						<Icon
-							className="fa fa-user"
-						/>
+							className="icon"
+						>profile</Icon>
 					</IconButton>
 					<Popover
 						open={this.state.isAccountDialogPopoverOpen}

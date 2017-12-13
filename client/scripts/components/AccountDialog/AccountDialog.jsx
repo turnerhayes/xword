@@ -11,12 +11,6 @@ import {
 import Config     from "project/scripts/config";
 import                 "./AccountDialog.less";
 
-const PROVIDER_ICON_MAP = {
-	facebook: "fa-facebook-square",
-	google: "fa-google-plus-square",
-	twitter: "fa-twitter-square"
-};
-
 
 function handleLogoutButtonClicked({ dispatch }) {
 	dispatch(logout());
@@ -38,8 +32,8 @@ function renderNotLoggedIn(dispatch) {
 						onClick={() => handleLoginClicked({ dispatch, provider: "facebook" })}
 					>
 						<Icon
-							className={`fa ${PROVIDER_ICON_MAP.facebook}`}
-						/>
+							className="icon"
+						>facebook</Icon>
 					</IconButton>
 				)
 			}
@@ -52,8 +46,8 @@ function renderNotLoggedIn(dispatch) {
 						onClick={() => handleLoginClicked({ dispatch, provider: "google" })}
 					>
 						<Icon
-							className={`fa ${PROVIDER_ICON_MAP.google}`}
-						/>
+							className="icon"
+						>google plus</Icon>
 					</IconButton>
 				)
 			}
@@ -66,8 +60,8 @@ function renderNotLoggedIn(dispatch) {
 						onClick={() => handleLoginClicked({ dispatch, provider: "twitter" })}
 					>
 						<Icon
-							className={`fa ${PROVIDER_ICON_MAP.twitter}`}
-						/>
+							className="icon"
+						>twitter</Icon>
 					</IconButton>
 				)
 			}
@@ -86,8 +80,6 @@ function renderNotLoggedIn(dispatch) {
  * @return {external:React.Component} the component to render
  */
 function AccountDialog(props) {
-	const providerIcon = props.loggedInUser && PROVIDER_ICON_MAP[props.loggedInUser.provider];
-
 	return (
 		<div
 			className="c_account-dialog"
@@ -100,13 +92,9 @@ function AccountDialog(props) {
 							<Link
 								to={`/profile/${props.loggedInUser.username}`}
 							>
-								{
-									providerIcon && (
-										<span
-											className={`fa ${providerIcon} provider-icon`}
-										></span>
-									)
-								}
+								<Icon
+									className="icon provider-icon"
+								>{props.loggedInUser.provider}</Icon>
 								{ props.loggedInUser.name.get("display") }
 							</Link>
 						)
@@ -119,8 +107,8 @@ function AccountDialog(props) {
 								onClick={handleLogoutButtonClicked}
 							>
 								<Icon
-									className="fa fa-sign-out"
-								/>
+									className="icon"
+								>log out</Icon>
 							</IconButton>
 						)
 					}

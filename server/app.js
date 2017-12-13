@@ -72,19 +72,6 @@ app.use(session);
 
 passportMiddleware(app);
 
-app.use(
-	"/static/fonts/font-awesome",
-	express.static(
-		// Need to do this ugly resolve; using requre.resolve() doesn't seem to work,
-		// possibly because the font-awesome package contains no main entry or index.js,
-		// so Node treats it as not a package.
-		path.resolve(__dirname, "..", "node_modules", "font-awesome", "fonts"),
-		{
-			fallthrough: false
-		}
-	)
-);
-
 app.use("/", cors(SITE_RESTRICTED_CORS_OPTIONS), require("./routes/authentication"));
 // Make sure no /api calls get caught by the below catch-all route handler, so that
 // /api calls can 404 correctly

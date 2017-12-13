@@ -51,7 +51,7 @@ function PuzzlePicker(props) {
 			>
 				<Button
 				>
-					<Icon className="fa fa-upload"/>
+					<Icon className="icon">upload</Icon>
 					Upload a .puz file
 				</Button>
 			</Dropzone>

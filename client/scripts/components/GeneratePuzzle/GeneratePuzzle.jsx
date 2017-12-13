@@ -9,12 +9,19 @@ import {
 	is
 }                              from "immutable";
 import { withStyles }          from "material-ui/styles";
+import Button                  from "material-ui/Button";
 import TextField               from "material-ui/TextField";
+import Dialog, {
+	DialogTitle,
+	DialogContent
+}                              from "material-ui/Dialog";
 import {
 	ImmutablePuzzle
 }                              from "xpuz";
+import LoadingIcon             from "project/scripts/components/LoadingIcon";
 import CrosswordGrid           from "project/scripts/containers/CrosswordGrid";
 import PuzzlePicker            from "project/scripts/components/PuzzlePicker";
+import DictionaryLookup        from "project/scripts/containers/DictionaryLookup";
 import PuzzleGeneratorControls from "project/scripts/containers/PuzzleGeneratorControls";
 import {
 	MINIMUM_GRID_DIMENSIONS,
@@ -64,6 +71,7 @@ class GeneratePuzzle extends React.PureComponent {
 		cellPlacementMode: PropTypes.oneOf(Object.values(CELL_PLACEMENT_MODES)),
 		selectedCellPosition: ImmutablePropTypes.listOf(PropTypes.number),
 		currentDirection: PropTypes.oneOf(Object.values(DIRECTIONS)),
+		isDictionaryLookupDialogOpen: PropTypes.bool,
 		onSetPuzzle: PropTypes.func,
 		onUpdatePuzzleCell: PropTypes.func,
 		onUpdateGrid: PropTypes.func,
@@ -71,6 +79,7 @@ class GeneratePuzzle extends React.PureComponent {
 		onChangeSelectedCell: PropTypes.func,
 		onClueChange: PropTypes.func,
 		onClearClues: PropTypes.func,
+		onToggleDictionaryLookupDialogOpen: PropTypes.func,
 	}
 
 	static defaultProps = {
@@ -258,6 +267,11 @@ class GeneratePuzzle extends React.PureComponent {
 		});
 	}
 
+	toggleDictionaryLookupDialogOpen = (state) => {
+		this.props.onToggleDictionaryLookupDialogOpen &&
+			this.props.onToggleDictionaryLookupDialogOpen(state);
+	}
+
 	render() {
 		const selectedCell = this.props.puzzle && this.props.selectedCellPosition &&
 			this.props.puzzle.grid.getIn([this.props.selectedCellPosition.get(1), this.props.selectedCellPosition.get(0)]);
@@ -271,6 +285,11 @@ class GeneratePuzzle extends React.PureComponent {
 				]).toString() // Keys in the clues map are strings
 			])
 		};
+		const cellsInSelectedTerm = selectedCell && this.props.currentDirection && this.props.puzzle.grid.reduce(
+			(count, row) => count + row.count((cell) => cell.getIn(["containingClues", this.props.currentDirection]) ===
+				selectedCell.getIn(["containingClues", this.props.currentDirection])),
+			0
+		);
 
 		return (
 			<div
@@ -316,6 +335,22 @@ class GeneratePuzzle extends React.PureComponent {
 								clueText: event.target.value,
 							})}
 						/>
+						<Button
+							onClick={() => this.toggleDictionaryLookupDialogOpen(true)}
+						>
+							Lookup words
+						</Button>
+						<Dialog
+							open={this.props.isDictionaryLookupDialogOpen}
+							onRequestClose={() => this.toggleDictionaryLookupDialogOpen(false)}
+						>
+							<DialogTitle>Lookup Words</DialogTitle>
+							<DialogContent>
+								<DictionaryLookup
+									termLength={cellsInSelectedTerm}
+								/>
+							</DialogContent>
+						</Dialog>
 					</h1>
 				{
 					this.props.puzzle && (
@@ -333,9 +368,7 @@ class GeneratePuzzle extends React.PureComponent {
 				}
 				{
 					!this.props.puzzle && (
-						<span
-							className="fa fa-spinner fa-spin"
-						/>
+						<LoadingIcon />
 					)
 				}
 			</div>

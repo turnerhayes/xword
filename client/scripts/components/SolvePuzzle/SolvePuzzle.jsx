@@ -136,8 +136,8 @@ class SolvePuzzle extends React.Component {
 					})}
 				>
 					<Icon
-						className="fa fa-gear"
-					/>
+						className="icon"
+					>settings</Icon>
 				</IconButton>
 				<PuzzlePicker
 					onUploadSuccess={this.handleFileUpload}

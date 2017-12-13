@@ -17,6 +17,7 @@ const schema = {
 		selectedCellPosition: null,
 		currentDirection: DIRECTIONS.Across,
 	}),
+	DictionaryLookup: Map(),
 	isRehydrated: false,
 };
 

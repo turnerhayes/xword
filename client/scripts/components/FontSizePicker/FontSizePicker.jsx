@@ -1,7 +1,9 @@
-import React     from "react";
-import PropTypes from "prop-types";
-import                "font-awesome/less/font-awesome.less";
-import                "./FontSizePicker.less";
+import React      from "react";
+import PropTypes  from "prop-types";
+import IconButton from "material-ui/IconButton";
+import Icon       from "material-ui/Icon";
+import                 "font-awesome/less/font-awesome.less";
+import                 "./FontSizePicker.less";
 
 function handleAdjustChange(props, up) {
 	let newValue = props.currentAdjust + (up ? 1 : -1);
@@ -16,17 +18,25 @@ function FontSizePicker(props) {
 		<div
 			className="c_font-size-picker"
 		>
-			<button
-				className="c_font-size-picker--adjust-button fa fa-minus"
+			<IconButton
+				className="c_font-size-picker--adjust-button"
 				onClick={() => handleAdjustChange(props, false)}
-			/>
-			<span
-				className="fa fa-font"
-			/>
-			<button
-				className="c_font-size-picker--adjust-button fa fa-plus"
+			>
+				<Icon
+					className="icon"
+				>zoom out</Icon>
+			</IconButton>
+			<Icon
+				className="icon"
+			>font</Icon>
+			<IconButton
+				className="c_font-size-picker--adjust-button"
 				onClick={() => handleAdjustChange(props, true)}
-			/>
+			>
+				<Icon
+					className="icon"
+				>zoom in</Icon>
+			</IconButton>
 		</div>
 	);
 }
