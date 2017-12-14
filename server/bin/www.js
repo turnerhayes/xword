@@ -16,9 +16,10 @@ const Config          = rfr("server/lib/config");
 app.set("port", Config.app.address.port);
 
 let server;
+let insecureServer;
 
 if (Config.app.ssl.key && Config.app.ssl.cert) {
-	const insecureServer = http.createServer(
+	insecureServer = http.createServer(
 		function(req, res) {
 			res.writeHead(HTTPStatusCodes.MOVED_PERMANENTLY, {
 				Location: "https://" + req.headers.host.replace(
@@ -45,7 +46,12 @@ if (Config.app.ssl.key && Config.app.ssl.cert) {
 		app
 	).listen(
 		Config.app.address.port,
-		function() {
+		function(err) {
+			if (err) {
+				insecureServer.close();
+				throw err;
+			}
+
 			debug("Express server listening on secure port " + server.address().port);
 		}
 	);
@@ -62,3 +68,37 @@ else {
 		}
 	);
 }
+
+server.on("close", () => {
+	rfr("server/lib/persistence/db-connection").close();
+});
+
+function shutDownServer(cause, signal) {
+	if (insecureServer) {
+		insecureServer.close();
+	}
+
+	debug("Closing server due to " + cause);
+	server.close(() => {
+		signal ?
+			process.kill(process.pid, signal) :
+			process.exit(0);
+	});
+}
+
+[
+	"SIGINT",
+	"SIGHUP",
+	// SIGUSR2 is used by Nodemon to restart
+	"SIGUSR2",
+].forEach(
+	(signal) => {
+		process.once(signal, () => {
+			shutDownServer("signal " + signal);
+		});
+	}
+);
+
+process.once("unhandledException", () => {
+	shutDownServer("unhandled exception");
+});

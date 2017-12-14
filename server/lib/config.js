@@ -15,19 +15,21 @@ const EXTERNAL_PORT = Number(process.env.APP_ADDRESS_EXTERNAL_PORT) || PORT;
 const IS_SECURE = process.env.APP_ADDRESS_IS_SECURE ||
 	(process.env.APP_SSL_KEY && process.env.APP_SSL_CERT);
 	
-const ORIGIN = (function() {
+function getAddressWithPort(port) {
 	let baseURL = "http" + (IS_SECURE ? "s" : "") + "://" +
 		HOST;
 
 	if (
-		!(EXTERNAL_PORT === HTTP_DEFAULT_PORT && !IS_SECURE) &&
-		!(EXTERNAL_PORT === HTTPS_DEFAULT_PORT && IS_SECURE)
+		!(port === HTTP_DEFAULT_PORT && !IS_SECURE) &&
+		!(port === HTTPS_DEFAULT_PORT && IS_SECURE)
 	) {
-		baseURL += ":" + EXTERNAL_PORT;
+		baseURL += ":" + port;
 	}
 
 	return baseURL;
-}());
+};
+
+const ORIGIN = getAddressWithPort(EXTERNAL_PORT);
 
 // "fake" document object so that shared-config can access it when not run from the
 // client (as it's doing here)
@@ -99,7 +101,8 @@ const Config = {
 			port: PORT,
 			externalPort: EXTERNAL_PORT,
 			isSecure: IS_SECURE,
-			origin: ORIGIN
+			origin: ORIGIN,
+			internalAddress: getAddressWithPort(PORT),
 		},
 		ssl: {
 			key: sslKeyPath,

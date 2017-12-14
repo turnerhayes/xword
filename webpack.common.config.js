@@ -13,8 +13,10 @@ const jsxFilenameRegex = /\.jsx?$/;
 const stylesDirectory = path.join(Config.paths.client, "styles");
 const scriptsDirectory = path.join(Config.paths.client, "scripts");
 
+console.log("staticContentURL: ", Config.staticContent.url);
+
 exports = module.exports = {
-	entry: ["babel-polyfill", "./client/scripts/index.jsx"],
+	entry: ["./client/scripts/polyfills", "./client/scripts/index.jsx"],
 
 	output: {
 		path: Config.paths.dist,
@@ -51,9 +53,6 @@ exports = module.exports = {
 							loader: "less-loader",
 							options: {
 								sourceMap: true,
-								modifyVars: {
-									"fa-font-path": '"/static/fonts/font-awesome"'
-								},
 							}
 						},
 					],
@@ -121,6 +120,7 @@ exports = module.exports = {
 			NODE_ENV: Config.app.environment,
 			WEB_SOCKETS_URL: null,
 			STATIC_CONTENT_URL: null,
+			STATIC_CONTENT_PORT: null,
 			IS_DEVELOPMENT: Config.app.isDevelopment || false,
 			CREDENTIALS_FACEBOOK_IS_ENABLED: Config.auth.facebook.isEnabled || false,
 			CREDENTIALS_GOOGLE_IS_ENABLED: Config.auth.google.isEnabled || false,

@@ -63,6 +63,10 @@ app.set("view engine", "hbs");
 
 app.locals.STATIC_URL = Config.staticContent.url;
 
+if (Config.app.isDevelopment) {
+	require("./webpack-middleware")(app);
+}
+
 // app.use(favicon());
 app.use(Loggers.http);
 app.use(cookieParser(Config.session.secret));
@@ -72,14 +76,23 @@ app.use(session);
 
 passportMiddleware(app);
 
+app.use(
+	"/static/fonts/font-awesome",
+	express.static(
+		// Need to do this ugly resolve; using requre.resolve() doesn't seem to work,
+		// possibly because the font-awesome package contains no main entry or index.js,
+		// so Node treats it as not a package.
+		path.resolve(__dirname, "..", "node_modules", "font-awesome", "fonts"),
+		{
+			fallthrough: false
+		}
+	)
+);
+
 app.use("/", cors(SITE_RESTRICTED_CORS_OPTIONS), require("./routes/authentication"));
 // Make sure no /api calls get caught by the below catch-all route handler, so that
 // /api calls can 404 correctly
 app.use("/api", cors(), require("./routes/api"), raise404);
-
-if (Config.staticContent.inline) {
-	app.use("/static/", express.static(Config.paths.dist), raise404);
-}
 
 app.get(
 	"*",

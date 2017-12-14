@@ -14,8 +14,9 @@ if (Config.app.ssl.key) {
 		sslKey = fs.readFileSync(Config.app.ssl.key);
 	}
 	catch (ex) {
-		// eslint-disable-next-line no-console
-		console.error("Error reading SSL key file: ", ex);
+		const err = new Error("Error reading SSL key file: " + ex.message);
+		err.exception = ex;
+		throw err;
 	}
 }
 
@@ -26,33 +27,20 @@ if (Config.app.ssl.cert) {
 		sslCert = fs.readFileSync(Config.app.ssl.cert);
 	}
 	catch (ex) {
-		// eslint-disable-next-line no-console
-		console.error("Error reading SSL cert file: ", ex);
+		const err = new Error("Error reading SSL cert file: " + ex.message);
+		err.exception = ex;
+		throw err;
 	}
 }
 
 const devServer = {
-	port: 8200,
 	headers: {
 		"Access-Control-Allow-Origin": "*"
 	},
-	before(app) {
-		app.use(
-			"/static/fonts/font-awesome",
-			cors({
-				origin: Config.app.address.origin
-			}),
-			express.static(
-				// Need to do this ugly resolve; using requre.resolve() doesn't seem to work,
-				// possibly because the font-awesome package contains no main entry or index.js,
-				// so Node treats it as not a package.
-				path.resolve(__dirname, "node_modules", "font-awesome", "fonts"),
-				{
-					fallthrough: false
-				}
-			)
-		);
-	},
+	hot: true,
+	compress: true,
+	quiet: true,
+	publicPath: common.output.publicPath,
 };
 
 if (sslKey && sslCert) {

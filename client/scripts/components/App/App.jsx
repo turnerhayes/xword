@@ -1,7 +1,15 @@
 import React          from "react";
 import PropTypes      from "prop-types";
+import {
+	Route
+}                       from "react-router-dom";
+import { Provider }     from "react-redux";
+import {
+	ConnectedRouter
+}                       from "react-router-redux";
 import classnames     from "classnames";
-import { withRouter } from "react-router";
+import { history }      from "project/scripts/redux/configure-store";
+import getStore         from "project/scripts/redux/store";
 import {
 	MuiThemeProvider,
 	createMuiTheme,
@@ -13,6 +21,9 @@ import {
 	orange
 }                     from "material-ui/colors/purple";
 import TopNavigation  from "project/scripts/components/TopNavigation";
+import Home             from "project/scripts/components/Home";
+import SolvePuzzle      from "project/scripts/containers/SolvePuzzle";
+import GeneratePuzzle   from "project/scripts/containers/GeneratePuzzle";
 import                     "project/styles/page-layout.less";
 
 const TOP_NAVIGATION_BAR_HEIGHT = 60;
@@ -44,63 +55,67 @@ const styles = {
  *
  * @return {external:React.Component} the component to render
  */
-function App({ children, sidebar, classes }) {
+function App({ classes }) {
 	return (
-		<MuiThemeProvider
-			theme={theme}
-		>
-			<section
-				className="page-layout__main-container"
-			>
-				<header
-					className="page-layout__main-header"
+		<Provider store={getStore()}>
+			<ConnectedRouter history={history}>
+				<MuiThemeProvider
+					theme={theme}
 				>
-					<TopNavigation
-						className={classes.topNav}
-					/>
-				</header>
-				<div
-					className={classnames(
-						"page-layout__main-content-container",
-						classes.mainContent
-					)}
-				>
-					<article
-						className="page-layout__main-content"
+					<section
+						className="page-layout__main-container"
 					>
-						{children}
-					</article>
-					{
-						sidebar && (
-							<aside
-								className="page-layout__left-panel"
-							>{sidebar}</aside>
-						)
-					}
-				</div>
-			</section>
-		</MuiThemeProvider>
+						<header
+							className="page-layout__main-header"
+						>
+							<TopNavigation
+								className={classes.topNav}
+							/>
+						</header>
+						<div
+							className={classnames(
+								"page-layout__main-content-container",
+								classes.mainContent
+							)}
+						>
+							<article
+								className="page-layout__main-content"
+							>
+								<Route
+									exact
+									name="Home"
+									path="/"
+									component={Home}
+								>
+								</Route>
+								<Route
+									exact
+									name="Solve a Puzzle"
+									path="/solve"
+									component={SolvePuzzle}
+								>
+								</Route>
+								<Route
+									exact
+									name="Generate a Puzzle"
+									path="/generate"
+									component={GeneratePuzzle}
+								>
+								</Route>
+							</article>
+						</div>
+					</section>
+				</MuiThemeProvider>
+			</ConnectedRouter>
+		</Provider>
 	);
 }
 
 /**
  * @member {object} - Component prop types
- *
- * @prop {Types.RenderableElement} [children=[]] - child(ren) of the component
- * @prop {external:React.Component} [sidebar] - Component to render in the sidebar
  */
 App.propTypes = {
-	children: PropTypes.oneOfType([
-		PropTypes.arrayOf(PropTypes.node),
-		PropTypes.node
-	]),
-	sidebar: PropTypes.element,
 	classes: PropTypes.object,
 };
 
-App.defaultProps = {
-	children: []
-};
-
-
-export default withRouter(withStyles(styles)(App));
+export default withStyles(styles)(App);

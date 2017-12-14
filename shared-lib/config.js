@@ -4,9 +4,8 @@ const ENVIRONMENT = process.env.NODE_ENV || "development";
 const IS_DEVELOPMENT = ENVIRONMENT === "development";
 
 let staticContentURL = process.env.STATIC_CONTENT_URL;
-const staticContentInline = !staticContentURL;
 
-if (staticContentInline) {
+if (!staticContentURL) {
 	staticContentURL = global.document.origin;
 }
 else {
@@ -17,11 +16,10 @@ else {
 exports = module.exports = {
 	app: {
 		environment: ENVIRONMENT,
-		isDevelopment: IS_DEVELOPMENT
+		isDevelopment: IS_DEVELOPMENT,
 	},
 
 	staticContent: {
-		inline: staticContentInline,
-		url: staticContentURL
+		url: staticContentURL,
 	},
 };
