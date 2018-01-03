@@ -36,7 +36,7 @@ export default connect(
 			props.cellPlacementMode = uiState.getIn([uiSection, "cellPlacementMode"]);
 			props.selectedCellPosition = uiState.getIn([uiSection, "selectedCellPosition"]);
 			props.currentDirection = uiState.getIn([uiSection, "currentDirection"]);
-			props.isDictionaryLookupDialogOpen = uiState.getIn([uiSection, "isDictionaryLookupDialogOpen"]);
+			props.isDictionaryLookupDialogOpen = uiState.getIn([uiSection, "DictionaryLookupDialog", "isOpen"], false);
 
 			if (props.selectedCellPosition && !props.currentDirection) {
 				props.currentDirection = DIRECTIONS.Across;
@@ -118,7 +118,9 @@ export default connect(
 				dispatch(setUIState({
 					section: uiSection,
 					settings: {
-						isDictionaryLookupDialogOpen: !!state,
+						DictionaryLookup: {
+							isOpen: !!state,
+						},
 					},
 				}));
 			}

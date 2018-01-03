@@ -1,34 +1,40 @@
-import React          from "react";
-import PropTypes      from "prop-types";
-import Toolbar        from "material-ui/Toolbar";
-import Icon           from "material-ui/Icon";
-import IconButton     from "material-ui/IconButton";
-import Button         from "material-ui/Button";
-import TextField      from "material-ui/TextField";
+import React              from "react";
+import PropTypes          from "prop-types";
+import ImmutablePropTypes from "react-immutable-proptypes";
+import Toolbar            from "material-ui/Toolbar";
+import Icon               from "material-ui/Icon";
+import IconButton         from "material-ui/IconButton";
+import Button             from "material-ui/Button";
+import TextField          from "material-ui/TextField";
+import {
+	ImmutablePuzzle
+}                         from "xpuz";
 import {
 	GRID_DIMENSIONS,
 	MINIMUM_GRID_DIMENSIONS,
 	CELL_PLACEMENT_MODES,
 	DIRECTIONS
-}                     from "project/scripts/constants";
-import classHelper    from "project/scripts/classes";
-import                     "./PuzzleGeneratorControls.less";
+}                         from "project/scripts/constants";
+import classHelper        from "project/scripts/classes";
+import                         "./PuzzleGeneratorControls.less";
 
 const classes = classHelper("puzzle-generator-controls");
 
 const placementModeConfig = {
 	[CELL_PLACEMENT_MODES.Blocks]: {
-		icon: "input square",
+		icon: "block square",
 		label: "Place block cells",
 	},
 	[CELL_PLACEMENT_MODES.Input]: {
-		icon: "block square",
+		icon: "input square",
 		label: "Remove block cells",
 	},
 };
 
 class PuzzleGeneratorControls extends React.PureComponent {
 	static propTypes = {
+		puzzle: PropTypes.instanceOf(ImmutablePuzzle).isRequired,
+		selectedCellPosition: ImmutablePropTypes.listOf(Number),
 		onClearPuzzle: PropTypes.func,
 		onCellPlacementModeChange: PropTypes.func,
 		onDirectionChange: PropTypes.func,
@@ -69,15 +75,31 @@ class PuzzleGeneratorControls extends React.PureComponent {
 	}
 
 	handleDirectionClick = ({ currentDirection }) => {
-		this.props.onDirectionChange && this.props.onDirectionChange({
-			direction: currentDirection === DIRECTIONS.Across ?
-				DIRECTIONS.Down :
-				DIRECTIONS.Across,
-		});
+		const nextDirection = currentDirection === DIRECTIONS.Across ?
+			DIRECTIONS.Down :
+			DIRECTIONS.Across;
+
+		const selectedCell = this.props.selectedCellPosition &&
+			this.props.puzzle.grid.getIn(this.props.selectedCellPosition.reverse());
+
+		if (
+			// If there is no selected cell, we can change the direction
+			!selectedCell ||
+			// Otherwise, we can only switch direction if there is a clue
+			// for the desired direction 
+			!!selectedCell.getIn(["containingClues", nextDirection])
+		) {
+			this.props.onDirectionChange && this.props.onDirectionChange({
+				direction: nextDirection,
+			});
+		}
+
 	}
 
 	render() {
 		const {
+			puzzle,
+			selectedCellPosition,
 			onClearPuzzle,
 			cellPlacementMode,
 			uiWidth,
@@ -87,6 +109,17 @@ class PuzzleGeneratorControls extends React.PureComponent {
 			height,
 			onDimensionsChange,
 		} = this.props;
+
+		const selectedCell = selectedCellPosition &&
+			puzzle.grid.getIn(selectedCellPosition.reverse());
+
+		const otherDirection = currentDirection === DIRECTIONS.Across ?
+			DIRECTIONS.Down :
+			DIRECTIONS.Across;
+
+		const canChangeDirection = !selectedCell || !!selectedCell.getIn(
+			["containingClues", otherDirection]
+		);
 
 		return (
 			<Toolbar
@@ -121,6 +154,7 @@ class PuzzleGeneratorControls extends React.PureComponent {
 					onClick={() => this.handleDirectionClick({
 						currentDirection
 					})}
+					disabled={!canChangeDirection}
 				>
 					<Icon
 						className="icon"

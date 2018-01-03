@@ -6,22 +6,17 @@ import classnames              from "classnames";
 import {
 	Map,
 	List,
-	is
 }                              from "immutable";
 import { withStyles }          from "material-ui/styles";
 import Button                  from "material-ui/Button";
 import TextField               from "material-ui/TextField";
-import Dialog, {
-	DialogTitle,
-	DialogContent
-}                              from "material-ui/Dialog";
 import {
 	ImmutablePuzzle
 }                              from "xpuz";
 import LoadingIcon             from "project/scripts/components/LoadingIcon";
 import CrosswordGrid           from "project/scripts/containers/CrosswordGrid";
 import PuzzlePicker            from "project/scripts/components/PuzzlePicker";
-import DictionaryLookup        from "project/scripts/containers/DictionaryLookup";
+import DictionaryLookupDialog  from "project/scripts/containers/DictionaryLookupDialog";
 import PuzzleGeneratorControls from "project/scripts/containers/PuzzleGeneratorControls";
 import {
 	MINIMUM_GRID_DIMENSIONS,
@@ -99,8 +94,14 @@ class GeneratePuzzle extends React.PureComponent {
 		}
 	}
 
-	componentDidUpdate(oldProps) {
-		if (!is(oldProps.puzzle, this.props.puzzle)) {
+	componentDidUpdate() {
+		const selectedCell = this.props.selectedCellPosition &&
+			this.props.puzzle.grid.getIn(this.props.selectedCellPosition.reverse());
+
+		if (
+			this.props.selectedCellPosition &&
+			(!selectedCell || selectedCell.get("isBlockCell"))
+		) {
 			this.selectFirstInputCell();
 		}
 	}
@@ -163,6 +164,9 @@ class GeneratePuzzle extends React.PureComponent {
 		const shouldPlaceBlockCells = (this.props.cellPlacementMode === CELL_PLACEMENT_MODES.Blocks);
 
 		if ((!!cell.get("isBlockCell")) !== shouldPlaceBlockCells) {
+			this.props.onChangeSelectedCell && this.props.onChangeSelectedCell({
+				position: null,
+			});
 			this.updatePuzzleCell(position[0], position[1], {
 				isBlockCell: shouldPlaceBlockCells,
 			});
@@ -221,7 +225,6 @@ class GeneratePuzzle extends React.PureComponent {
 
 		this.updateGrid(this.props.puzzle.grid.withMutations(
 			(grid) => {
-
 				if (height && height !== currentHeight) {
 					if (height > currentHeight) {
 						// need to add rows
@@ -259,6 +262,55 @@ class GeneratePuzzle extends React.PureComponent {
 		this.props.onCellPlacementModeChange && this.props.onCellPlacementModeChange({ mode });
 	}
 
+	handleDictionaryResultChosen = ({ term, clue }) => {
+		this.toggleDictionaryLookupDialogOpen(false);
+
+		const {
+			puzzle,
+			selectedCellPosition,
+			currentDirection,
+		} = this.props;
+
+		const selectedCell = puzzle.grid.getIn(selectedCellPosition.reverse());
+
+		const clueNumber = selectedCell.getIn(["containingClues", currentDirection]);
+
+		let termIndex = 0;
+
+		this.handleClueTextChange({
+			clueNumber,
+			clueText: clue,
+		});
+
+		this.updateGrid(this.props.puzzle.grid.withMutations(
+			(grid) => {
+				let isFinished = false;
+
+				grid.forEach(
+					(row, rowIndex) => {
+						grid.set(rowIndex, row.map(
+							(cell) => {
+								if (isFinished || cell.getIn(["containingClues", currentDirection]) !== clueNumber) {
+									return cell;
+								}
+
+								cell = cell.set("solution", term[termIndex++]);
+
+								if (termIndex === term.length) {
+									isFinished = true;
+								}
+
+								return cell;
+							}
+						));
+					}
+				);
+
+				return grid;
+			}
+		));
+	}
+
 	toggleShouldPlaceBlockCells = () => {
 		this.handleCellPlacementModeChange({
 			mode: this.props.cellPlacementMode === CELL_PLACEMENT_MODES.Blocks ?
@@ -274,21 +326,30 @@ class GeneratePuzzle extends React.PureComponent {
 
 	render() {
 		const selectedCell = this.props.puzzle && this.props.selectedCellPosition &&
-			this.props.puzzle.grid.getIn([this.props.selectedCellPosition.get(1), this.props.selectedCellPosition.get(0)]);
-		const selectedClue = selectedCell && !selectedCell.get("isBlockCell") && {
+			this.props.puzzle.grid.getIn(this.props.selectedCellPosition.reverse());
+		
+		// If a cell was just made into a block cell, then the highlighted clue direction may no longer be valid
+		// (for example, the highlighted clue has two cells across, then you make one of the cells a block cell;
+		// now there is no valid across clue, because clues must be more than one cell wide)
+		const directionClueNumber = selectedCell && !selectedCell.get("isBlockCell") && selectedCell.getIn([
+			"containingClues",
+			this.props.currentDirection,
+		]);
+
+		const selectedClue = directionClueNumber && {
 			number: selectedCell.getIn(["containingClues", this.props.currentDirection]),
 			text: this.props.puzzle.clues.getIn([
 				this.props.currentDirection,
-				selectedCell.getIn([
-					"containingClues",
-					this.props.currentDirection
-				]).toString() // Keys in the clues map are strings
+				directionClueNumber.toString() // Keys in the clues map are strings
 			])
 		};
+
 		const cellsInSelectedTerm = selectedCell && this.props.currentDirection && this.props.puzzle.grid.reduce(
-			(count, row) => count + row.count((cell) => cell.getIn(["containingClues", this.props.currentDirection]) ===
-				selectedCell.getIn(["containingClues", this.props.currentDirection])),
-			0
+			(cells, row) => cells.concat(row.filter(
+				(cell) => cell.getIn(["containingClues", this.props.currentDirection]) ===
+					selectedCell.getIn(["containingClues", this.props.currentDirection]))
+				),
+			List()
 		);
 
 		return (
@@ -296,7 +357,7 @@ class GeneratePuzzle extends React.PureComponent {
 				className={`c_generate-puzzle ${this.props.classes.root}`}
 			>
 				<DocumentEvents
-					enabled={true}
+					enabled={!this.props.isDictionaryLookupDialogOpen}
 					onKeyDown={(event) => !event.repeat && event.key === "Shift" && this.toggleShouldPlaceBlockCells()}
 					onKeyUp={(event) => event.key === "Shift" && this.toggleShouldPlaceBlockCells()}
 				/>
@@ -306,6 +367,8 @@ class GeneratePuzzle extends React.PureComponent {
 				{
 					this.props.puzzle && (
 						<PuzzleGeneratorControls
+							puzzle={this.props.puzzle}
+							selectedCellPosition={this.props.selectedCellPosition}
 							onClearPuzzle={this.handleClearPuzzle}
 							onCellPlacementModeChange={this.handleCellPlacementModeChange}
 							cellPlacementMode={this.props.cellPlacementMode}
@@ -335,22 +398,24 @@ class GeneratePuzzle extends React.PureComponent {
 								clueText: event.target.value,
 							})}
 						/>
-						<Button
-							onClick={() => this.toggleDictionaryLookupDialogOpen(true)}
-						>
-							Lookup words
-						</Button>
-						<Dialog
-							open={this.props.isDictionaryLookupDialogOpen}
-							onRequestClose={() => this.toggleDictionaryLookupDialogOpen(false)}
-						>
-							<DialogTitle>Lookup Words</DialogTitle>
-							<DialogContent>
-								<DictionaryLookup
-									termLength={cellsInSelectedTerm}
-								/>
-							</DialogContent>
-						</Dialog>
+						{
+							cellsInSelectedTerm && (
+								<div>
+									<Button
+										onClick={() => this.toggleDictionaryLookupDialogOpen(true)}
+									>
+										Lookup words
+									</Button>
+									<DictionaryLookupDialog
+										uiSection="GeneratePuzzle"
+										onResultChosen={this.handleDictionaryResultChosen}
+										currentFill={cellsInSelectedTerm.map(
+											(cell) => cell.get("solution") || ""
+										)}
+									/>
+								</div>
+							)
+						}
 					</h1>
 				{
 					this.props.puzzle && (

@@ -215,49 +215,32 @@ class CrosswordGrid extends React.PureComponent {
 			case "Backspace": {
 				let value = event.target.value;
 
-				if (value.length === 0) {
+				const moveArgs = {
+					currentPosition: position,
+					isForward: false,
+					direction: this.props.currentDirection,
+				};
+
+				const nextPosition = this.getNextPosition(moveArgs);
+
+				if (nextPosition !== null) {
 					this.onMoveFocus(
 						Object.assign(
-							{
-								currentPosition: position,
-								direction: this.props.currentDirection,
-								isForward: false,
-							},
-							this.getNextPosition({
-								currentPosition: position,
-								isForward: false,
-								direction: this.props.currentDirection,
-							}),
+							moveArgs,
+							nextPosition,
 						)
 					);
+				}
 
+				if (value.length > 0) {
 					this.triggerCellContentChange({
 						event,
 						position,
-						value,
+						value: "",
 						wasDelete: true,
 					});
 					return;
 				}
-				else if (value.length === 1) {
-					value = "";
-				}
-				// Cursor is at the start of the text--do nothing
-				else if (event.target.selectionStart === 0) {
-					event.preventDefault();
-					return;
-				}
-				else {
-					// Remove character before cursor, like Backspace normally does
-					value = value.substring(0, event.target.selectionStart - 1) + value.substring(event.target.selectionEnd);
-				}
-
-				this.triggerCellContentChange({
-					event,
-					position,
-					value,
-					wasDelete: true,
-				});
 
 				return;
 			}
@@ -331,6 +314,21 @@ class CrosswordGrid extends React.PureComponent {
 			position,
 			value
 		});
+
+		const moveArgs = {
+			currentPosition: position,
+			isForward: true,
+			direction: this.props.currentDirection,
+		};
+
+		const nextPosition = this.getNextPosition(moveArgs);
+
+		if (nextPosition !== null) {
+			this.onMoveFocus(Object.assign(
+				moveArgs,
+				nextPosition,
+			));
+		}
 	}
 
 	render() {

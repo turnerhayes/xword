@@ -1,4 +1,8 @@
-import { Set }         from "immutable";
+import {
+	Set,
+	Map,
+	fromJS,
+}                      from "immutable";
 import UserUtils       from "project/scripts/utils/user";
 import DictionaryUtils from "project/scripts/utils/dictionary";
 
@@ -208,8 +212,19 @@ export function setPuzzleCellContent({ puzzleIndex, position, value }) {
 export const FIND_TERMS = "@XWORD/TERMS/FIND";
 
 export function findTerms(searchArgs) {
-	return {
-		type: FIND_TERMS,
-		payload: DictionaryUtils.findTerms(searchArgs),
+	return (dispatch, getState) => {
+		const state = getState();
+
+		if (!state.getIn(["dictionary", "termSearches", searchArgs.pattern])) {
+			dispatch({
+				type: FIND_TERMS,
+				payload: DictionaryUtils.findTerms(searchArgs).then(
+					(results) => Map({
+						results,
+						searchArgs: fromJS(searchArgs),
+					})
+				),
+			});
+		}
 	};
 }

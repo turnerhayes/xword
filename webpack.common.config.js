@@ -19,7 +19,7 @@ exports = module.exports = {
 	output: {
 		path: Config.paths.dist,
 		publicPath: "/static/",
-		filename: "js/[name]-[hash].js"
+		filename: "[name]-[hash].js"
 	},
 
 	module: {
@@ -51,13 +51,9 @@ exports = module.exports = {
 							loader: "less-loader",
 							options: {
 								sourceMap: true,
-								modifyVars: {
-									"fa-font-path": '"/static/fonts/font-awesome"'
-								},
 							}
 						},
 					],
-					publicPath: "/static/css"
 				})
 			},
 
@@ -67,14 +63,20 @@ exports = module.exports = {
 					loader: "url-loader",
 					options: {
 						limit: 10000,
-						mimetype: "application/font-woff"
+						mimetype: "application/font-woff",
+						name: "fonts/[hash].[ext]",
 					}
 				}
 			},
 
 			{
 				test: /\.ttf(\?.*)?$/,
-				use: "file-loader"
+				use: {
+					loader: "file-loader",
+					options: {
+						name: "fonts/[hash].[ext]",
+					}
+				},
 			},
 
 			{
@@ -128,7 +130,7 @@ exports = module.exports = {
 		}),
 
 		new ExtractTextPlugin({
-			filename: "css/[name]-[hash].css",
+			filename: "[name]-[hash].css",
 			allChunks: true
 		}),
 

@@ -1,6 +1,6 @@
 import { Map, List } from "immutable";
 import {
-	FIND_TERMS
+	FIND_TERMS,
 }              from "project/scripts/redux/actions";
 
 export default function dictionaryReducer(state = Map(), action) {
@@ -11,7 +11,10 @@ export default function dictionaryReducer(state = Map(), action) {
 				return state;
 			}
 
-			return state.set("findResults", action.payload || List());
+			return state.setIn(
+				["termSearches", action.payload.getIn(["searchArgs", "pattern"])],
+				action.payload.set("results", action.payload.get("results") || List()),
+			);
 		}
 
 		default: return state;
