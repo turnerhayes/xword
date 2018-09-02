@@ -64,5 +64,5 @@ export default function configureStore(initialState = Map(), history) {
 		(saga) => sagaMiddleware.run(saga)
 	);
 
-	return store;
+	return { store };
 }

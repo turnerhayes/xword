@@ -4,7 +4,6 @@
 
 require("dotenv").config();
 const webpack = require("webpack");
-const LessListsPlugin = require("less-plugin-lists");
 const aliases = require("./aliases");
 const rfr = require("rfr");
 const Config = rfr("server/lib/config");
@@ -60,16 +59,6 @@ module.exports = (options) => ({
 						loader: "less-loader",
 						options: {
 							sourceMap: true,
-							globalVars: {
-								// Converts the list of valid colors into a format that
-								// LESS can iterate over (using the LessListsPlugin)
-								_marbleColors: Config.game.colors.map(
-									(colorInfo) => `${colorInfo.id} ${colorInfo.hex}`
-								).join(", ")
-							},
-							plugins: [
-								new LessListsPlugin()
-							]
 						}
 					},
 				],
@@ -144,7 +133,6 @@ module.exports = (options) => ({
 		new webpack.EnvironmentPlugin({
 			// Necessary environment variables for shared-lib/config
 			NODE_ENV: Config.app.environment,
-			WEB_SOCKETS_URL: null,
 			STATIC_CONTENT_URL: null,
 
 			// Necessary environment variables for social media login integration
@@ -172,4 +160,8 @@ module.exports = (options) => ({
 	devtool: options.devtool,
 	target: "web", // Make web variables accessible to webpack, e.g. window
 	performance: options.performance || {},
+
+	node: {
+		fs: "empty",
+	},
 });

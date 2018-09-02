@@ -1,1 +1,3 @@
-export { default } from "./TopNavigation";
+import TopNavigation from "./TopNavigation";
+
+export default TopNavigation;

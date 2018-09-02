@@ -2,11 +2,8 @@ import React                        from "react";
 import { Switch, Route }            from "react-router-dom";
 import { Loadable as NotFoundPage } from "@app/components/NotFoundPage";
 import { Loadable as HomePage }     from "@app/components/HomePage";
-import FindGame                     from "@app/containers/FindGame";
-import CreateGame                   from "@app/containers/CreateGame";
-import PlayGame                     from "@app/containers/PlayGame";
-import HowToPlay                    from "@app/components/HowToPlay";
-import UserGamesList                from "@app/containers/UserGamesList";
+import SolvePuzzle                  from "@app/containers/SolvePuzzle";
+import GeneratePuzzle               from "@app/containers/GeneratePuzzle";
 import TopNavigation                from "@app/containers/TopNavigation";
 import                                   "./App.less";
 
@@ -69,20 +66,11 @@ class App extends React.Component { // Do not use PureComponent; messes with rea
 					>
 						<Switch>
 							<Route exact path="/" component={HomePage} />
-							<Route exact path="/game/find" component={FindGame} />
-							<Route exact path="/game/create" component={CreateGame} />
-							<Route exact path="/play/:gameName" render={(props) => (
-								<PlayGame
-									gameName={props.match.params.gameName}
-								/>
-							)} />
-							<Route exact path="/how-to-play" component={HowToPlay} />
+							<Route exact path="/puzzle/solve" component={SolvePuzzle} />
+							<Route exact path="/puzzle/generate" component={GeneratePuzzle} />
 							<Route component={NotFoundPage} />
 						</Switch>
 					</article>
-					<Switch>
-						{this.sidebarRoute(UserGamesList, "/")}
-					</Switch>
 				</div>
 			</section>
 		);

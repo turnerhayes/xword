@@ -2,7 +2,6 @@
 
 const assert     = require("assert");
 const mongoose   = require("mongoose");
-const GamesStore = require("./game");
 const UserModel  = require("../models/user");
 
 class UserStore {
@@ -74,30 +73,6 @@ class UserStore {
 						new: true,
 						runValidators: true
 					}
-				);
-			}
-		);
-	}
-
-	static convertSessionUserToSiteUser({ userID, sessionID }) {
-		assert(userID, "`convertSessionUserToSiteUser` requires a `userID` parameter");
-		assert(sessionID, "`convertSessionUserToSiteUser` requires a `sessionID` parameter");
-
-		return UserStore.findBySessionID(sessionID).then(
-			(sessionUser) => {
-				if (!sessionUser) {
-					// There's no user on this session, so there's nothing to replace
-					return;
-				}
-
-				sessionID = mongoose.Types.ObjectId(sessionUser.id);
-				userID = mongoose.Types.ObjectId(userID);
-
-				return GamesStore.replacePlayerUsers({
-					userIDToReplace: sessionID,
-					userIDToReplaceWith: userID
-				}).then(
-					() => UserModel.findByIdAndRemove(sessionID)
 				);
 			}
 		);

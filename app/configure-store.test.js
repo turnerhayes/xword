@@ -9,7 +9,7 @@ describe("configureStore", () => {
 	let store;
 
 	beforeAll(() => {
-		store = configureStore({}, browserHistory);
+		store = configureStore({}, browserHistory).store;
 	});
 
 	describe("injectedReducers", () => {

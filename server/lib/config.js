@@ -150,7 +150,6 @@ const Config = {
 			isEnabled: enabledAuths.twitter
 		}
 	},
-	websockets: sharedConfig.websockets,
 	staticContent: sharedConfig.staticContent,
 	storage: {
 		db: {
@@ -159,7 +158,7 @@ const Config = {
 	},
 	session: {
 		secret: process.env.SESSION_SECRET,
-		cookieName: process.env.SESSION_COOKIE_NAME || "quintro.sid",
+		cookieName: process.env.SESSION_COOKIE_NAME || "xword.sid",
 		db: {
 			url: SESSION_DB_URL
 		}
@@ -185,11 +184,6 @@ const Config = {
 						false
 				)
 		},
-		websockets: {
-			file: process.env.WEB_SOCKETS_LOGGING_FILE ?
-				path.resolve(LOGS_DIRECTORY, process.env.WEB_SOCKETS_LOGGING_FILE) :
-				null
-		}
 	}
 };
 

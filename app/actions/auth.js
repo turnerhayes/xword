@@ -3,7 +3,7 @@ function getCurrentPagePath() {
 }
 
 
-export const LOGIN = "@@QUINTRO/AUTH/LOGIN";
+export const LOGIN = "@@XWORD/AUTH/LOGIN";
 
 export function login({ provider }) {
 	const currentPage = getCurrentPagePath();
@@ -26,7 +26,7 @@ export function login({ provider }) {
 	};
 }
 
-export const LOGOUT = "@@QUINTRO/AUTH/LOGOUT";
+export const LOGOUT = "@@XWORD/AUTH/LOGOUT";
 
 export function logout() {
 	const currentPage = getCurrentPagePath();

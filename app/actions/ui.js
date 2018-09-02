@@ -1,4 +1,4 @@
-export const SET_UI_STATE = "@@QUINTRO/UI/SET_STATE";
+export const SET_UI_STATE = "@@XWORD/UI/SET_STATE";
 
 export function setUIState({ section, settings}) {
 	return {

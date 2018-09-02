@@ -34,24 +34,6 @@ if (Config.logging.sql.file !== false) {
 	};
 }
 
-const websocketsLogger = new winston.Logger({
-	level: "info"
-});
-
-if (Config.logging.websockets.file === null) {
-	websocketsLogger.add(winston.transports.Console);
-}
-else {
-	websocketsLogger.add(
-		winston.transports.File,
-		{
-			filename: Config.logging.websockets.file,
-			timestamp: true,
-			maxsize: MAX_LOG_SIZE_BYTES
-		}
-	);
-}
-
 const errorLogger = new winston.Logger({
 	level: "error",
 	transports: [
@@ -65,5 +47,4 @@ exports = module.exports = {
 	http: morgan("dev"),
 	sql: sqlLogger,
 	error: errorLogger.error,
-	websockets: websocketsLogger
 };

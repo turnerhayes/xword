@@ -16,6 +16,10 @@ import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import { ConnectedRouter } from "connected-react-router/immutable";
 import { IntlProvider } from "react-intl";
+import { create as createJSS } from "jss";
+import { jssPreset } from "@material-ui/core";
+import JssProvider from "react-jss/lib/JssProvider";
+import nestedJSS from "jss-nested";
 import "sanitize.css/sanitize.css";
 
 // Import root app
@@ -37,6 +41,9 @@ import "file-loader?name=[name].[ext]!./.htaccess";
 /* eslint-enable import/no-unresolved, import/extensions */
 
 import getStore, { history } from "@app/store";
+
+const jss = createJSS(jssPreset());
+jss.use(nestedJSS());
 
 // Create redux store with history
 const store = getStore();
@@ -62,9 +69,11 @@ const render = (messages) => {
 					locale={locale}
 					messages={localeMessages}
 				>
-					<ConnectedRouter history={history}>
-						<App />
-					</ConnectedRouter>
+					<JssProvider jss={jss}>
+						<ConnectedRouter history={history}>
+							<App />
+						</ConnectedRouter>
+					</JssProvider>
 				</IntlProvider>
 			</Provider>
 		),

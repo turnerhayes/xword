@@ -1,1 +1,3 @@
-export { default } from "./AccountDialog";
+import AccountDialog from "./AccountDialog";
+
+export default AccountDialog;

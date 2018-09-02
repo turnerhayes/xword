@@ -5,10 +5,10 @@
 import { combineReducers } from "redux-immutable";
 import { connectRouter } from "connected-react-router/immutable";
 import createHistory from "history/createBrowserHistory";
-import usersReducer from "@app/reducers/users";
-import gamesReducer from "@app/reducers/games";
-import uiReducer from "@app/reducers/ui";
-import settingsReducer from "@app/reducers/settings";
+import puzzlesReducer from "./puzzles";
+import dictionaryReducer from "./dictionary";
+import usersReducer from "./users";
+import uiReducer from "./ui";
 
 /**
  * Creates the main reducer with the dynamically injected ones
@@ -20,9 +20,9 @@ export default function createReducer({
 	return connectRouter(history)(
 		combineReducers({
 			users: usersReducer,
-			games: gamesReducer,
-			settings: settingsReducer,
 			ui: uiReducer,
+			dictionary: dictionaryReducer,
+			puzzles: puzzlesReducer,
 			...injectedReducers,
 		})
 	);

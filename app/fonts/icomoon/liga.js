@@ -5,11 +5,11 @@
    method 'icomoonLiga' to the window object. You can pass element references to this method.
 */
 (function () {
-    'use strict';
+    
     function supportsProperty(p) {
-        var prefixes = ['Webkit', 'Moz', 'O', 'ms'],
+        let prefixes = ["Webkit", "Moz", "O", "ms"],
             i,
-            div = document.createElement('div'),
+            div = document.createElement("div"),
             ret = p in div.style;
         if (!ret) {
             p = p.charAt(0).toUpperCase() + p.substr(1);
@@ -22,26 +22,42 @@
         }
         return ret;
     }
-    var icons;
-    if (!supportsProperty('fontFeatureSettings')) {
+    let icons;
+    if (!supportsProperty("fontFeatureSettings")) {
         icons = {
-            'eye': '&#xe905;',
-            'watcher': '&#xe905;',
-            'log out': '&#xe904;',
-            'loading': '&#xe903;',
-            'twitter': '&#xe901;',
-            'google plus': '&#xe900;',
-            'facebook': '&#xe902;',
-          '0': 0
+            search: "&#xf002;",
+            find: "&#xf002;",
+            user: "&#xf007;",
+            profile: "&#xf007;",
+            "zoom in": "&#xf00e;",
+            "zoom out": "&#xf010;",
+            settings: "&#xf013;",
+            font: "&#xf031;",
+            right: "&#xf061;",
+            across: "&#xf061;",
+            down: "&#xf063;",
+            twitter: "&#xf081;",
+            facebook: "&#xf082;",
+            "log out": "&#xf08b;",
+            upload: "&#xf093;",
+            "empty square": "&#xf096;",
+            "input square": "&#xf096;",
+            "filled square": "&#xf0c8;",
+            "block square": "&#xf0c8;",
+            "google plus": "&#xf0d4;",
+            loading: "&#xf110;",
+            erase: "&#xe900;",
+            "clear puzzle": "&#xe900;",
+          0: 0
         };
-        delete icons['0'];
+        delete icons["0"];
         window.icomoonLiga = function (els) {
-            var classes,
+            let classes,
                 el,
                 i,
                 innerHTML,
                 key;
-            els = els || document.getElementsByTagName('*');
+            els = els || document.getElementsByTagName("*");
             if (!els.length) {
                 els = [els];
             }
@@ -56,7 +72,7 @@
                     if (innerHTML && innerHTML.length > 1) {
                         for (key in icons) {
                             if (icons.hasOwnProperty(key)) {
-                                innerHTML = innerHTML.replace(new RegExp(key, 'g'), icons[key]);
+                                innerHTML = innerHTML.replace(new RegExp(key, "g"), icons[key]);
                             }
                         }
                         el.innerHTML = innerHTML;

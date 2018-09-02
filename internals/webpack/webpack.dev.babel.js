@@ -92,14 +92,14 @@ function dependencyHandlers() {
 		];
 	}
 
-	const dllPath = path.resolve(process.cwd(), dllPlugin.path || "node_modules/quintro-dlls");
+	const dllPath = path.resolve(process.cwd(), dllPlugin.path || "node_modules/xword-dlls");
 
 	/**
    * If DLLs aren't explicitly defined, we assume all production dependencies listed in package.json
    * Reminder: You need to exclude any server side dependencies by listing them in dllConfig.exclude
    */
 	if (!dllPlugin.dlls) {
-		const manifestPath = path.resolve(dllPath, "quintroDeps.json");
+		const manifestPath = path.resolve(dllPath, "xwordDeps.json");
 
 		if (!fs.existsSync(manifestPath)) {
 			Loggers.error("The DLL manifest is missing. Please run `npm run build:dll`");

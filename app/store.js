@@ -26,11 +26,27 @@ const initialState = Map(
 );
 
 let store;
+let persistor;
+
+function initStoreAndPersistor() {
+	const configured = configureStore(initialState, history);
+
+	store = configured.store;
+	persistor = configured.persistor;
+}
 
 export default function getStore() {
 	if (!store) {
-		store = configureStore(initialState, history);
+		initStoreAndPersistor();
 	}
 
 	return store;
+}
+
+export function getPersistor() {
+	if (!persistor) {
+		initStoreAndPersistor();
+	}
+
+	return persistor;
 }

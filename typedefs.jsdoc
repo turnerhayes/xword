@@ -3,49 +3,6 @@
  */
 
 /**
- * Represents a position on a board.
- *
- * This is a two-element array of positive integers, where the first integer is
- * the column offset of the position (horizontal axis) and the second integer is
- * the row offset of the position (vertical axis). Higher values for the column
- * offset are closer to the right side of the board. Higher values for the row
- * offset are closer to the bottom side of the board.
- *
- * @typedef {number[]} BoardPosition
- * @memberof Types
- */
-
-/**
- * Represents a position on a board. Same as {@link Types.BoardPosition}, but represented
- * as a two-element {@link external:Immutable.Collection.Indexed|Immutable indexed collection},
- * such as a {@link external:Immutable.List}.
- *
- * @typedef {external:Immutable.Collection.Indexed<number>} BoardPositionImmutable
- * @memberof Types
- */
-
-/**
- * Represents a cell on the board.
- *
- * @typedef {object} Cell
- * @memberof Types
- * @prop {Types.BoardPosition} position - the position of the cell on the board
- * @prop {string|undefined} color - the color of the marble currently occupying the
- *	cell (if any)
- */
-
-/**
- * Represents a quintro or potential quintro.
- *
- * @typedef {object} Quintro
- * @memberof Types
- * @prop {string} color - the color of any filled cells in the quintro (a quintro
- *	can only contain a combination of one or more cells of any single color plus zero
- *	or more empty cells)
- * @prop {Types.Cell[]} quintro - the cells that comprise this quintro
- */
-
-/**
  * Any item that React is able to render; number, string, React component, DOM node, etc.
  *
  * @typedef {*} RenderableElement

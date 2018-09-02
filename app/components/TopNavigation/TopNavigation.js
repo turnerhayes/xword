@@ -9,16 +9,12 @@ import {
 import AppBar               from "@material-ui/core/AppBar";
 import Toolbar              from "@material-ui/core/Toolbar";
 import Popover              from "@material-ui/core/Popover";
-import Card                 from "@material-ui/core/Card";
-import CardContent          from "@material-ui/core/CardContent";
 import Button               from "@material-ui/core/Button";
 import IconButton           from "@material-ui/core/IconButton";
 import { withStyles }       from "@material-ui/core/styles";
 import HomeIcon             from "@material-ui/icons/Home";
 import AccountCircleIcon    from "@material-ui/icons/AccountCircle";
-import SettingsIcon         from "@material-ui/icons/Settings";
 import AccountDialog        from "@app/containers/AccountDialog";
-import QuickSettingsDialog  from "@app/containers/QuickSettingsDialog";
 import messages             from "./messages";
 
 const styles = {
@@ -82,28 +78,6 @@ class TopNavigation extends React.PureComponent {
 	}
 
 	/**
-	 * Handles a click of the Quick Settings button.
-	 *
-	 * @function
-	 * @private
-	 *
-	 * @param {React.Event} event - the event for the click
-	 *
-	 * @returns {void}
-	 */
-	onQuickSettingsButtonClick = (event) => {
-		this.setState({
-			quickSettingsButtonEl: event.target,
-		});
-	}
-
-	closeQuickSettingsDialog = () => {
-		this.setState({
-			quickSettingsButtonEl: null,
-		});
-	}
-
-	/**
 	 * Renders the component.
 	 *
 	 * @function
@@ -125,21 +99,15 @@ class TopNavigation extends React.PureComponent {
 					</Link>
 					<Button
 						component={Link}
-						to="/game/find"
+						to="/puzzle/solve"
 					>
-						{this.formatMessage(messages.links.findGame)}
+						{this.formatMessage(messages.links.solvePuzzle)}
 					</Button>
 					<Button
 						component={Link}
-						to="/how-to-play"
+						to="/puzzle/generate"
 					>
-						{this.formatMessage(messages.links.howToPlay)}
-					</Button>
-					<Button
-						component={Link}
-						to="/game/create"
-					>
-						{this.formatMessage(messages.links.startGame)}
+						{this.formatMessage(messages.links.generatePuzzle)}
 					</Button>
 
 					<IconButton
@@ -164,31 +132,6 @@ class TopNavigation extends React.PureComponent {
 						<AccountDialog
 							loggedInUser={this.props.loggedInUser}
 						/>
-					</Popover>
-					<IconButton
-						onClick={this.onQuickSettingsButtonClick}
-					>
-						<SettingsIcon />
-					</IconButton>
-					<Popover
-						open={!!this.state.quickSettingsButtonEl}
-						onClose={this.closeQuickSettingsDialog}
-						anchorEl={this.state.quickSettingsButtonEl}
-						anchorOrigin={{
-							horizontal: "right",
-							vertical: "bottom",
-						}}
-						transformOrigin={{
-							horizontal: "right",
-							vertical: "top",
-						}}
-					>
-						<Card>
-							<CardContent>
-								<QuickSettingsDialog
-								/>
-							</CardContent>
-						</Card>
 					</Popover>
 				</Toolbar>
 			</AppBar>

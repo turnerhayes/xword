@@ -4,7 +4,7 @@
 		"server",
 		"internals/webpack",
 		"internals/config.js",
-		"node_modules/quintro-dlls"
+		"node_modules/xword-dlls"
 	],
 	"ignore": ["client", "tools", "logs"]
 }

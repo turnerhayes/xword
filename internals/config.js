@@ -2,7 +2,7 @@ const resolve = require("path").resolve;
 const pullAll = require("lodash/pullAll");
 const uniq = require("lodash/uniq");
 
-const Quintro = {
+const Xword = {
 	// This refers to the react-boilerplate version this project is based on.
 	version: "3.5.0",
 
@@ -37,19 +37,19 @@ const Quintro = {
 			include: ["core-js", "eventsource-polyfill", "babel-polyfill", "lodash"],
 
 			// The path where the DLL manifest and bundle will get built
-			path: resolve("../node_modules/quintro-dlls"),
+			path: resolve("../node_modules/xword-dlls"),
 		},
 
 		entry(dependencyNames, pluginConfig) {
-			const exclude = pluginConfig.exclude || Quintro.dllPlugin.defaults.exclude;
-			const include = pluginConfig.include || Quintro.dllPlugin.defaults.include;
+			const exclude = pluginConfig.exclude || Xword.dllPlugin.defaults.exclude;
+			const include = pluginConfig.include || Xword.dllPlugin.defaults.include;
 			const includeDependencies = uniq(dependencyNames.concat(include));
 
 			return {
-				quintroDeps: pullAll(includeDependencies, exclude),
+				xwordDeps: pullAll(includeDependencies, exclude),
 			};
 		},
 	},
 };
 
-module.exports = Quintro;
+module.exports = Xword;

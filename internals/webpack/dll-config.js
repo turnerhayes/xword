@@ -1,5 +1,5 @@
 exports = module.exports = {
-	path: "node_modules/quintro-dlls",
+	path: "node_modules/xword-dlls",
 	exclude: [
 		"chalk",
 		"compression",

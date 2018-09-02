@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.use("/users", require("./users"));
 
-router.use("/games", require("./games"));
+router.use("/dictionary", require("./dictionary"));
 
 exports = module.exports = router;

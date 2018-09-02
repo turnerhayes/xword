@@ -11,7 +11,7 @@ const debug = require("debug");
 // to update if you do debug.enable("namespace") after the instance is created
 // so we make sure here to set the debug namespace(s) before anything else.
 if (argv.debug) {
-	debug.enable("quintro:*");
+	debug.enable("xword:*");
 }
 
 const http = require("http");
@@ -45,14 +45,6 @@ app.use(require("./lib/session"));
 passportMiddleware(app);
 
 app.use(router);
-
-if (Config.websockets.inline) {
-	const createSocketsApp = require("./apps/socket");
-
-	const sockets = createSocketsApp(server);
-
-	app.use(sockets.app);
-}
 
 // In production we need to pass these values in instead of relying on webpack
 setup(app, {

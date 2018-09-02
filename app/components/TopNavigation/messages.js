@@ -3,19 +3,15 @@ import { defineMessages } from "react-intl";
 export default defineMessages({
 	links: {
 		home: {
-			id: "quintro.components.TopNavigation.links.home",
+			id: "xword.components.TopNavigation.links.home",
 		},
 
-		findGame: {
-			id: "quintro.components.TopNavigation.links.findGame",
+		solvePuzzle: {
+			id: "xword.components.TopNavigation.links.solvePuzzle",
 		},
 
-		howToPlay: {
-			id: "quintro.components.TopNavigation.links.howToPlay",
-		},
-
-		startGame: {
-			id: "quintro.components.TopNavigation.links.startGame",
+		generatePuzzle: {
+			id: "xword.components.TopNavigation.links.generatePuzzle",
 		},
 	},
 });

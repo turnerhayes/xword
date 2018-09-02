@@ -1,7 +1,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
-const debug    = require("debug")("quintro:db");
+const debug    = require("debug")("xword:db");
 const rfr      = require("rfr");
 const Config   = rfr("server/lib/config");
 
