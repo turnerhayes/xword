@@ -1,0 +1,10 @@
+{
+	"verbose": true,
+	"watch": [
+		"server",
+		"internals/webpack",
+		"internals/config.js",
+		"node_modules/xword-dlls"
+	],
+	"ignore": ["client", "tools", "logs"]
+}

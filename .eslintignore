@@ -1,0 +1,8 @@
+coverage
+dist
+docs
+node_modules
+app/fonts
+internals/scripts
+
+/projects/xpuz
