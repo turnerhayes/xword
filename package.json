@@ -89,7 +89,7 @@
     "jss": "^9.8.7",
     "jss-nested": "^6.0.1",
     "localforage": "^1.7.2",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.13",
     "minimist": "1.2.0",
     "mkdirp": "^0.5.1",
     "mongodb": "^3.0.2",
