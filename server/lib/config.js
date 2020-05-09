@@ -179,7 +179,7 @@ const Config = {
 			file: process.env.LOGGING_SQL_FILE ?
 				path.resolve(LOGS_DIRECTORY, process.env.LOGGING_SQL_FILE) :
 				(
-					sharedConfig.app.isDevelopment ?
+					IS_DEVELOPMENT ?
 						null :
 						false
 				)
