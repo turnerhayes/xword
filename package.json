@@ -7,8 +7,8 @@
     "url": "git://github.com/turnerhayes/xword"
   },
   "engines": {
-    "npm": ">=5",
-    "node": ">=8"
+    "npm": ">6",
+    "node": "10.16.x"
   },
   "author": "Turner Hayes <dev@turnerhayes.com>",
   "license": "MIT",
