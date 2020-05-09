@@ -9,6 +9,4 @@ mongoose.Promise = require("bluebird");
 
 mongoose.set("debug", debug.enabled);
 
-console.log("Config:\n", require("util").inspect(Config, {depth: null}));
-
 exports = module.exports = mongoose.connect(Config.storage.db.url);
