@@ -2,9 +2,8 @@
 
 const HTTPStatusCodes = require("http-status-codes");
 const Promise         = require("bluebird");
-const rfr             = require("rfr");
-const Config          = rfr("server/lib/config");
-const UserStore       = rfr("server/persistence/stores/user");
+const Config          = require("../lib/config");
+const UserStore       = require("../persistence/stores/user");
 
 const USER_ID_HEADER = "X-API-User-ID";
 

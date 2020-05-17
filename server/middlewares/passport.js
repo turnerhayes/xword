@@ -2,9 +2,8 @@
 
 const passport  = require("passport");
 const debug     = require("debug")("xword:server:middleware:passport");
-const rfr       = require("rfr");
-const UserStore = rfr("server/persistence/stores/user");
-const Config    = rfr("server/lib/config");
+const UserStore = require("../persistence/stores/user");
+const Config    = require("../lib/config");
 
 passport.serializeUser((user, done) => {
 	done(null, user.id);
@@ -59,7 +58,7 @@ function getOrCreateUser({ req, provider, profile }) {
 }
 
 if (Config.auth.facebook.isEnabled) {
-	const FacebookStrategy = require("passport-facebook-rwky");
+	const FacebookStrategy = require("@passport-next/passport-facebook");
 
 	passport.use(new FacebookStrategy(
 		{
@@ -68,7 +67,8 @@ if (Config.auth.facebook.isEnabled) {
 			callbackURL: Config.app.address.origin + Config.auth.facebook.callbackURL,
 			passReqToCallback: true,
 			profileFields: ["id", "email", "name", "displayName"],
-			enableProof: true
+			enableProof: true,
+			graphApiVersion: "v3.2",
 		},
 		(req, accessToken, refreshToken, profile, done) => {
 

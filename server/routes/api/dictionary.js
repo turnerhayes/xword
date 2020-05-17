@@ -1,9 +1,8 @@
 "use strict";
 
 const express = require("express");
-const rfr = require("rfr");
 const HTTPStatusCodes = require("http-status-codes");
-const DictionaryItemStore = rfr("server/persistence/stores/dictionary");
+const DictionaryItemStore = require("../../persistence/stores/dictionary");
 
 const router = express.Router();
 

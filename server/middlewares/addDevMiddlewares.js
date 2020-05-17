@@ -5,11 +5,10 @@ const webpack = require("webpack");
 const webpackDevMiddleware = require("webpack-dev-middleware");
 const { ready } = require("webpack-dev-middleware/lib/util");
 const webpackHotMiddleware = require("webpack-hot-middleware");
-const rfr = require("rfr");
-const Config = rfr("server/lib/config");
+const Config = require("../lib/config");
 const {
 	prepareUserForFrontend
-} = rfr("server/routes/utils");
+} = require("../routes/utils");
 const { getIndex, handleGetIndexError } = require("./utils");
 
 module.exports = function addDevMiddlewares(app, webpackConfig) {

@@ -5,7 +5,7 @@ import { Loadable as HomePage }     from "@app/components/HomePage";
 import SolvePuzzle                  from "@app/containers/SolvePuzzle";
 import GeneratePuzzle               from "@app/containers/GeneratePuzzle";
 import TopNavigation                from "@app/containers/TopNavigation";
-import                                   "./App.less";
+// import                                   "./App.less";
 
 /**
  * Root application component.

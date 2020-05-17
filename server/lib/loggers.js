@@ -2,8 +2,7 @@
 
 const winston = require("winston");
 const morgan  = require("morgan");
-const rfr     = require("rfr");
-const Config  = rfr("server/lib/config");
+const Config  = require("../lib/config");
 
 // eslint-disable-next-line no-magic-numbers
 const MAX_LOG_SIZE_BYTES = 10 * 1000 * 1000; // 10MB
@@ -11,21 +10,22 @@ const MAX_LOG_SIZE_BYTES = 10 * 1000 * 1000; // 10MB
 let sqlLogger;
 
 if (Config.logging.sql.file !== false) {
-	const logger = new winston.Logger({
+	const logger = winston.createLogger({
 		level: "info"
 	});
 
 	if (Config.logging.sql.file === null) {
-		logger.add(winston.transports.Console);
+		logger.add(new winston.transports.Console());
 	}
 	else {
 		logger.add(
-			winston.transports.File,
-			{
-				filename: Config.logging.sql.file,
-				timestamp: true,
-				maxsize: MAX_LOG_SIZE_BYTES
-			}
+			new winston.transports.File(
+				{
+					filename: Config.logging.sql.file,
+					timestamp: true,
+					maxsize: MAX_LOG_SIZE_BYTES
+				}
+			),
 		);
 	}
 
@@ -34,7 +34,7 @@ if (Config.logging.sql.file !== false) {
 	};
 }
 
-const errorLogger = new winston.Logger({
+const errorLogger = winston.createLogger({
 	level: "error",
 	transports: [
 		new winston.transports.Console({

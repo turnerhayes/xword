@@ -2,8 +2,7 @@
 
 const mongoose = require("mongoose");
 const debug    = require("debug")("xword:db");
-const rfr      = require("rfr");
-const Config   = rfr("server/lib/config");
+const Config   = require("../lib/config");
 
 mongoose.Promise = require("bluebird");
 

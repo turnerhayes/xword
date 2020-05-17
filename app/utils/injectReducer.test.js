@@ -5,7 +5,7 @@
 import { memoryHistory } from "react-router-dom";
 import { shallow } from "enzyme";
 import React from "react";
-import identity from "lodash/identity";
+import identity from "lodash.identity";
 
 import configureStore from "@app/configure-store";
 import injectReducer from "./injectReducer";
@@ -22,6 +22,7 @@ describe("injectReducer decorator", () => {
 	let ComponentWithReducer;
 
 	beforeAll(() => {
+		// eslint-disable-next-line no-import-assign
 		reducerInjectors.default = jest.fn().mockImplementation(() => injectors);
 	});
 

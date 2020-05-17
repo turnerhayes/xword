@@ -4,7 +4,7 @@
 
 import { combineReducers } from "redux-immutable";
 import { connectRouter } from "connected-react-router/immutable";
-import createHistory from "history/createBrowserHistory";
+import { createBrowserHistory } from "history";
 import puzzlesReducer from "./puzzles";
 import dictionaryReducer from "./dictionary";
 import usersReducer from "./users";
@@ -15,15 +15,14 @@ import uiReducer from "./ui";
  */
 export default function createReducer({
 	injectedReducers,
-	history = createHistory(),
+	history = createBrowserHistory(),
 } = {}) {
-	return connectRouter(history)(
-		combineReducers({
-			users: usersReducer,
-			ui: uiReducer,
-			dictionary: dictionaryReducer,
-			puzzles: puzzlesReducer,
-			...injectedReducers,
-		})
-	);
+	return combineReducers({
+		router: connectRouter(history),
+		users: usersReducer,
+		ui: uiReducer,
+		dictionary: dictionaryReducer,
+		puzzles: puzzlesReducer,
+		...injectedReducers,
+	});
 }

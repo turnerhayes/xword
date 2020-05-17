@@ -64,7 +64,7 @@ class DictionaryLookup extends React.PureComponent {
 		});
 	}
 
-	componentWillReceiveProps(nextProps) {
+	UNSAFE_componentWillReceiveProps(nextProps) {
 		if (nextProps.currentFill && !is(nextProps.currentFill, this.props.currentFill)) {
 			this.props.onPatternChange({
 				pattern: this.patternFromFill(nextProps.currentFill),

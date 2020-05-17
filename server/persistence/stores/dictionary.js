@@ -1,8 +1,8 @@
 "use strict";
 
-const without             = require("lodash/without");
-const uniq                = require("lodash/uniq");
-const difference          = require("lodash/difference");
+const without             = require("lodash.without");
+const uniq                = require("lodash.uniq");
+const difference          = require("lodash.difference");
 const assert              = require("assert");
 const Promise             = require("bluebird");
 const DictionaryItemModel = require("../models/dictionary-item");

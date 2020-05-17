@@ -3,8 +3,7 @@
 const express  = require("express");
 const passport = require("passport");
 const assert   = require("assert");
-const rfr      = require("rfr");
-const Config   = rfr("server/lib/config");
+const Config   = require("../lib/config");
 
 exports = module.exports = function getAuthenticationRouter(mountPrefix) {
 	assert(mountPrefix !== undefined, "Must pass a mount prefix");

@@ -2,8 +2,7 @@
 
 const express  = require("express");
 const cors = require("cors");
-const rfr = require("rfr");
-const Config = rfr("server/lib/config");
+const Config = require("../lib/config");
 const createAuthenticationRouter = require("./authentication");
 
 const SITE_RESTRICTED_CORS_OPTIONS = {
