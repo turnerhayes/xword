@@ -5,7 +5,7 @@ import ImmutablePropTypes from "react-immutable-proptypes";
 import Select             from "react-select";
 import Dropzone           from "react-dropzone";
 import Icon               from "@material-ui/core/Icon";
-import Button             from "@material-ui/core/Button";
+// import Button             from "@material-ui/core/Button";
 import { withStyles }     from "@material-ui/core/styles";
 import {
 	Puzzle,
@@ -87,11 +87,13 @@ class PuzzlePicker extends React.PureComponent {
 					className={this.props.classes.dropzone}
 					onDrop={this.handleFileUpload}
 				>
-					<Button
-					>
-						<Icon className="icon">upload</Icon>
-						Upload a .puz file
-					</Button>
+					{({getRootProps, getInputProps}) => (
+						<label {...getRootProps()}>
+							<Icon className="icon">upload</Icon>
+							<input type="file" {...getInputProps()} />
+							Upload a .puz file
+						</label>
+					)}
 				</Dropzone>
 				{
 					this.props.existingPuzzles && this.props.existingPuzzles.size > 1 && (

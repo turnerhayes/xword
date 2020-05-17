@@ -7,7 +7,7 @@ import FontSizePicker     from "@app/components/FontSizePicker";
 import {
 	ERROR_OPTIONS
 }                         from "@app/constants";
-import                         "./PuzzleSettings.less";
+// import                         "./PuzzleSettings.less";
 
 const styles = {
 	root: {

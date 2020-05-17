@@ -18,27 +18,12 @@ import { ConnectedRouter } from "connected-react-router/immutable";
 import { IntlProvider } from "react-intl";
 import { create as createJSS } from "jss";
 import { jssPreset } from "@material-ui/core";
-import JssProvider from "react-jss/lib/JssProvider";
+import {JssProvider} from "react-jss";
 import nestedJSS from "jss-nested";
 import "sanitize.css/sanitize.css";
 
 // Import root app
 import App from "@app/components/App";
-
-// Load the favicon, the manifest.json file and the .htaccess file
-/* eslint-disable import/no-unresolved, import/extensions */
-import "!file-loader?name=[name].[ext]!./images/favicon.ico";
-import "!file-loader?name=[name].[ext]!./images/icon-72x72.png";
-import "!file-loader?name=[name].[ext]!./images/icon-96x96.png";
-import "!file-loader?name=[name].[ext]!./images/icon-128x128.png";
-import "!file-loader?name=[name].[ext]!./images/icon-144x144.png";
-import "!file-loader?name=[name].[ext]!./images/icon-152x152.png";
-import "!file-loader?name=[name].[ext]!./images/icon-192x192.png";
-import "!file-loader?name=[name].[ext]!./images/icon-384x384.png";
-import "!file-loader?name=[name].[ext]!./images/icon-512x512.png";
-import "!file-loader?name=[name].[ext]!./manifest.json";
-import "file-loader?name=[name].[ext]!./.htaccess";
-/* eslint-enable import/no-unresolved, import/extensions */
 
 import getStore, { history } from "@app/store";
 
@@ -93,16 +78,8 @@ if (module.hot) {
 
 // Chunked polyfill for browsers without Intl support
 if (!window.Intl) {
-	(new Promise((resolve) => {
-		resolve(import("intl"));
-	}))
-		.then(() => Promise.all([
-		import("intl/locale-data/jsonp/en.js"),
-		]))
-		.then(() => render(translationMessages))
-		.catch((err) => {
-			throw err;
-		});
+	Promise.resolve(import("intl"))
+		.then(() => render(translationMessages));
 } else {
 	render(translationMessages);
 }

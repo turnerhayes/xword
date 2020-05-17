@@ -1,16 +1,17 @@
 {
 	"plugins": [
+		"@babel/plugin-proposal-class-properties",
+		"@babel/plugin-proposal-export-default-from",
 		"transform-undefined-to-void"
 	],
 	"presets": [
 		[
-			"env",
+			"@babel/env",
 			{
 				"modules": false
 			}
 		],
-		"react",
-		"stage-0"
+		"@babel/preset-react"
 	],
 	"env": {
 		"production": {

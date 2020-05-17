@@ -3,8 +3,7 @@ import PropTypes            from "prop-types";
 import ImmutablePropTyps    from "react-immutable-proptypes";
 import { Link }             from "react-router-dom";
 import {
-	injectIntl,
-	intlShape
+	injectIntl
 }                           from "react-intl";
 import AppBar               from "@material-ui/core/AppBar";
 import Toolbar              from "@material-ui/core/Toolbar";
@@ -42,7 +41,9 @@ class TopNavigation extends React.PureComponent {
 	static propTypes = {
 		loggedInUser: ImmutablePropTyps.map,
 		className: PropTypes.string,
-		intl: intlShape.isRequired,
+		intl: PropTypes.shape({
+			formatMessage: PropTypes.func.isRequired,
+		}).isRequired,
 		classes: PropTypes.object.isRequired,
 	}
 

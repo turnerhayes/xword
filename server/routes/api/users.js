@@ -2,12 +2,11 @@
 
 const express                  = require("express");
 const bodyParsers              = require("./body-parsers");
-const rfr                      = require("rfr");
 const {
 	prepareUserForFrontend
-}                              = rfr("server/routes/utils");
-const UsersStore               = rfr("server/persistence/stores/user");
-const AccessForbiddenException = rfr("server/persistence/exceptions/access-forbidden");
+}                              = require("../../routes/utils");
+const UsersStore               = require("../../persistence/stores/user");
+const AccessForbiddenException = require("../../persistence/exceptions/access-forbidden");
 
 const router = express.Router();
 

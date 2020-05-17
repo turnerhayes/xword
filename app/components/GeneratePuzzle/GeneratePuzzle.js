@@ -10,9 +10,7 @@ import {
 import { withStyles }          from "@material-ui/core/styles";
 import Button                  from "@material-ui/core/Button";
 import TextField               from "@material-ui/core/TextField";
-import {
-	Puzzle
-}                              from "xpuz/immutable";
+import { Puzzle }              from "xpuz/immutable";
 import LoadingSpinner          from "@app/components/LoadingSpinner";
 import CrosswordGrid           from "@app/containers/CrosswordGrid";
 import PuzzlePicker            from "@app/components/PuzzlePicker";
@@ -83,7 +81,7 @@ class GeneratePuzzle extends React.PureComponent {
 		height: 10,
 	}
 
-	componentWillMount() {
+	UNSAFE_componentWillMount() {
 		if (!this.props.puzzle) {
 			this.setGeneratedPuzzle();
 		}

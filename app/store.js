@@ -5,10 +5,10 @@
  */
 
 import { Map, fromJS }       from "immutable";
-import createHistory         from "history/createBrowserHistory";
+import { createBrowserHistory } from "history";
 import configureStore        from "@app/configure-store";
 
-export const history = createHistory();
+export const history = createBrowserHistory();
 
 const context = JSON.parse(document.body.dataset.context || "{}");
 
