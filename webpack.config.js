@@ -39,6 +39,8 @@ const plugins = [
 	}),
 ];
 
+let devtool;
+
 if (Config.app.isDevelopment) {
 	entry.unshift(
 		"eventsource-polyfill", // Necessary for hot reloading with IE
@@ -46,6 +48,8 @@ if (Config.app.isDevelopment) {
 	);
 
 	plugins.push(new webpack.HotModuleReplacementPlugin());
+
+	devtool = "eval-source-map";
 }
 
 module.exports = {
@@ -128,4 +132,6 @@ module.exports = {
 	node: {
 		fs: "empty",
 	},
+
+	devtool,
 };

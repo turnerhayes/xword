@@ -3,16 +3,6 @@
 "use strict";
 
 require("dotenv").config();
-const argv = require("./argv");
-const debug = require("debug");
-
-// This should go before basically everything else, in case a dependency
-// instantiates require("debug")("mynamespace")--debug instances don't seem
-// to update if you do debug.enable("namespace") after the instance is created
-// so we make sure here to set the debug namespace(s) before anything else.
-if (argv.debug) {
-	debug.enable("xword:*");
-}
 
 const http = require("http");
 const express = require("express");
@@ -21,11 +11,10 @@ const HTTPStatusCodes = require("http-status-codes");
 const chalk = require("chalk");
 const ip = require("ip");
 const Loggers = require("./lib/loggers");
-const port = require("./port");
 const setup = require("./middlewares/frontendMiddleware");
 const passportMiddleware = require("./middlewares/passport");
 const Config = require("./lib/config");
-const ngrok = (Config.app.isDevelopment && process.env.ENABLE_TUNNEL) || argv.tunnel ? require("ngrok") : false;
+const ngrok = Config.app.isDevelopment && process.env.ENABLE_TUNNEL ? require("ngrok") : false;
 const { router, raise404 } = require("./routes");
 
 
@@ -51,12 +40,6 @@ setup(app, {
 	outputPath: Config.paths.dist,
 	publicPath: "/static/",
 });
-
-// get the intended host and port number, use localhost and port 3000 if not provided
-const customHost = argv.host || process.env.HOST;
-const host = customHost || null; // Let http.Server use its default IPv6/4 host
-const prettyHost = customHost || "localhost";
-
 
 /// catch 404 and forwarding to error handler
 app.use(raise404);
@@ -105,8 +88,8 @@ function logAppStarted(port, host, tunnelStarted) {
 	// eslint-disable-next-line no-console
 	console.log(`
 ${chalk.bold("Access URLs:")}${divider}
-Localhost: ${chalk.magenta(`http://${host}:${port}`)}
-      LAN: ${chalk.magenta(`http://${ip.address()}:${port}`) +
+Localhost: ${chalk.magenta(`http://${host}:${Config.app.address.externalPort}`)}
+      LAN: ${chalk.magenta(`http://${ip.address()}:${Config.app.address.externalPort}`) +
 (tunnelStarted ? `\n    Proxy: ${chalk.magenta(tunnelStarted)}` : "")}${divider}
 ${chalk.blue(`Press ${chalk.italic("CTRL-C")} to stop`)}
     `);
@@ -114,21 +97,21 @@ ${chalk.blue(`Press ${chalk.italic("CTRL-C")} to stop`)}
 
 
 // Start your app.
-server.listen(port, host, (err) => {
+server.listen(Config.app.address.port, Config.app.address.host, (err) => {
 	if (err) {
 		return Loggers.error(err);
 	}
 
 	// Connect to ngrok in dev mode
 	if (ngrok) {
-		ngrok.connect(port, (innerErr, url) => {
+		ngrok.connect(Config.app.address.port, (innerErr, url) => {
 			if (innerErr) {
 				return Loggers.error(innerErr);
 			}
 
-			logAppStarted(port, prettyHost, url);
+			logAppStarted(Config.app.address.port, Config.app.address.host, url);
 		});
 	} else {
-		logAppStarted(port, prettyHost);
+		logAppStarted(Config.app.address.port, Config.app.address.host);
 	}
 });
