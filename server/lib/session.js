@@ -2,8 +2,7 @@
 
 const session            = require("express-session");
 const MongoStore         = require("connect-mongo")(session);
-const rfr                = require("rfr");
-const Config             = rfr("server/lib/config");
+const Config             = require("../lib/config");
 
 // eslint-disable-next-line no-magic-numbers
 const THIRTY_DAYS_IN_MILLISECONDS = 30 * 24 * 60 * 60 * 1000;

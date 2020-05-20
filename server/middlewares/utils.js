@@ -1,11 +1,10 @@
 "use strict";
 
 const { FORBIDDEN } = require("http-status-codes");
-const rfr = require("rfr");
-const { raise404 } = rfr("server/routes");
-const Loggers = rfr("server/lib/loggers");
-const NotFoundException = rfr("server/persistence/exceptions/not-found");
-const AccessForbiddenException = rfr("server/persistence/exceptions/access-forbidden");
+const { raise404 } = require("../routes");
+const Loggers = require("../lib/loggers");
+const NotFoundException = require("../persistence/exceptions/not-found");
+const AccessForbiddenException = require("../persistence/exceptions/access-forbidden");
 
 let indexPartsPromise;
 

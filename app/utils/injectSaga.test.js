@@ -1,7 +1,3 @@
-/**
- * Test injectors
- */
-
 import { memoryHistory } from "react-router-dom";
 import { put } from "redux-saga/effects";
 import { shallow } from "enzyme";
@@ -24,6 +20,7 @@ describe("injectSaga decorator", () => {
 	let ComponentWithSaga;
 
 	beforeAll(() => {
+		// eslint-disable-next-line no-import-assign
 		sagaInjectors.default = jest.fn().mockImplementation(() => injectors);
 	});
 

@@ -1,7 +1,6 @@
 require("dotenv").config();
 const path = require("path");
-const rfr = require("rfr");
-const Config = rfr("server/lib/config");
+const Config = require("./server/lib/config");
 
 module.exports = exports = {
 	"@app": Config.paths.app,

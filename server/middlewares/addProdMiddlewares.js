@@ -3,11 +3,10 @@
 const path = require("path");
 const express = require("express");
 const compression = require("compression");
-const rfr = require("rfr");
 const {
 	prepareUserForFrontend
-} = rfr("server/routes/utils");
-const Config = rfr("server/lib/config");
+} = require("../routes/utils");
+const Config = require("../lib/config");
 const { getIndex, handleGetIndexError } = require("./utils");
 
 module.exports = function addProdMiddlewares(app, options) {

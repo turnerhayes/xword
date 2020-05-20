@@ -37,8 +37,7 @@ global.document = {
 	origin: ORIGIN
 };
 
-const rfr          = require("rfr");
-const sharedConfig = rfr("shared-lib/config");
+const sharedConfig = require("../../shared-lib/config");
 
 
 const ENVIRONMENT = process.env.NODE_ENV || "development";

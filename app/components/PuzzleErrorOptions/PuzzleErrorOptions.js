@@ -1,8 +1,7 @@
 import React     from "react";
 import PropTypes from "prop-types";
-import Radio, {
-	RadioGroup
-}                from "@material-ui/core/Radio";
+import Radio            from "@material-ui/core/Radio";
+import RadioGroup       from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import {
 	ERROR_OPTIONS

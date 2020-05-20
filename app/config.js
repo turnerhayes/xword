@@ -1,6 +1,6 @@
 /* global process */
 
-import merge from "lodash/merge";
+import merge from "lodash.merge";
 import sharedConfig from "@shared-lib/config";
 
 export default merge(
