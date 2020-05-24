@@ -10,7 +10,7 @@ import {
 import { withStyles }          from "@material-ui/core/styles";
 import Button                  from "@material-ui/core/Button";
 import TextField               from "@material-ui/core/TextField";
-import { Puzzle }              from "xpuz/immutable";
+import { Puzzle, Parsers }     from "xpuz/immutable";
 import LoadingSpinner          from "@app/components/LoadingSpinner";
 import CrosswordGrid           from "@app/containers/CrosswordGrid";
 import PuzzlePicker            from "@app/components/PuzzlePicker";
@@ -29,10 +29,14 @@ function range(max) {
 function generateEmptyGrid({ width, height }) {
 	return List(range(height)).map(
 		() => List(range(width)).map(
-			() => Map()
+			() => Map({
+				solution: "",
+			})
 		)
 	);
 }
+
+const puzParser = new Parsers.PUZ();
 
 const styles = {
 	root: {
@@ -310,6 +314,18 @@ class GeneratePuzzle extends React.PureComponent {
 		));
 	}
 
+	handleDownloadPuzzleClick = () => {
+		const blob = new Blob([puzParser.generate(this.props.puzzle)], {
+			type: "application/x-crossword",
+		});
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.setAttribute("download", "puzzle.puz");
+		link.click();
+		URL.revokeObjectURL(url);
+	}
+
 	toggleShouldPlaceBlockCells = () => {
 		this.handleCellPlacementModeChange({
 			mode: this.props.cellPlacementMode === CELL_PLACEMENT_MODES.Blocks ?
@@ -397,6 +413,11 @@ class GeneratePuzzle extends React.PureComponent {
 				<PuzzlePicker
 					onUploadSuccess={this.handlePuzzleUpload}
 				/>
+				<Button
+					onClick={this.handleDownloadPuzzleClick}
+				>
+					Download puzzle
+				</Button>
 				{
 					puzzle && (
 						<PuzzleGeneratorControls
