@@ -1,4 +1,4 @@
-/* global module, process, require, Promise */
+/* global module, process, require */
 
 /**
  * app.js
@@ -18,7 +18,7 @@ import { ConnectedRouter } from "connected-react-router/immutable";
 import { IntlProvider } from "react-intl";
 import { create as createJSS } from "jss";
 import { jssPreset } from "@material-ui/core";
-import {JssProvider} from "react-jss";
+import { JssProvider } from "react-jss";
 import nestedJSS from "jss-nested";
 import "sanitize.css/sanitize.css";
 

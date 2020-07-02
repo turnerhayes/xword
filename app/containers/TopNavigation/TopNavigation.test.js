@@ -1,9 +1,9 @@
 import React from "react";
 import { fromJS } from "immutable";
-import { shallow } from "enzyme";
 
 import createReducer from "@app/reducers";
-import { mockStore } from "@app/utils/test-utils";
+import { mockStore, mount } from "@app/utils/test-utils";
+import TopNavigationComponent from "@app/components/TopNavigation";
 
 import TopNavigation from "./TopNavigation";
 
@@ -13,21 +13,18 @@ describe("TopNavigation container unit tests", () => {
 
 		let state = reducer(undefined, {});
 
-		let store =  mockStore(state);
+		let store = mockStore(state);
 
-		let wrapper = shallow(
+		let wrapper = mount(
 			(
-				<TopNavigation
-				/>
+				<TopNavigation />
 			),
 			{
-				context: {
-					store,
-				},
+				store,
 			},
 		);
 
-		expect(wrapper).toHaveProp("loggedInUser", undefined);
+		expect(wrapper.find(TopNavigationComponent)).toHaveProp("loggedInUser", undefined);
 
 		const user = fromJS({
 			id: "1",
@@ -47,20 +44,18 @@ describe("TopNavigation container unit tests", () => {
 			},
 		}));
 
-		store =  mockStore(state);
+		store = mockStore(state);
 
-		wrapper = shallow(
+		wrapper = mount(
 			(
 				<TopNavigation
 				/>
 			),
 			{
-				context: {
-					store,
-				},
+				store,
 			},
 		);
 
-		expect(wrapper).toHaveProp("loggedInUser", user);
+		expect(wrapper.find(TopNavigationComponent)).toHaveProp("loggedInUser", user);
 	});
 });

@@ -1,14 +1,18 @@
-import { IntlProvider } from "react-intl";
+import React from "react";
+import PropTypes from "prop-types";
 import configureStore from "redux-mock-store";
 import { runSaga as realRunSaga } from "redux-saga";
+import { IntlProvider } from "react-intl";
+import { mount as enzymeMount, shallow as enzymeShallow } from "enzyme";
+import { Provider } from "react-redux";
+import { MemoryRouter } from "react-router-dom";
+import Renderer from "react-test-renderer";
 
 import { translationMessages } from "@app/i18n";
 import createReducer from "@app/reducers";
 
-const intlProvider = new IntlProvider({ locale: "en", messages: translationMessages.en }, {});
-export const { intl } = intlProvider.getChildContext();
-
-export const formatMessage = intl.formatMessage.bind(intl);
+const locale = "en";
+const defaultLocale = "en";
 
 const _mockStore = configureStore();
 
@@ -19,13 +23,57 @@ export const mockStore = (initialState, ...args) => {
 
 	const store = _mockStore(initialState, ...args);
 
-	store.injectedReducers = {};
-	store.injectedSagas = {};
-
 	store.runSaga = () => {};
 
 	return store;
 };
+
+const WrapperComponent = ({ children, store }) => (
+	<MemoryRouter>
+		<Provider store={store}>
+			<IntlProvider
+				locale={locale}
+				defaultLocale={defaultLocale}
+				messages={translationMessages[locale]}
+			>
+				{children}
+			</IntlProvider>
+		</Provider>
+	</MemoryRouter>
+);
+
+WrapperComponent.propTypes = {
+	children: PropTypes.any,
+	store: PropTypes.object,
+};
+
+export const mount = (node, {
+	store = mockStore(),
+} = {}) => enzymeMount(node, {
+	wrappingComponent: WrapperComponent,
+	wrappingComponentProps: {
+		store,
+	},
+});
+
+export const shallow = (node, {
+	store = mockStore(),
+} = {}) => enzymeShallow(node, {
+	wrappingComponent: WrapperComponent,
+	wrappingComponentProps: {
+		store
+	},
+});
+
+export const renderComponent = (node, {
+	store = mockStore(),
+} = {}) => Renderer.create(
+	<WrapperComponent
+		store={store}
+	>
+		{node}
+	</WrapperComponent>
+);
 
 export async function runSaga({
 	state,

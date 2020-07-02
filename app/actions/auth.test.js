@@ -7,6 +7,10 @@ import {
 	LOGOUT,
 } from "./auth";
 
+jest.mock("@app/utils/navigation");
+
+import { navigateToUrl } from "@app/utils/navigation";
+
 describe("auth action creators", () => {
 	describe("login", () => {
 		it("should throw on a bad provider", () => {
@@ -18,8 +22,6 @@ describe("auth action creators", () => {
 		});
 
 		it("should change document.location and return a LOGIN action", () => {
-			jest.spyOn(document.location, "assign").mockImplementation(() => {});
-
 			[
 				"facebook",
 				"twitter",
@@ -28,7 +30,7 @@ describe("auth action creators", () => {
 				(provider) => {
 					const action = login({ provider });
 
-					expect(document.location.assign).toHaveBeenCalledWith(`/auth/${provider}?redirectTo=blank`);
+					expect(navigateToUrl).toHaveBeenCalledWith(`/auth/${provider}?redirectTo=${encodeURIComponent("/")}`);
 					
 					expect(isFSA(action)).toBeTruthy();
 
@@ -42,11 +44,9 @@ describe("auth action creators", () => {
 
 	describe("logout", () => {
 		it("should change document.location and return a LOGOUT action", () => {
-			jest.spyOn(document.location, "assign").mockImplementation(() => {});
-
 			const action = logout();
 
-			expect(document.location.assign).toHaveBeenCalledWith(`/auth/logout?redirectTo=blank`);
+			expect(navigateToUrl).toHaveBeenCalledWith(`/auth/logout?redirectTo=${encodeURIComponent("/")}`);
 			
 			expect(isFSA(action)).toBeTruthy();
 

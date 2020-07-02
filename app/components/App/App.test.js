@@ -1,13 +1,10 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { fromJS } from "immutable";
-import { mount } from "enzyme";
 import { MemoryRouter } from "react-router";
-import { intlShape } from "react-intl";
 import fetchMock from "fetch-mock";
 import Loadable from "react-loadable";
 import * as immutableMatchers from "jest-immutable-matchers";
-import { intl, mockStore } from "@app/utils/test-utils";
+import { mount, mockStore } from "@app/utils/test-utils";
 import App from "./index";
 
 
@@ -42,15 +39,7 @@ describe("App component", () => {
 				</MemoryRouter>
 			),
 			{
-				context: {
-					intl,
-					store: mockStore(initialState),
-				},
-
-				childContextTypes: {
-					intl: intlShape,
-					store: PropTypes.object,
-				},
+				store: mockStore(initialState),
 			}
 		);
 
@@ -77,15 +66,7 @@ describe("App component", () => {
 				</MemoryRouter>
 			),
 			{
-				context: {
-					intl,
-					store: mockStore(initialState),
-				},
-
-				childContextTypes: {
-					intl: intlShape,
-					store: PropTypes.object,
-				},
+				store: mockStore(initialState),
 			}
 		);
 

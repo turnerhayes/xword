@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AccountDialog container should pass the logged in user if user is logged in 1`] = `
+<div
+  className="MuiPaper-root MuiCard-root MuiPaper-elevation1 MuiPaper-rounded"
+>
+  <div
+    className="MuiCardHeader-root"
+  >
+    <div
+      className="MuiCardHeader-content"
+    >
+      <span
+        className="MuiTypography-root MuiCardHeader-title MuiTypography-h5 MuiTypography-displayBlock"
+      >
+        <div>
+          <span
+            aria-hidden={true}
+            className="material-icons MuiIcon-root icon AccountDialog-providerIcon-2"
+          >
+            facebook
+          </span>
+          <a
+            href="/profile/undefined"
+            onClick={[Function]}
+          />
+        </div>
+      </span>
+    </div>
+  </div>
+  <div
+    className="MuiCardContent-root"
+  />
+  <div
+    className="MuiCardActions-root MuiCardActions-spacing"
+  >
+    <button
+      className="MuiButtonBase-root MuiButton-root MuiButton-text"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onDragLeave={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      tabIndex={0}
+      type="button"
+    >
+      <span
+        className="MuiButton-label"
+      >
+        <span
+          aria-hidden={true}
+          className="material-icons MuiIcon-root icon AccountDialog-buttonIcon-3"
+        >
+          log out
+        </span>
+        Log out
+      </span>
+    </button>
+  </div>
+</div>
+`;

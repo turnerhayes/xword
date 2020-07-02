@@ -52,12 +52,13 @@ describe("User API", () => {
 			}));
 		});
 
-		it("should reject on error", () => {
+		it("should reject on error", async () => {
 			const uriRegex = /\/api\/users\/(\w+)/;
 
 			const error = "Test error";
 
-			fetchMock.get(uriRegex, () => {
+			const fetchPromise = new Promise((resolve) => fetchMock.get(uriRegex, () => {
+				resolve();
 				return {
 					status: 500,
 					body: {
@@ -66,9 +67,11 @@ describe("User API", () => {
 						},
 					},
 				};
-			});
+			}));
 
 			const userPromise = getUser({ userID: "123" });
+
+			await fetchPromise;
 
 			expect(userPromise).rejects.toThrow(new Error(error));
 		});

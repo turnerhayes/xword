@@ -1,5 +1,3 @@
-/* global Promise */
-
 import fetchMock from "fetch-mock";
 
 import fetch from "./fetch";

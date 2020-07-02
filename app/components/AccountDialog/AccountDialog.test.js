@@ -1,13 +1,11 @@
 import React from "react";
 import { fromJS } from "immutable";
-import { shallow } from "enzyme";
-import { Link } from "react-router-dom";
 import Icon from "@material-ui/core/Icon";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
-import CardHeader from "@material-ui/core/CardHeader";
-import { Unwrapped as AccountDialog } from "./AccountDialog";
-import { intl } from "@app/utils/test-utils";
+import { mount, renderComponent } from "@app/utils/test-utils";
+
+import AccountDialog from "./AccountDialog";
 
 const NO_OP = () => {};
 
@@ -17,50 +15,29 @@ describe("AccountDialog component", () => {
 	it("should show a login link for each supported provider if no user is logged in", () => {
 		const providers = [ "facebook", "google", "twitter" ];
 
-
-		const wrapper = shallow(
+		const component = renderComponent(
 			<AccountDialog
 				onLogin={NO_OP}
 				onLogout={NO_OP}
 				enabledProviders={providers}
-				intl={intl}
-				classes={{
-					loginLink: loginLinkClass,
-				}}
+				classes={{}}
 			/>
 		);
 
-		const loginButtons = wrapper.find(IconButton).filter(`.${loginLinkClass}`);
-
-		expect(loginButtons).toHaveLength(providers.length);
-		providers.forEach(
-			(provider) => expect(
-				loginButtons.filterWhere(
-					(el) => el.key() === provider
-				)
-			).toExist()
-		);
+		expect(component.toJSON()).toMatchSnapshot();
 	});
 
 	it("should not show a login link for a provider if that provider is not supported", () => {
-		const wrapper = shallow(
+		const component = renderComponent(
 			<AccountDialog
 				onLogin={NO_OP}
 				onLogout={NO_OP}
 				enabledProviders={[ "facebook" ]}
-				intl={intl}
-				classes={{
-					loginLink: loginLinkClass,
-				}}
+				classes={{}}
 			/>
 		);
 
-		const loginButtons = wrapper.find(IconButton).filter(`.${loginLinkClass}`);
-		expect(
-			loginButtons.filterWhere(
-				(el) => el.key() === "twitter"
-			)
-		).not.toExist();
+		expect(component.toJSON()).toMatchSnapshot();
 	});
 
 	it("should call login callback with the appropriate provider when login button is clicked", () => {
@@ -68,12 +45,11 @@ describe("AccountDialog component", () => {
 
 		const selectedProvider = "facebook";
 
-		const wrapper = shallow(
+		const wrapper = mount(
 			<AccountDialog
 				onLogin={onLogin}
 				onLogout={NO_OP}
 				enabledProviders={[ selectedProvider, "twitter" ]}
-				intl={intl}
 				classes={{
 					loginLink: loginLinkClass,
 				}}
@@ -102,17 +78,16 @@ describe("AccountDialog component", () => {
 			provider: "facebook",
 		});
 
-		const wrapper = shallow(
+		const component = renderComponent(
 			<AccountDialog
 				onLogin={NO_OP}
 				onLogout={NO_OP}
-				intl={intl}
 				loggedInUser={loggedInUser}
 				classes={{}}
 			/>
-		).find(CardHeader).shallow().shallow();
+		);
 
-		expect(wrapper.find(Link).filterWhere((el) => el.children().text() === displayName)).toExist();
+		expect(component.toJSON()).toMatchSnapshot();
 	});
 
 	it("should call logout callback when logout button clicked", () => {
@@ -127,11 +102,10 @@ describe("AccountDialog component", () => {
 
 		const onLogout = jest.fn();
 
-		const wrapper = shallow(
+		const wrapper = mount(
 			<AccountDialog
 				onLogin={NO_OP}
 				onLogout={onLogout}
-				intl={intl}
 				loggedInUser={loggedInUser}
 				classes={{}}
 			/>

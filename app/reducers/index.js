@@ -14,7 +14,6 @@ import uiReducer from "./ui";
  * Creates the main reducer with the dynamically injected ones
  */
 export default function createReducer({
-	injectedReducers,
 	history = createBrowserHistory(),
 } = {}) {
 	return combineReducers({
@@ -23,6 +22,5 @@ export default function createReducer({
 		ui: uiReducer,
 		dictionary: dictionaryReducer,
 		puzzles: puzzlesReducer,
-		...injectedReducers,
 	});
 }

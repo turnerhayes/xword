@@ -1,5 +1,4 @@
 import invariant from "invariant";
-import isObject from "lodash.isobject";
 
 /**
  * Validate the shape of redux store
@@ -33,15 +32,5 @@ export default function checkStore(store) {
 	invariant(
 		typeof store.runSaga === "function",
 		"(@app/utils/checkStore) injectors: Expected a runSaga function"
-	);
-
-	invariant(
-		isObject(store.injectedReducers),
-		"(@app/utils/checkStore) injectors: Expected an injectedReducers object"
-	);
-
-	invariant(
-		isObject(store.injectedSagas),
-		"(@app/utils/checkStore) injectors: Expected an injectedSagas object"
 	);
 }

@@ -1,27 +1,41 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { fromJS } from "immutable";
-import { shallow, mount } from "enzyme";
 import * as immutableMatchers from "jest-immutable-matchers";
 import { MemoryRouter } from "react-router";
-import { intlShape } from "react-intl";
 import Icon from "@material-ui/core/Icon";
 import Button from "@material-ui/core/Button";
 
 import { LOGOUT, LOGIN } from "@app/actions";
-import { intl, mockStore } from "@app/utils/test-utils";
+import { renderComponent, mount, mockStore } from "@app/utils/test-utils";
 
 import AccountDialog from "./AccountDialog";
 
-beforeAll(async () => {
+const locationProp = Object.getOwnPropertyDescriptor(document, "location");
+let locationAssign;
+
+beforeAll(() => {
 	jest.addMatchers(immutableMatchers);
 });
 
+beforeEach(() => {
+	locationAssign = jest.fn();
+	locationAssign.mockName("assign");
+
+	Object.defineProperty(document, "location", {
+		assign: locationAssign,
+	});
+});
+
+afterAll(() => {
+	Object.defineProperty(window, "location", locationProp);
+});
+
 describe("AccountDialog container", () => {
-	it("should pass the logged in user if user is logged in", () => {
+	fit("should pass the logged in user if user is logged in", () => {
 		const user = fromJS({
 			id: "1",
 			isMe: true,
+			provider: "facebook",
 		});
 
 		const store = mockStore(fromJS({
@@ -33,20 +47,9 @@ describe("AccountDialog container", () => {
 			},
 		}));
 
-		const wrapper = shallow(
-			(
-				<AccountDialog
-				/>
-			),
-			{
-				context: {
-					intl,
-					store,
-				},
-			}
-		);
+		const component = renderComponent(<AccountDialog />, { store, });
 
-		expect(wrapper.dive().dive().prop("loggedInUser")).toEqualImmutable(user);
+		expect(component.toJSON()).toMatchSnapshot();
 	});
 
 	it("should pass undefined for the logged in user if user is not logged in", () => {
@@ -55,20 +58,9 @@ describe("AccountDialog container", () => {
 			},
 		}));
 
-		const wrapper = shallow(
-			(
-				<AccountDialog
-				/>
-			),
-			{
-				context: {
-					intl,
-					store,
-				},
-			}
-		);
+		const component = renderComponent(<AccountDialog />, { store, });
 
-		expect(wrapper.dive().prop("loggedInUser")).toBeUndefined();
+		expect(component.toJSON()).toMatchSnapshot();
 	});
 
 	it("should dispatch a logout action", () => {
@@ -89,8 +81,6 @@ describe("AccountDialog container", () => {
 
 		store.dispatch = jest.fn();
 
-		jest.spyOn(document.location, "assign").mockImplementation(() => {});
-
 		const wrapper = mount(
 			(
 				<MemoryRouter>
@@ -99,16 +89,8 @@ describe("AccountDialog container", () => {
 				</MemoryRouter>
 			),
 			{
-				context: {
-					intl,
-					store,
-				},
-
-				childContextTypes: {
-					intl: intlShape,
-					store: PropTypes.object,
-				},
-			}
+				store,
+			},
 		);
 
 		const logoutButton = wrapper.find(Button).filterWhere(
@@ -119,7 +101,7 @@ describe("AccountDialog container", () => {
 
 		logoutButton.simulate("click");
 
-		expect(document.location.assign).toHaveBeenCalledWith("/auth/logout?redirectTo=blank");
+		expect(locationAssign).toHaveBeenCalledWith("/auth/logout?redirectTo=blank");
 
 		expect(store.dispatch).toHaveBeenCalledWith({
 			type: LOGOUT,
@@ -135,8 +117,6 @@ describe("AccountDialog container", () => {
 
 		store.dispatch = jest.fn();
 
-		jest.spyOn(document.location, "assign").mockImplementation(() => {});
-
 		const wrapper = mount(
 			(
 				<MemoryRouter>
@@ -146,16 +126,8 @@ describe("AccountDialog container", () => {
 				</MemoryRouter>
 			),
 			{
-				context: {
-					intl,
-					store,
-				},
-
-				childContextTypes: {
-					intl: intlShape,
-					store: PropTypes.object,
-				},
-			}
+				store,
+			},
 		);
 
 		const classes = wrapper.find("AccountDialog").prop("classes");
@@ -164,7 +136,7 @@ describe("AccountDialog container", () => {
 
 		loginButton.simulate("click");
 
-		expect(document.location.assign).toHaveBeenCalledWith("/auth/facebook?redirectTo=blank");
+		expect(locationAssign).toHaveBeenCalledWith("/auth/facebook?redirectTo=blank");
 
 		expect(store.dispatch).toHaveBeenCalledWith({
 			type: LOGIN,
