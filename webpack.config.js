@@ -37,6 +37,19 @@ const plugins = [
 		filename: Config.paths.indexFile.name,
 		template: Config.paths.indexFile.template,
 	}),
+	// Always expose NODE_ENV to webpack, in order to use `process.env.NODE_ENV`
+	// inside your code for any environment checks; UglifyJS will automatically
+	// drop any unreachable code.
+	new webpack.EnvironmentPlugin({
+		// Necessary environment variables for shared-lib/config
+		NODE_ENV: Config.app.environment,
+		STATIC_CONTENT_URL: null,
+
+		// Necessary environment variables for social media login integration
+		CREDENTIALS_FACEBOOK_IS_ENABLED: Config.auth.facebook.isEnabled || false,
+		CREDENTIALS_GOOGLE_IS_ENABLED: Config.auth.google.isEnabled || false,
+		CREDENTIALS_TWITTER_IS_ENABLED: Config.auth.twitter.isEnabled || false,
+	}),
 ];
 
 let devtool;

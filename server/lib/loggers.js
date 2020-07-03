@@ -46,5 +46,5 @@ const errorLogger = winston.createLogger({
 exports = module.exports = {
 	http: morgan("dev"),
 	sql: sqlLogger,
-	error: errorLogger.error,
+	error: errorLogger.error.bind(errorLogger),
 };

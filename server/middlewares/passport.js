@@ -31,30 +31,23 @@ function getUserInfoFromOAuth20Profile(profile) {
 	};
 }
 
-function getOrCreateUser({ req, provider, profile }) {
-	return UserStore.findByProviderID(provider, profile.id).then(
-		user => Promise.resolve(
-			user || UserStore.createUser({
-				username: profile.username,
-				email: profile.email,
-				provider,
-				providerID: profile.id,
-				name: {
-					first: profile.name.givenName,
-					middle: profile.name.middleName,
-					last: profile.name.familyName,
-					display: profile.displayName
-				}
-			})
-		).then(
-			(user) => UserStore.convertSessionUserToSiteUser({
-				userID: user.id,
-				sessionID: req.session.id
-			}).then(
-				() => user
-			)
-		)
-	);
+async function getOrCreateUser({ provider, profile }) {
+	let user = await UserStore.findByProviderID(provider, profile.id);
+	if (!user) {
+		user = await UserStore.createUser({
+			username: profile.username,
+			email: profile.email,
+			provider,
+			providerID: profile.id,
+			name: {
+				first: profile.name.givenName,
+				middle: profile.name.middleName,
+				last: profile.name.familyName,
+				display: profile.displayName
+			}
+		});
+	}
+	return user;
 }
 
 if (Config.auth.facebook.isEnabled) {
